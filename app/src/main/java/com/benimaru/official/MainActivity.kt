@@ -26,6 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
 import java.io.File
@@ -33,6 +34,7 @@ import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,8 +61,10 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        Shizuku.addRequestPermissionResultListener(permissionListener)
+        verifyAppSignature()
+        checkForUpdates() // Triggers the auto-update check on startup
 
+        Shizuku.addRequestPermissionResultListener(permissionListener)
         checkShizukuStatus()
         setupClickListeners()
     }
@@ -68,6 +72,189 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Shizuku.removeRequestPermissionResultListener(permissionListener)
+    }
+
+    // --- Security & Signature Checker ---
+
+    private fun verifyAppSignature() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val currentSignature = getCurrentAppSignature()
+                var expectedSignature = "3ba04fa59e97759b9d2cd2b85e4598d1efa87caf714a70e46f1d8c8f5bb7658b"
+
+                try {
+                    val url = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/signature.txt")
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.connectTimeout = 3000
+                    conn.readTimeout = 3000
+
+                    if (conn.responseCode == 200) {
+                        val fetchedSig = conn.inputStream.bufferedReader().readText().trim()
+                        if (fetchedSig.isNotEmpty()) {
+                            expectedSignature = fetchedSig
+                        }
+                    }
+                } catch (e: Exception) {}
+
+                if (!currentSignature.equals(expectedSignature, ignoreCase = true)) {
+                    withContext(Dispatchers.Main) {
+                        Toasty.error(this@MainActivity, "Unofficial APK detected! Closing app.", Toast.LENGTH_LONG, true).show()
+                        delay(2000)
+                        finishAffinity()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) { finishAffinity() }
+            }
+        }
+    }
+
+    private fun getCurrentAppSignature(): String {
+        val signatures = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+            packageInfo.signingInfo?.apkContentsSigners
+        } else {
+            @Suppress("DEPRECATION")
+            val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
+            @Suppress("DEPRECATION")
+            packageInfo.signatures
+        }
+
+        if (signatures.isNullOrEmpty()) return ""
+        val md = MessageDigest.getInstance("SHA-256")
+        md.update(signatures[0].toByteArray())
+        return md.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    // --- Auto Updater Logic ---
+
+    private fun checkForUpdates() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // TODO: Replace with your actual raw JSON URL
+                val url = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/version.json")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                if (conn.responseCode == 200) {
+                    val jsonString = conn.inputStream.bufferedReader().readText()
+                    val jsonObject = JSONObject(jsonString)
+
+                    val latestVersionCode = jsonObject.getInt("versionCode")
+                    val latestVersionName = jsonObject.getString("versionName")
+                    val apkUrl = jsonObject.getString("apkUrl")
+                    val releaseNotes = jsonObject.getString("releaseNotes")
+
+                    val currentVersionCode = try {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                            packageManager.getPackageInfo(packageName, 0).longVersionCode.toInt()
+                        } else {
+                            @Suppress("DEPRECATION")
+                            packageManager.getPackageInfo(packageName, 0).versionCode
+                        }
+                    } catch (e: Exception) {
+                        1
+                    }
+
+                    if (latestVersionCode > currentVersionCode) {
+                        withContext(Dispatchers.Main) {
+                            showUpdateDialog(latestVersionName, releaseNotes, apkUrl)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Fails silently if offline or URL is inaccessible
+            }
+        }
+    }
+
+    private fun showUpdateDialog(versionName: String, releaseNotes: String, apkUrl: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Update Available (v$versionName)")
+            .setMessage("A new version of Benimaru Tool is available.\n\nWhat's new:\n$releaseNotes")
+            .setCancelable(false)
+            .setPositiveButton("Update Now") { _, _ ->
+                downloadAppUpdate(apkUrl)
+            }
+            .setNegativeButton("Later", null)
+            .show()
+    }
+
+    private fun downloadAppUpdate(downloadUrl: String) {
+        val fileName = "BenimaruTool-update.apk"
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(64, 32, 64, 32)
+        }
+
+        val tvProgress = TextView(this).apply {
+            text = "0%"
+            textSize = 16f
+        }
+
+        val progressIndicator = LinearProgressIndicator(this).apply {
+            isIndeterminate = false
+            max = 100
+            progress = 0
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 16 }
+        }
+
+        layout.addView(tvProgress)
+        layout.addView(progressIndicator)
+
+        val progressDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Downloading Update")
+            .setView(layout)
+            .setCancelable(false)
+            .show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val url = URL(downloadUrl)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.connect()
+
+                val fileLength = connection.contentLength
+                val input = connection.inputStream
+
+                val outputFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+                val output = FileOutputStream(outputFile)
+
+                val data = ByteArray(4096)
+                var total: Long = 0
+                var count: Int
+
+                while (input.read(data).also { count = it } != -1) {
+                    total += count
+                    val progress = ((total * 100) / fileLength).toInt()
+
+                    withContext(Dispatchers.Main) {
+                        progressIndicator.progress = progress
+                        tvProgress.text = "$progress%"
+                    }
+                    output.write(data, 0, count)
+                }
+
+                output.flush()
+                output.close()
+                input.close()
+
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    installApk(outputFile) // Reuses existing file provider logic
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    Toasty.error(this@MainActivity, "Update failed: ${e.message}", Toast.LENGTH_SHORT, true).show()
+                }
+            }
+        }
     }
 
     // --- Shizuku Setup & Logic ---

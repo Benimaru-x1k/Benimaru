@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "1.1",
-  "apkUrl": "https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/releases/download/v1.1/BenimaruTool-v1.1.apk",
+  "versionCode": 3,
+  "versionName": "1.2",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.1/BenimaruTool-v1.1.apk",
   "releaseNotes": "- Added auto-updater\n- Bug fixes"
 }

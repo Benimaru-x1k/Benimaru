@@ -12,6 +12,10 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic DPI calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
 *   ⏪ **One-Tap Reset**: Easily revert all tweaks back to your device's stock default settings.
 
+![App Screenshot](images/photo_1_2026-09-13_12-06-59.jpg)
+![App Screenshot](images/photo_2_2026-09-13_12-06-59.jpg)
+![App Screenshot](images/photo_3_2026-09-13_12-06-59.jpg)
+
 ## 📋 Prerequisites
 
 Because Benimaru Tool modifies secure system settings, it requires **Shizuku** to function. 

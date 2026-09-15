@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.1/BenimaruTool-v1.0.apk",
-  "releaseNotes": "- Added auto-updater\n- Bug fixes"
+  "versionCode": 2,
+  "versionName": "1.2",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.1/BenimaruTool-v1.2.apk",
+  "releaseNotes": "- Added Crosshair Overlay\n- Added Game Launcher"
 }

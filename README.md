@@ -10,6 +10,10 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   ⚡ **Touch Latency Reduction**: Increases touch sampling rate and reduces long-press timeouts for faster, more precise screen interactions.
 *   🔄 **Custom Refresh Rate**: Force specific Minimum and Maximum screen refresh rates (e.g., lock to 120Hz).
 *   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic DPI calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
+*   🎯 **FPS Crosshair Overlay**: Enable a persistent, center-screen red crosshair to improve accuracy in FPS games.
+*   🎮 **Quick Game Launcher**: Automatically detects installed games on your device and lets you launch them directly from the tool.
+*   🛡️ **Anti-Tamper Security**: Built-in SHA-256 signature verification to prevent the execution of modified, repackaged, or unofficial APKs.
+*   📲 **In-App Auto Updater**: Automatically checks the official GitHub repository for new releases and handles seamless updates within the app.
 *   ⏪ **One-Tap Reset**: Easily revert all tweaks back to your device's stock default settings.
 
 <p align="center">
@@ -23,6 +27,7 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 Because Benimaru Tool modifies secure system settings, it requires **Shizuku** to function. 
 * If you do not have Shizuku installed, Benimaru Tool will automatically prompt you to download and install it safely from the official GitHub repository.
 * **Note:** You must start the Shizuku service via Wireless Debugging (Android 11+) or via ADB from a computer. [Read the official Shizuku setup guide here](https://shizuku.rikka.app/guide/setup/).
+* **Overlay Permission:** To use the Crosshair Overlay, you must grant the "Display over other apps" permission when prompted.
 
 ## 🛠️ Built With
 

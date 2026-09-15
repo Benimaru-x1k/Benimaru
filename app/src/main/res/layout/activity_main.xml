@@ -32,7 +32,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="16dp"
-        android:text="Powerful ADB Comands to Improve Android Performance without Root"
+        android:text="Powerful ADB Commands to Improve Android Performance without Root"
         android:textColor="#555555"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,13 +72,11 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -86,21 +84,18 @@
                         android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="8dp"
                         android:background="#E0E0E0" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Lock device performance to a fixed state to maintain consistent frame rates."
                         android:textColor="#757575"
                         android:textSize="14sp" />
-
                     <TextView
                         android:id="@+id/tvStatusFixedPerf"
                         android:layout_width="wrap_content"
@@ -124,13 +119,11 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -138,21 +131,18 @@
                         android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="8dp"
                         android:background="#E0E0E0" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Clear background processes and allocate resources to active applications."
                         android:textColor="#757575"
                         android:textSize="14sp" />
-
                     <TextView
                         android:id="@+id/tvStatusOptimize"
                         android:layout_width="wrap_content"
@@ -176,13 +166,11 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -190,21 +178,18 @@
                         android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="8dp"
                         android:background="#E0E0E0" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Modify the screen refresh rate to balance smooth visuals and battery life."
                         android:textColor="#757575"
                         android:textSize="14sp" />
-
                     <TextView
                         android:id="@+id/tvStatusRefresh"
                         android:layout_width="wrap_content"
@@ -228,13 +213,11 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -242,21 +225,18 @@
                         android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="8dp"
                         android:background="#E0E0E0" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Prioritize network traffic and reduce ping for a lag-free experience."
                         android:textColor="#757575"
                         android:textSize="14sp" />
-
                     <TextView
                         android:id="@+id/tvStatusNetwork"
                         android:layout_width="wrap_content"
@@ -280,13 +260,11 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -294,21 +272,18 @@
                         android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="8dp"
                         android:background="#E0E0E0" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Increase touch sampling rate for faster and more precise screen interactions."
                         android:textColor="#757575"
                         android:textSize="14sp" />
-
                     <TextView
                         android:id="@+id/tvStatusTouch"
                         android:layout_width="wrap_content"
@@ -332,13 +307,11 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -346,21 +319,18 @@
                         android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="8dp"
                         android:background="#E0E0E0" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Adjust the display resolution to improve gaming performance and battery life."
                         android:textColor="#757575"
                         android:textSize="14sp" />
-
                     <TextView
                         android:id="@+id/tvStatusResolution"
                         android:layout_width="wrap_content"
@@ -372,6 +342,65 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <!-- Card 7: Enable Crosshair -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardCrosshair"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Enable Crosshair Overlay"
+                        android:textColor="#212121"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#E0E0E0" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Displays a fixed red crosshair in the center of the screen for FPS games."
+                        android:textColor="#757575"
+                        android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/tvStatusCrosshair"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Status: Disabled"
+                        android:textColor="#1976D2"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Launch Game Button -->
+            <Button
+                android:id="@+id/btnLaunchGame"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="#4CAF50"
+                android:padding="12dp"
+                android:text="Launch Game"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
 
         </LinearLayout>
     </ScrollView>

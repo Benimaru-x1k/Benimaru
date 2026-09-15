@@ -1,11 +1,18 @@
 package com.benimaru.official
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.provider.Settings
 import android.text.InputType
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -39,6 +46,7 @@ import java.security.MessageDigest
 class MainActivity : AppCompatActivity() {
 
     private val SHIZUKU_REQUEST_CODE = 100
+    private var isCrosshairEnabled = false
 
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == SHIZUKU_REQUEST_CODE) {
@@ -62,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         verifyAppSignature()
-        checkForUpdates() // Triggers the auto-update check on startup
+        checkForUpdates()
 
         Shizuku.addRequestPermissionResultListener(permissionListener)
         checkShizukuStatus()
@@ -127,11 +135,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Auto Updater Logic ---
-
     private fun checkForUpdates() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // TODO: Replace with your actual raw JSON URL
                 val url = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/version.json")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.connectTimeout = 5000
@@ -174,16 +180,13 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Update Available (v$versionName)")
             .setMessage("A new version of Benimaru Tool is available.\n\nWhat's new:\n$releaseNotes")
             .setCancelable(false)
-            .setPositiveButton("Update Now") { _, _ ->
-                downloadAppUpdate(apkUrl)
-            }
+            .setPositiveButton("Update Now") { _, _ -> downloadAppUpdate(apkUrl) }
             .setNegativeButton("Later", null)
             .show()
     }
 
     private fun downloadAppUpdate(downloadUrl: String) {
         val fileName = "BenimaruTool-update.apk"
-
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(64, 32, 64, 32)
@@ -232,7 +235,6 @@ class MainActivity : AppCompatActivity() {
                 while (input.read(data).also { count = it } != -1) {
                     total += count
                     val progress = ((total * 100) / fileLength).toInt()
-
                     withContext(Dispatchers.Main) {
                         progressIndicator.progress = progress
                         tvProgress.text = "$progress%"
@@ -246,7 +248,7 @@ class MainActivity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
-                    installApk(outputFile) // Reuses existing file provider logic
+                    installApk(outputFile)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -262,9 +264,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkShizukuStatus() {
         if (isShizukuInstalled()) {
             if (Shizuku.pingBinder()) {
-                if (hasShizukuPermission()) {
-                    fetchSystemStatuses()
-                }
+                if (hasShizukuPermission()) fetchSystemStatuses()
             } else {
                 Toasty.warning(this, "Shizuku is installed but not running. Launching app...", Toast.LENGTH_LONG, true).show()
                 launchShizukuApp()
@@ -400,6 +400,16 @@ class MainActivity : AppCompatActivity() {
             showResolutionDialog()
         }
 
+        // Crosshair Toggle
+        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
+            toggleCrosshair()
+        }
+
+        // Launch Game Button
+        findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
+            showGameLauncherDialog()
+        }
+
         findViewById<Button>(R.id.btnResetAll).setOnClickListener {
             val resetCmd = """
                 cmd power set-fixed-performance-mode-enabled false
@@ -440,6 +450,84 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    // --- Crosshair Logic ---
+
+    private fun toggleCrosshair() {
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+            startActivity(intent)
+            Toasty.info(this, "Please allow 'Display over other apps' to use the crosshair", Toast.LENGTH_LONG, true).show()
+            return
+        }
+
+        val intent = Intent(this, CrosshairService::class.java)
+        if (isCrosshairEnabled) {
+            stopService(intent)
+            isCrosshairEnabled = false
+            findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
+            Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
+        } else {
+            startService(intent)
+            isCrosshairEnabled = true
+            findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Enabled"
+            Toasty.success(this, "Crosshair enabled", Toast.LENGTH_SHORT, true).show()
+        }
+    }
+
+    // --- Game Launcher Logic ---
+
+    private fun showGameLauncherDialog() {
+        val pm = packageManager
+        val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+        val allApps = pm.queryIntentActivities(intent, 0)
+
+        // Filter out apps that are officially categorized as games
+        val gameApps = allApps.filter {
+            val appInfo = it.activityInfo.applicationInfo
+            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
+            val isGameCategory = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                appInfo.category == ApplicationInfo.CATEGORY_GAME
+            } else false
+            isGameFlag || isGameCategory
+        }
+
+        if (gameApps.isEmpty()) {
+            Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
+            return
+        }
+
+        // Custom Adapter to show Icon + Name in the Dialog
+        val adapter = object : ArrayAdapter<ResolveInfo>(this, android.R.layout.select_dialog_item, android.R.id.text1, gameApps) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                val app = gameApps[position]
+                view.text = app.loadLabel(pm)
+
+                val icon = app.loadIcon(pm)
+                icon.setBounds(0, 0, 96, 96) // Resize the icon slightly
+                view.setCompoundDrawables(icon, null, null, null)
+                view.compoundDrawablePadding = 24
+
+                return view
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Launch a Game")
+            .setAdapter(adapter) { _, which ->
+                val selectedApp = gameApps[which]
+                val launchIntent = pm.getLaunchIntentForPackage(selectedApp.activityInfo.packageName)
+                if (launchIntent != null) {
+                    startActivity(launchIntent)
+                    Toasty.success(this, "Launching ${selectedApp.loadLabel(pm)}", Toast.LENGTH_SHORT, true).show()
+                } else {
+                    Toasty.error(this, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     // --- Custom Dialogs ---
@@ -547,7 +635,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun showResolutionPreviewCountdown() {
         var timerJob: Job? = null
-
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle("Confirm Resolution")
             .setMessage("Reverting to default in 6 seconds...")
@@ -590,19 +677,14 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Shizuku Required")
             .setMessage("Shizuku is required to use this app. Would you like to download it now?")
             .setCancelable(false)
-            .setPositiveButton("Download") { _, _ ->
-                downloadShizukuApk()
-            }
-            .setNegativeButton("Dismiss") { _, _ ->
-                finishAffinity()
-            }
+            .setPositiveButton("Download") { _, _ -> downloadShizukuApk() }
+            .setNegativeButton("Dismiss") { _, _ -> finishAffinity() }
             .show()
     }
 
     private fun downloadShizukuApk() {
         val downloadUrl = "https://github.com/RikkaApps/Shizuku/releases/download/v13.6.0/shizuku-v13.6.0.r1086.2650830c-release.apk"
         val fileName = "shizuku-v13.6.0.apk"
-
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(64, 32, 64, 32)
@@ -651,7 +733,6 @@ class MainActivity : AppCompatActivity() {
                 while (input.read(data).also { count = it } != -1) {
                     total += count
                     val progress = ((total * 100) / fileLength).toInt()
-
                     withContext(Dispatchers.Main) {
                         progressIndicator.progress = progress
                         tvProgress.text = "$progress%"
@@ -667,7 +748,6 @@ class MainActivity : AppCompatActivity() {
                     progressDialog.dismiss()
                     installApk(outputFile)
                 }
-
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()

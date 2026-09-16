@@ -10,6 +10,7 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   ⚡ **Touch Latency Reduction**: Increases touch sampling rate and reduces long-press timeouts for faster, more precise screen interactions.
 *   🔄 **Custom Refresh Rate**: Force specific Minimum and Maximum screen refresh rates (e.g., lock to 120Hz).
 *   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic DPI calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
+*   🌐 **Custom DNS Selector**: Set a system-wide private DNS (Cloudflare, Quad9, Control D, etc.) via ADB for reliable ad blocking, tracker protection, and lower latency without needing a VPN.
 *   🎯 **FPS Crosshair Overlay**: Enable a persistent, center-screen red crosshair to improve accuracy in FPS games.
 *   🎮 **Quick Game Launcher**: Automatically detects installed games on your device and lets you launch them directly from the tool.
 *   🛡️ **Anti-Tamper Security**: Built-in SHA-256 signature verification to prevent the execution of modified, repackaged, or unofficial APKs.

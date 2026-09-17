@@ -343,7 +343,54 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Card 7: Enable Crosshair -->
+            <!-- Card 7: Custom DNS -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardCustomDns"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Custom DNS"
+                        android:textColor="#212121"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#E0E0E0" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Set a private DNS provider for reliable ad blocking, tracker protection, and lower latency."
+                        android:textColor="#757575"
+                        android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/tvStatusDns"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Status: Checking..."
+                        android:textColor="#1976D2"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Card 8: Enable Crosshair -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardCrosshair"
                 android:layout_width="match_parent"
@@ -375,7 +422,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Displays a fixed red crosshair in the center of the screen for FPS games."
+                        android:text="Displays a customizable crosshair in the center of the screen for FPS games."
                         android:textColor="#757575"
                         android:textSize="14sp" />
                     <TextView

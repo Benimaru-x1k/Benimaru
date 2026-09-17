@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -340,11 +341,20 @@ class MainActivity : AppCompatActivity() {
             val touchOpt = runAdbCommandWithResult("settings get system pointer_speed")
             val touchStatus = if (touchOpt == "7") "Status: Improved" else "Status: Default"
 
+            val dnsMode = runAdbCommandWithResult("settings get global private_dns_mode")
+            val dnsSpecifier = runAdbCommandWithResult("settings get global private_dns_specifier")
+            val dnsStatus = if (dnsMode.trim() == "hostname" && dnsSpecifier.isNotEmpty() && dnsSpecifier != "null") {
+                "Status: ${dnsSpecifier.trim()}"
+            } else {
+                "Status: Default"
+            }
+
             withContext(Dispatchers.Main) {
                 findViewById<TextView>(R.id.tvStatusRefresh).text = refreshStatus
                 findViewById<TextView>(R.id.tvStatusResolution).text = resStatus
                 findViewById<TextView>(R.id.tvStatusNetwork).text = netStatus
                 findViewById<TextView>(R.id.tvStatusTouch).text = touchStatus
+                findViewById<TextView>(R.id.tvStatusDns).text = dnsStatus
             }
         }
     }
@@ -400,16 +410,20 @@ class MainActivity : AppCompatActivity() {
             showResolutionDialog()
         }
 
-        // Crosshair Toggle
-        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
-            toggleCrosshair()
+        findViewById<CardView>(R.id.cardCustomDns).setOnClickListener {
+            showDnsDialog()
         }
 
-        // Launch Game Button
+        // Crosshair Configuration
+        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
+            showCrosshairConfigDialog()
+        }
+
         findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
             showGameLauncherDialog()
         }
 
+        // Reset Everything
         findViewById<Button>(R.id.btnResetAll).setOnClickListener {
             val resetCmd = """
                 cmd power set-fixed-performance-mode-enabled false
@@ -419,6 +433,8 @@ class MainActivity : AppCompatActivity() {
                 wm density reset
                 settings delete system pointer_speed
                 settings put secure long_press_timeout 400
+                settings put global private_dns_mode default
+                settings delete global private_dns_specifier
             """.trimIndent().replace("\n", " && ")
 
             runAdbCommand(resetCmd, "All adjustments reset to default") {
@@ -452,85 +468,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Crosshair Logic ---
+    // --- Custom Dialogs ---
 
-    private fun toggleCrosshair() {
-        if (!Settings.canDrawOverlays(this)) {
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-            startActivity(intent)
-            Toasty.info(this, "Please allow 'Display over other apps' to use the crosshair", Toast.LENGTH_LONG, true).show()
-            return
-        }
+    private fun showDnsDialog() {
+        val dnsOptions = arrayOf(
+            "Control D (Blocks ads/trackers)",
+            "Cloudflare (Fastest, no logs)",
+            "Quad9 (Blocks malicious links)",
+            "NextDNS (Personalized blocking)",
+            "Google (Stable and reliable)",
+            "Default (Off / Automatic)"
+        )
 
-        val intent = Intent(this, CrosshairService::class.java)
-        if (isCrosshairEnabled) {
-            stopService(intent)
-            isCrosshairEnabled = false
-            findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
-            Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
-        } else {
-            startService(intent)
-            isCrosshairEnabled = true
-            findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Enabled"
-            Toasty.success(this, "Crosshair enabled", Toast.LENGTH_SHORT, true).show()
-        }
-    }
-
-    // --- Game Launcher Logic ---
-
-    private fun showGameLauncherDialog() {
-        val pm = packageManager
-        val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        val allApps = pm.queryIntentActivities(intent, 0)
-
-        // Filter out apps that are officially categorized as games
-        val gameApps = allApps.filter {
-            val appInfo = it.activityInfo.applicationInfo
-            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-            val isGameCategory = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                appInfo.category == ApplicationInfo.CATEGORY_GAME
-            } else false
-            isGameFlag || isGameCategory
-        }
-
-        if (gameApps.isEmpty()) {
-            Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
-            return
-        }
-
-        // Custom Adapter to show Icon + Name in the Dialog
-        val adapter = object : ArrayAdapter<ResolveInfo>(this, android.R.layout.select_dialog_item, android.R.id.text1, gameApps) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent) as TextView
-                val app = gameApps[position]
-                view.text = app.loadLabel(pm)
-
-                val icon = app.loadIcon(pm)
-                icon.setBounds(0, 0, 96, 96) // Resize the icon slightly
-                view.setCompoundDrawables(icon, null, null, null)
-                view.compoundDrawablePadding = 24
-
-                return view
-            }
-        }
+        val dnsHostnames = arrayOf(
+            "p2.freedns.controld.com",
+            "one.one.one.one",
+            "dns.quad9.net",
+            "dns.nextdns.io",
+            "dns.google",
+            ""
+        )
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Launch a Game")
-            .setAdapter(adapter) { _, which ->
-                val selectedApp = gameApps[which]
-                val launchIntent = pm.getLaunchIntentForPackage(selectedApp.activityInfo.packageName)
-                if (launchIntent != null) {
-                    startActivity(launchIntent)
-                    Toasty.success(this, "Launching ${selectedApp.loadLabel(pm)}", Toast.LENGTH_SHORT, true).show()
+            .setTitle("Select Custom DNS")
+            .setItems(dnsOptions) { _, which ->
+                val selectedHostname = dnsHostnames[which]
+                if (selectedHostname.isEmpty()) {
+                    val cmd = "settings put global private_dns_mode default && settings delete global private_dns_specifier"
+                    runAdbCommand(cmd, "DNS reset to Default") { fetchSystemStatuses() }
                 } else {
-                    Toasty.error(this, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                    val cmd = "settings put global private_dns_mode hostname && settings put global private_dns_specifier $selectedHostname"
+                    runAdbCommand(cmd, "DNS set to $selectedHostname") { fetchSystemStatuses() }
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
-
-    // --- Custom Dialogs ---
 
     private fun showRefreshRateDialog() {
         val layout = LinearLayout(this).apply {
@@ -668,6 +641,139 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    // --- Crosshair & Launch Game logic Below ---
+
+    private fun showCrosshairConfigDialog() {
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+            startActivity(intent)
+            Toasty.info(this, "Please allow 'Display over other apps' to use the crosshair", Toast.LENGTH_LONG, true).show()
+            return
+        }
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(64, 32, 64, 32)
+        }
+
+        // Shape Spinner
+        val styleLabel = TextView(this).apply { text = "Shape"; setPadding(0, 0, 0, 8) }
+        val styleSpinner = Spinner(this)
+        val styles = arrayOf("Cross", "Dot", "Cross with Circle")
+        styleSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, styles)
+
+        // Color Spinner
+        val colorLabel = TextView(this).apply { text = "Color"; setPadding(0, 32, 0, 8) }
+        val colorSpinner = Spinner(this)
+        val colors = arrayOf("White", "Black", "Blue", "Red", "Green")
+        colorSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, colors)
+        colorSpinner.setSelection(3) // Default to Red
+
+        // Size Spinner
+        val sizeLabel = TextView(this).apply { text = "Size"; setPadding(0, 32, 0, 8) }
+        val sizeSpinner = Spinner(this)
+        val sizes = arrayOf("Small", "Medium", "Large")
+        sizeSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sizes)
+        sizeSpinner.setSelection(1) // Default to Medium
+
+        layout.addView(styleLabel)
+        layout.addView(styleSpinner)
+        layout.addView(colorLabel)
+        layout.addView(colorSpinner)
+        layout.addView(sizeLabel)
+        layout.addView(sizeSpinner)
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Customize Crosshair")
+            .setView(layout)
+            .setPositiveButton(if (isCrosshairEnabled) "Apply" else "Start") { _, _ ->
+                val selectedStyle = styles[styleSpinner.selectedItemPosition]
+                val selectedColor = colors[colorSpinner.selectedItemPosition]
+                val selectedSize = sizes[sizeSpinner.selectedItemPosition]
+                startCrosshairService(selectedStyle, selectedColor, selectedSize)
+            }
+            .setNegativeButton("Cancel", null)
+
+        // Show a "Turn Off" button if the crosshair is currently running
+        if (isCrosshairEnabled) {
+            dialog.setNeutralButton("Turn Off") { _, _ ->
+                stopCrosshairService()
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun startCrosshairService(style: String, color: String, size: String) {
+        val intent = Intent(this, CrosshairService::class.java).apply {
+            putExtra("STYLE", style)
+            putExtra("COLOR", color)
+            putExtra("SIZE", size)
+        }
+        startService(intent)
+        isCrosshairEnabled = true
+        findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
+        Toasty.success(this, "Crosshair Updated", Toast.LENGTH_SHORT, true).show()
+    }
+
+    private fun stopCrosshairService() {
+        val intent = Intent(this, CrosshairService::class.java)
+        stopService(intent)
+        isCrosshairEnabled = false
+        findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
+        Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
+    }
+
+    private fun showGameLauncherDialog() {
+        val pm = packageManager
+        val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+        val allApps = pm.queryIntentActivities(intent, 0)
+
+        val gameApps = allApps.filter {
+            val appInfo = it.activityInfo.applicationInfo
+            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
+            val isGameCategory = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                appInfo.category == ApplicationInfo.CATEGORY_GAME
+            } else false
+            isGameFlag || isGameCategory
+        }
+
+        if (gameApps.isEmpty()) {
+            Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
+            return
+        }
+
+        val adapter = object : ArrayAdapter<ResolveInfo>(this, android.R.layout.select_dialog_item, android.R.id.text1, gameApps) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                val app = gameApps[position]
+                view.text = app.loadLabel(pm)
+
+                val icon = app.loadIcon(pm)
+                icon.setBounds(0, 0, 96, 96)
+                view.setCompoundDrawables(icon, null, null, null)
+                view.compoundDrawablePadding = 24
+
+                return view
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Launch a Game")
+            .setAdapter(adapter) { _, which ->
+                val selectedApp = gameApps[which]
+                val launchIntent = pm.getLaunchIntentForPackage(selectedApp.activityInfo.packageName)
+                if (launchIntent != null) {
+                    startActivity(launchIntent)
+                    Toasty.success(this, "Launching ${selectedApp.loadLabel(pm)}", Toast.LENGTH_SHORT, true).show()
+                } else {
+                    Toasty.error(this, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     // --- Shizuku Download Logic Below ---

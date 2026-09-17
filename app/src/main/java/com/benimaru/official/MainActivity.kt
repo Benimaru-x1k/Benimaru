@@ -1,13 +1,17 @@
 package com.benimaru.official
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.Uri
+import android.os.BatteryManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.StatFs
 import android.provider.Settings
 import android.text.InputType
 import android.view.View
@@ -72,15 +76,58 @@ class MainActivity : AppCompatActivity() {
 
         verifyAppSignature()
         checkForUpdates()
+        updateDeviceInfo()
 
         Shizuku.addRequestPermissionResultListener(permissionListener)
         checkShizukuStatus()
         setupClickListeners()
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateDeviceInfo() // Refresh RAM and Battery when opening app
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         Shizuku.removeRequestPermissionResultListener(permissionListener)
+    }
+
+    // --- Device Info Dashboard ---
+
+    private fun updateDeviceInfo() {
+        try {
+            // 1. Device Name & Android Version
+            val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
+            val androidVersion = "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+
+            // 2. RAM Usage
+            val actManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val memInfo = ActivityManager.MemoryInfo()
+            actManager.getMemoryInfo(memInfo)
+            val totalRamGb = memInfo.totalMem.toDouble() / (1024 * 1024 * 1024)
+            val availRamGb = memInfo.availMem.toDouble() / (1024 * 1024 * 1024)
+            val usedRamGb = totalRamGb - availRamGb
+
+            // 3. Storage Usage
+            val stat = StatFs(Environment.getDataDirectory().path)
+            val totalStorageGb = stat.totalBytes.toDouble() / (1024 * 1024 * 1024)
+            val availStorageGb = stat.availableBytes.toDouble() / (1024 * 1024 * 1024)
+            val usedStorageGb = totalStorageGb - availStorageGb
+
+            // 4. Battery Percentage
+            val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+
+            // Update the UI
+            findViewById<TextView>(R.id.tvDeviceModel).text = deviceName.uppercase()
+            findViewById<TextView>(R.id.tvAndroidVersion).text = androidVersion
+            findViewById<TextView>(R.id.tvRamUsage).text = String.format("%.1f/%.1f GB", usedRamGb, totalRamGb)
+            findViewById<TextView>(R.id.tvStorageUsage).text = String.format("%.1f/%.1f GB", usedStorageGb, totalStorageGb)
+            findViewById<TextView>(R.id.tvBattery).text = "$batLevel%"
+        } catch (e: Exception) {
+            // Failsafe in case device restricts fetching certain hardware metrics
+        }
     }
 
     // --- Security & Signature Checker ---

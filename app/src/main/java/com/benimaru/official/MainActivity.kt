@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
@@ -19,15 +20,18 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -65,13 +69,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
+        val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
+
+        if (isDarkModeSaved) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        val currentNightMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !currentNightMode
+            isAppearanceLightNavigationBars = !currentNightMode
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        // Theme Toggle Button Logic
+        val btnThemeToggle = findViewById<ImageView>(R.id.btnThemeToggle)
+
+        if (currentNightMode) {
+            btnThemeToggle.setImageResource(R.drawable.ic_light_mode)
+        } else {
+            btnThemeToggle.setImageResource(R.drawable.ic_dark_mode)
+        }
+
+        btnThemeToggle.setOnClickListener {
+            if (currentNightMode) {
+                prefs.edit().putBoolean("isDarkMode", false).apply()
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            } else {
+                prefs.edit().putBoolean("isDarkMode", true).apply()
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            }
         }
 
         verifyAppSignature()
@@ -85,7 +125,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateDeviceInfo() // Refresh RAM and Battery when opening app
+        updateDeviceInfo()
     }
 
     override fun onDestroy() {
@@ -94,14 +134,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Device Info Dashboard ---
-
     private fun updateDeviceInfo() {
         try {
-            // 1. Device Name & Android Version
             val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
             val androidVersion = "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
 
-            // 2. RAM Usage
             val actManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val memInfo = ActivityManager.MemoryInfo()
             actManager.getMemoryInfo(memInfo)
@@ -109,29 +146,24 @@ class MainActivity : AppCompatActivity() {
             val availRamGb = memInfo.availMem.toDouble() / (1024 * 1024 * 1024)
             val usedRamGb = totalRamGb - availRamGb
 
-            // 3. Storage Usage
             val stat = StatFs(Environment.getDataDirectory().path)
             val totalStorageGb = stat.totalBytes.toDouble() / (1024 * 1024 * 1024)
             val availStorageGb = stat.availableBytes.toDouble() / (1024 * 1024 * 1024)
             val usedStorageGb = totalStorageGb - availStorageGb
 
-            // 4. Battery Percentage
             val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
             val batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
-            // Update the UI
             findViewById<TextView>(R.id.tvDeviceModel).text = deviceName.uppercase()
             findViewById<TextView>(R.id.tvAndroidVersion).text = androidVersion
             findViewById<TextView>(R.id.tvRamUsage).text = String.format("%.1f/%.1f GB", usedRamGb, totalRamGb)
             findViewById<TextView>(R.id.tvStorageUsage).text = String.format("%.1f/%.1f GB", usedStorageGb, totalStorageGb)
             findViewById<TextView>(R.id.tvBattery).text = "$batLevel%"
         } catch (e: Exception) {
-            // Failsafe in case device restricts fetching certain hardware metrics
         }
     }
 
     // --- Security & Signature Checker ---
-
     private fun verifyAppSignature() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -218,7 +250,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // Fails silently if offline or URL is inaccessible
             }
         }
     }
@@ -308,7 +339,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Shizuku Setup & Logic ---
-
     private fun checkShizukuStatus() {
         if (isShizukuInstalled()) {
             if (Shizuku.pingBinder()) {
@@ -360,7 +390,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- System Status Fetching ---
-
     private fun fetchSystemStatuses() {
         if (!hasShizukuPermission()) return
 
@@ -396,12 +425,25 @@ class MainActivity : AppCompatActivity() {
                 "Status: Default"
             }
 
+            // New Status Fetches
+            val animScale = runAdbCommandWithResult("settings get global window_animation_scale")
+            val animStatus = if (animScale == "0.5") "Status: 0.5x (Fast)" else "Status: Default"
+
+            val blursOpt = runAdbCommandWithResult("settings get global disable_window_blurs")
+            val blursStatus = if (blursOpt == "1") "Status: Disabled (Optimized)" else "Status: Default"
+
+            val headsUpOpt = runAdbCommandWithResult("settings get global heads_up_notifications_enabled")
+            val headsUpStatus = if (headsUpOpt == "0") "Status: Blocked (Focus Mode)" else "Status: Default"
+
             withContext(Dispatchers.Main) {
                 findViewById<TextView>(R.id.tvStatusRefresh).text = refreshStatus
                 findViewById<TextView>(R.id.tvStatusResolution).text = resStatus
                 findViewById<TextView>(R.id.tvStatusNetwork).text = netStatus
                 findViewById<TextView>(R.id.tvStatusTouch).text = touchStatus
                 findViewById<TextView>(R.id.tvStatusDns).text = dnsStatus
+                findViewById<TextView>(R.id.tvStatusAnimations).text = animStatus
+                findViewById<TextView>(R.id.tvStatusBlurs).text = blursStatus
+                findViewById<TextView>(R.id.tvStatusDnd).text = headsUpStatus
             }
         }
     }
@@ -423,7 +465,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Click Listeners & Commands ---
-
     private fun setupClickListeners() {
         findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
             runAdbCommand("cmd power set-fixed-performance-mode-enabled true", "Fixed Performance Enabled") {
@@ -461,9 +502,30 @@ class MainActivity : AppCompatActivity() {
             showDnsDialog()
         }
 
-        // Crosshair Configuration
         findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
             showCrosshairConfigDialog()
+        }
+
+        // New Card Listeners
+        findViewById<CardView>(R.id.cardFastAnimations).setOnClickListener {
+            runAdbCommand(
+                "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5",
+                "Animations sped up to 0.5x"
+            ) { fetchSystemStatuses() }
+        }
+
+        findViewById<CardView>(R.id.cardDisableBlurs).setOnClickListener {
+            runAdbCommand(
+                "settings put global disable_window_blurs 1",
+                "Window blurs disabled"
+            ) { fetchSystemStatuses() }
+        }
+
+        findViewById<CardView>(R.id.cardGamingDnd).setOnClickListener {
+            runAdbCommand(
+                "settings put global heads_up_notifications_enabled 0",
+                "Heads-up notifications blocked (Focus Mode)"
+            ) { fetchSystemStatuses() }
         }
 
         findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
@@ -482,6 +544,11 @@ class MainActivity : AppCompatActivity() {
                 settings put secure long_press_timeout 400
                 settings put global private_dns_mode default
                 settings delete global private_dns_specifier
+                settings put global window_animation_scale 1
+                settings put global transition_animation_scale 1
+                settings put global animator_duration_scale 1
+                settings put global disable_window_blurs 0
+                settings put global heads_up_notifications_enabled 1
             """.trimIndent().replace("\n", " && ")
 
             runAdbCommand(resetCmd, "All adjustments reset to default") {
@@ -516,7 +583,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Custom Dialogs ---
-
     private fun showDnsDialog() {
         val dnsOptions = arrayOf(
             "Control D (Blocks ads/trackers)",
@@ -691,7 +757,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Crosshair & Launch Game logic Below ---
-
     private fun showCrosshairConfigDialog() {
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
@@ -705,25 +770,22 @@ class MainActivity : AppCompatActivity() {
             setPadding(64, 32, 64, 32)
         }
 
-        // Shape Spinner
         val styleLabel = TextView(this).apply { text = "Shape"; setPadding(0, 0, 0, 8) }
         val styleSpinner = Spinner(this)
         val styles = arrayOf("Cross", "Dot", "Cross with Circle")
         styleSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, styles)
 
-        // Color Spinner
         val colorLabel = TextView(this).apply { text = "Color"; setPadding(0, 32, 0, 8) }
         val colorSpinner = Spinner(this)
         val colors = arrayOf("White", "Black", "Blue", "Red", "Green")
         colorSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, colors)
-        colorSpinner.setSelection(3) // Default to Red
+        colorSpinner.setSelection(3)
 
-        // Size Spinner
         val sizeLabel = TextView(this).apply { text = "Size"; setPadding(0, 32, 0, 8) }
         val sizeSpinner = Spinner(this)
         val sizes = arrayOf("Small", "Medium", "Large")
         sizeSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sizes)
-        sizeSpinner.setSelection(1) // Default to Medium
+        sizeSpinner.setSelection(1)
 
         layout.addView(styleLabel)
         layout.addView(styleSpinner)
@@ -743,7 +805,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
 
-        // Show a "Turn Off" button if the crosshair is currently running
         if (isCrosshairEnabled) {
             dialog.setNeutralButton("Turn Off") { _, _ ->
                 stopCrosshairService()
@@ -811,20 +872,34 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Launch a Game")
             .setAdapter(adapter) { _, which ->
                 val selectedApp = gameApps[which]
-                val launchIntent = pm.getLaunchIntentForPackage(selectedApp.activityInfo.packageName)
-                if (launchIntent != null) {
-                    startActivity(launchIntent)
-                    Toasty.success(this, "Launching ${selectedApp.loadLabel(pm)}", Toast.LENGTH_SHORT, true).show()
-                } else {
-                    Toasty.error(this, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
-                }
+                val pkgName = selectedApp.activityInfo.packageName
+                val appName = selectedApp.loadLabel(pm).toString()
+
+                // Show action dialog for optimization vs direct launch
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle(appName)
+                    .setMessage("Would you like to pre-compile the game code to prevent in-game stutters, or launch immediately?\n\n(Optimization takes 10-30 seconds)")
+                    .setPositiveButton("Launch") { _, _ ->
+                        val launchIntent = pm.getLaunchIntentForPackage(pkgName)
+                        if (launchIntent != null) {
+                            startActivity(launchIntent)
+                            Toasty.success(this@MainActivity, "Launching $appName", Toast.LENGTH_SHORT, true).show()
+                        } else {
+                            Toasty.error(this@MainActivity, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                        }
+                    }
+                    .setNeutralButton("Optimize") { _, _ ->
+                        Toasty.info(this@MainActivity, "Optimizing $appName. Please wait...", Toast.LENGTH_LONG, true).show()
+                        runAdbCommand("cmd package compile -m speed -f $pkgName", "$appName optimized successfully!")
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
     // --- Shizuku Download Logic Below ---
-
     private fun showShizukuRequiredDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Shizuku Required")

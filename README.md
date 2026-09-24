@@ -4,7 +4,11 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 
 ## ✨ Features
 
+*   🌗 **Dynamic Theme Engine**: Modern Light/Dark mode toggle with beautifully outlined Material Design cards that adapt to your system aesthetic.
 *   🚀 **Fixed Performance Mode**: Locks device performance to a fixed state to maintain consistent frame rates during heavy workloads or gaming.
+*   💨 **UI Animation Speedup**: Cuts system animation scales in half (0.5x) to make app launches and system navigation feel twice as fast.
+*   🌫️ **Disable Window Blurs**: Frees up valuable GPU resources by disabling expensive real-time background blurs on Android 12+ devices.
+*   🔕 **Gaming Focus Mode**: Blocks intrusive heads-up notification banners from dropping down over your screen mid-match.
 *   🧹 **System Optimization**: Clears background processes and reallocates resources to your active applications.
 *   📶 **Network Tweaks**: Prioritizes network traffic and reduces ping for a lag-free mobile data experience.
 *   ⚡ **Touch Latency Reduction**: Increases touch sampling rate and reduces long-press timeouts for faster, more precise screen interactions.
@@ -12,7 +16,7 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic DPI calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
 *   🌐 **Custom DNS Selector**: Set a system-wide private DNS (Cloudflare, Quad9, Control D, etc.) via ADB for reliable ad blocking, tracker protection, and lower latency without needing a VPN.
 *   🎯 **FPS Crosshair Overlay**: Enable a customizable, center-screen crosshair to improve accuracy in FPS games.
-*   🎮 **Quick Game Launcher**: Automatically detects installed games on your device and lets you launch them directly from the tool.
+*   🎮 **Game Launcher & Optimizer**: Automatically detects installed games and allows you to either launch them instantly or **Pre-Compile their DEX code (Speed Profile)** to eliminate in-game stutters.
 *   🛡️ **Anti-Tamper Security**: Built-in SHA-256 signature verification to prevent the execution of modified, repackaged, or unofficial APKs.
 *   📲 **In-App Auto Updater**: Automatically checks the official GitHub repository for new releases and handles seamless updates within the app.
 *   ⏪ **One-Tap Reset**: Easily revert all tweaks back to your device's stock default settings.
@@ -33,7 +37,7 @@ Because Benimaru Tool modifies secure system settings, it requires **Shizuku** t
 ## 🛠️ Built With
 
 *   **Kotlin** - 100% native Android development.
-*   **Material 3** - Modern, responsive UI with programmatically generated dialogs.
+*   **Material 3** - Modern, responsive UI utilizing `MaterialCardView` for dynamic Light/Dark mode contrasts and programmatically generated dialogs.
 *   **Kotlin Coroutines** - For smooth, non-blocking background task execution.
 *   [**Shizuku API**](https://github.com/RikkaApps/Shizuku-API) - For executing elevated ADB commands without root.
 *   [**Toasty**](https://github.com/GrenderG/Toasty) - For clean, stylized success/error popups.

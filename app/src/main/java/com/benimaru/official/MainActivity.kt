@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.content.res.Configuration
+import android.graphics.Color
 import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
@@ -94,6 +95,9 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // Apply Red/Blue styling based on the active theme
+        applyDynamicColors(currentNightMode)
 
         // Theme Toggle Button Logic
         val btnThemeToggle = findViewById<ImageView>(R.id.btnThemeToggle)
@@ -425,7 +429,6 @@ class MainActivity : AppCompatActivity() {
                 "Status: Default"
             }
 
-            // New Status Fetches
             val animScale = runAdbCommandWithResult("settings get global window_animation_scale")
             val animStatus = if (animScale == "0.5") "Status: 0.5x (Fast)" else "Status: Default"
 
@@ -506,7 +509,6 @@ class MainActivity : AppCompatActivity() {
             showCrosshairConfigDialog()
         }
 
-        // New Card Listeners
         findViewById<CardView>(R.id.cardFastAnimations).setOnClickListener {
             runAdbCommand(
                 "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5",
@@ -1003,6 +1005,34 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toasty.error(this, "Failed to parse APK: ${e.message}", Toast.LENGTH_LONG, true).show()
             finishAffinity()
+        }
+    }
+
+    // --- Dynamic Color Theming Routine ---
+    private fun applyDynamicColors(isDark: Boolean) {
+        // Red theme for Dark Mode, Blue theme for Light Mode
+        val primaryAccent = Color.parseColor(if (isDark) "#E53935" else "#1976D2")
+        val secondaryText = Color.parseColor(if (isDark) "#FFCDD2" else "#BBDEFB")
+        val dividerAccent = Color.parseColor(if (isDark) "#EF5350" else "#64B5F6")
+
+        // 1. Update the top Device Info Card
+        findViewById<androidx.cardview.widget.CardView>(R.id.cardDeviceInfo).setCardBackgroundColor(primaryAccent)
+        findViewById<View>(R.id.divDeviceInfo).setBackgroundColor(dividerAccent)
+        findViewById<TextView>(R.id.tvAndroidVersion).setTextColor(secondaryText)
+        findViewById<TextView>(R.id.tvLabelRam).setTextColor(secondaryText)
+        findViewById<TextView>(R.id.tvLabelStorage).setTextColor(secondaryText)
+        findViewById<TextView>(R.id.tvLabelBattery).setTextColor(secondaryText)
+
+        // 2. Loop through and update all Status Indicator texts inside the standard cards
+        val statusViews = arrayOf(
+            R.id.tvStatusFixedPerf, R.id.tvStatusOptimize, R.id.tvStatusRefresh,
+            R.id.tvStatusNetwork, R.id.tvStatusTouch, R.id.tvStatusResolution,
+            R.id.tvStatusDns, R.id.tvStatusCrosshair, R.id.tvStatusAnimations,
+            R.id.tvStatusBlurs, R.id.tvStatusDnd
+        )
+
+        for (id in statusViews) {
+            findViewById<TextView>(id).setTextColor(primaryAccent)
         }
     }
 }

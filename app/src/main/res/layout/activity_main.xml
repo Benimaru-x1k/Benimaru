@@ -110,6 +110,7 @@
                         android:textSize="14sp" />
 
                     <View
+                        android:id="@+id/divDeviceInfo"
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginTop="12dp"
@@ -129,6 +130,7 @@
                             android:layout_weight="1"
                             android:orientation="vertical">
                             <TextView
+                                android:id="@+id/tvLabelRam"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="RAM"
@@ -151,6 +153,7 @@
                             android:layout_weight="1"
                             android:orientation="vertical">
                             <TextView
+                                android:id="@+id/tvLabelStorage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Storage"
@@ -173,6 +176,7 @@
                             android:layout_weight="1"
                             android:orientation="vertical">
                             <TextView
+                                android:id="@+id/tvLabelBattery"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Battery"

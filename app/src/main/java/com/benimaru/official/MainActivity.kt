@@ -37,6 +37,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.unity3d.ads.IUnityAdsInitializationListener
+import com.unity3d.ads.IUnityAdsLoadListener
+import com.unity3d.ads.IUnityAdsShowListener
+import com.unity3d.ads.UnityAds
+import com.unity3d.services.banners.BannerView
+import com.unity3d.services.banners.UnityBannerSize
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,6 +64,12 @@ class MainActivity : AppCompatActivity() {
     private val SHIZUKU_REQUEST_CODE = 100
     private var isCrosshairEnabled = false
 
+    // Unity Ads IDs
+    private val unityGameId = "5781189"
+    private val adUnitInterstitial = "Interstitial_Android"
+    private val adUnitBanner = "Banner_Android"
+    private val testMode = false
+
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == SHIZUKU_REQUEST_CODE) {
             if (grantResult == PackageManager.PERMISSION_GRANTED) {
@@ -70,7 +82,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
         val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
 
@@ -96,10 +107,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Apply Red/Blue styling based on the active theme
         applyDynamicColors(currentNightMode)
 
-        // Theme Toggle Button Logic
         val btnThemeToggle = findViewById<ImageView>(R.id.btnThemeToggle)
 
         if (currentNightMode) {
@@ -118,6 +127,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Initialize Unity Ads
+        initializeUnityAds()
+
         verifyAppSignature()
         checkForUpdates()
         updateDeviceInfo()
@@ -126,6 +138,61 @@ class MainActivity : AppCompatActivity() {
         checkShizukuStatus()
         setupClickListeners()
     }
+
+    // --- Unity Ads Implementation ---
+    private fun initializeUnityAds() {
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("AdsRemoved", false)) return // Don't init if removed
+
+        UnityAds.initialize(this, unityGameId, testMode, object : IUnityAdsInitializationListener {
+            override fun onInitializationComplete() {
+                loadInterstitialAd()
+                setupBannerAd()
+            }
+            override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {}
+        })
+    }
+
+    private fun loadInterstitialAd() {
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("AdsRemoved", false)) return
+
+        UnityAds.load(adUnitInterstitial, object : IUnityAdsLoadListener {
+            override fun onUnityAdsAdLoaded(placementId: String) {}
+            override fun onUnityAdsFailedToLoad(placementId: String, error: UnityAds.UnityAdsLoadError, message: String) {}
+        })
+    }
+
+    private fun showInterstitialAd() {
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("AdsRemoved", false)) return
+
+        UnityAds.show(this, adUnitInterstitial, object : IUnityAdsShowListener {
+            override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
+                loadInterstitialAd()
+            }
+            override fun onUnityAdsShowStart(placementId: String) {}
+            override fun onUnityAdsShowClick(placementId: String) {}
+            override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
+                loadInterstitialAd()
+            }
+        })
+    }
+
+    private fun setupBannerAd() {
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        val bannerContainer = findViewById<LinearLayout>(R.id.bannerAdContainer)
+
+        if (prefs.getBoolean("AdsRemoved", false)) {
+            bannerContainer.removeAllViews() // Ensure it's clear
+            return
+        }
+
+        val bannerView = BannerView(this, adUnitBanner, UnityBannerSize(320, 50))
+        bannerContainer.addView(bannerView)
+        bannerView.load()
+    }
+    // --------------------------------
 
     override fun onResume() {
         super.onResume()
@@ -163,8 +230,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvRamUsage).text = String.format("%.1f/%.1f GB", usedRamGb, totalRamGb)
             findViewById<TextView>(R.id.tvStorageUsage).text = String.format("%.1f/%.1f GB", usedStorageGb, totalStorageGb)
             findViewById<TextView>(R.id.tvBattery).text = "$batLevel%"
-        } catch (e: Exception) {
-        }
+        } catch (e: Exception) {}
     }
 
     // --- Security & Signature Checker ---
@@ -253,8 +319,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-            } catch (e: Exception) {
-            }
+            } catch (e: Exception) {}
         }
     }
 
@@ -398,8 +463,13 @@ class MainActivity : AppCompatActivity() {
         if (!hasShizukuPermission()) return
 
         lifecycleScope.launch(Dispatchers.IO) {
+            val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+            val isFixedPerf = prefs.getBoolean("FixedPerf", false)
+            val fixedPerfStatus = if (isFixedPerf) "Status: Enabled" else "Status: Default"
+
             val minRefresh = runAdbCommandWithResult("settings get system min_refresh_rate")
             val maxRefresh = runAdbCommandWithResult("settings get system peak_refresh_rate")
+
             val refreshStatus = if (minRefresh.isNotEmpty() && minRefresh != "null" && maxRefresh.isNotEmpty() && maxRefresh != "null") {
                 "Status: $minRefresh - $maxRefresh Hz"
             } else {
@@ -423,6 +493,7 @@ class MainActivity : AppCompatActivity() {
 
             val dnsMode = runAdbCommandWithResult("settings get global private_dns_mode")
             val dnsSpecifier = runAdbCommandWithResult("settings get global private_dns_specifier")
+
             val dnsStatus = if (dnsMode.trim() == "hostname" && dnsSpecifier.isNotEmpty() && dnsSpecifier != "null") {
                 "Status: ${dnsSpecifier.trim()}"
             } else {
@@ -439,6 +510,7 @@ class MainActivity : AppCompatActivity() {
             val headsUpStatus = if (headsUpOpt == "0") "Status: Blocked (Focus Mode)" else "Status: Default"
 
             withContext(Dispatchers.Main) {
+                findViewById<TextView>(R.id.tvStatusFixedPerf).text = fixedPerfStatus
                 findViewById<TextView>(R.id.tvStatusRefresh).text = refreshStatus
                 findViewById<TextView>(R.id.tvStatusResolution).text = resStatus
                 findViewById<TextView>(R.id.tvStatusNetwork).text = netStatus
@@ -469,72 +541,139 @@ class MainActivity : AppCompatActivity() {
 
     // --- Click Listeners & Commands ---
     private fun setupClickListeners() {
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+
         findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
-            runAdbCommand("cmd power set-fixed-performance-mode-enabled true", "Fixed Performance Enabled") {
+            val status = findViewById<TextView>(R.id.tvStatusFixedPerf).text.toString()
+            if (status.contains("Enabled")) {
+                Toasty.info(this, "Already enabled!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("cmd power set-fixed-performance-mode-enabled true", "Fixed Performance Enabled", showAd = true) {
+                prefs.edit().putBoolean("FixedPerf", true).apply()
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Enabled"
             }
         }
 
         findViewById<CardView>(R.id.cardOptimizeSystem).setOnClickListener {
-            runAdbCommand("cmd activity kill-all", "System Optimized (Background processes cleared)") {
+            val status = findViewById<TextView>(R.id.tvStatusOptimize).text.toString()
+            if (status.contains("Recently")) {
+                Toasty.info(this, "Already optimized!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("cmd activity kill-all", "System Optimized (Background processes cleared)", showAd = true) {
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Recently Optimized"
             }
         }
 
         findViewById<CardView>(R.id.cardImproveNetwork).setOnClickListener {
-            runAdbCommand("settings put global tether_dun_required 0", "Network Optimized") {
+            val status = findViewById<TextView>(R.id.tvStatusNetwork).text.toString()
+            if (status.contains("Optimized")) {
+                Toasty.info(this, "Already optimized!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("settings put global tether_dun_required 0", "Network Optimized", showAd = true) {
                 fetchSystemStatuses()
             }
         }
 
         findViewById<CardView>(R.id.cardImproveTouch).setOnClickListener {
-            runAdbCommand("settings put system pointer_speed 7 && settings put secure long_press_timeout 250", "Touch Latency Improved") {
+            val status = findViewById<TextView>(R.id.tvStatusTouch).text.toString()
+            if (status.contains("Improved")) {
+                Toasty.info(this, "Already improved!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("settings put system pointer_speed 7 && settings put secure long_press_timeout 250", "Touch Latency Improved", showAd = true) {
                 fetchSystemStatuses()
             }
         }
 
-        findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener {
-            showRefreshRateDialog()
-        }
-
-        findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener {
-            showResolutionDialog()
-        }
-
-        findViewById<CardView>(R.id.cardCustomDns).setOnClickListener {
-            showDnsDialog()
-        }
-
-        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
-            showCrosshairConfigDialog()
-        }
-
         findViewById<CardView>(R.id.cardFastAnimations).setOnClickListener {
-            runAdbCommand(
-                "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5",
-                "Animations sped up to 0.5x"
-            ) { fetchSystemStatuses() }
+            val status = findViewById<TextView>(R.id.tvStatusAnimations).text.toString()
+            if (status.contains("0.5x")) {
+                Toasty.info(this, "Already sped up!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5", "Animations sped up to 0.5x", showAd = true) {
+                fetchSystemStatuses()
+            }
         }
 
         findViewById<CardView>(R.id.cardDisableBlurs).setOnClickListener {
-            runAdbCommand(
-                "settings put global disable_window_blurs 1",
-                "Window blurs disabled"
-            ) { fetchSystemStatuses() }
+            val status = findViewById<TextView>(R.id.tvStatusBlurs).text.toString()
+            if (status.contains("Disabled")) {
+                Toasty.info(this, "Already disabled!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("settings put global disable_window_blurs 1", "Window blurs disabled", showAd = true) {
+                fetchSystemStatuses()
+            }
         }
 
         findViewById<CardView>(R.id.cardGamingDnd).setOnClickListener {
-            runAdbCommand(
-                "settings put global heads_up_notifications_enabled 0",
-                "Heads-up notifications blocked (Focus Mode)"
-            ) { fetchSystemStatuses() }
+            val status = findViewById<TextView>(R.id.tvStatusDnd).text.toString()
+            if (status.contains("Blocked")) {
+                Toasty.info(this, "Already blocked!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("settings put global heads_up_notifications_enabled 0", "Heads-up notifications blocked (Focus Mode)", showAd = true) {
+                fetchSystemStatuses()
+            }
         }
 
+        findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
+        findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener { showResolutionDialog() }
+        findViewById<CardView>(R.id.cardCustomDns).setOnClickListener { showDnsDialog() }
+        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener { showCrosshairConfigDialog() }
+
+        // --- Individual Reset Button Clicks ---
+        findViewById<TextView>(R.id.btnResetFixedPerf).setOnClickListener {
+            runAdbCommand("cmd power set-fixed-performance-mode-enabled false", "Fixed Performance Reset") {
+                prefs.edit().putBoolean("FixedPerf", false).apply()
+                findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
+            }
+        }
+        findViewById<TextView>(R.id.btnResetOptimize).setOnClickListener {
+            findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
+            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+        }
+        findViewById<TextView>(R.id.btnResetRefresh).setOnClickListener {
+            runAdbCommand("settings delete system min_refresh_rate && settings delete system peak_refresh_rate", "Refresh Rate Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetNetwork).setOnClickListener {
+            runAdbCommand("settings delete global tether_dun_required", "Network Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetTouch).setOnClickListener {
+            runAdbCommand("settings delete system pointer_speed && settings put secure long_press_timeout 400", "Touch Settings Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetResolution).setOnClickListener {
+            runAdbCommand("wm size reset && wm density reset", "Resolution Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetDns).setOnClickListener {
+            runAdbCommand("settings put global private_dns_mode default && settings delete global private_dns_specifier", "DNS Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetCrosshair).setOnClickListener {
+            if (isCrosshairEnabled) stopCrosshairService()
+        }
+        findViewById<TextView>(R.id.btnResetAnimations).setOnClickListener {
+            runAdbCommand("settings put global window_animation_scale 1 && settings put global transition_animation_scale 1 && settings put global animator_duration_scale 1", "Animations Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetBlurs).setOnClickListener {
+            runAdbCommand("settings put global disable_window_blurs 0", "Window Blurs Reset") { fetchSystemStatuses() }
+        }
+        findViewById<TextView>(R.id.btnResetDnd).setOnClickListener {
+            runAdbCommand("settings put global heads_up_notifications_enabled 1", "Gaming Focus Mode Reset") { fetchSystemStatuses() }
+        }
+
+        // --- Global Buttons ---
         findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
             showGameLauncherDialog()
         }
 
-        // Reset Everything
+        findViewById<Button>(R.id.btnRemoveAds).setOnClickListener {
+            showRemoveAdsDialog()
+        }
+
         findViewById<Button>(R.id.btnResetAll).setOnClickListener {
             val resetCmd = """
                 cmd power set-fixed-performance-mode-enabled false
@@ -554,6 +693,7 @@ class MainActivity : AppCompatActivity() {
             """.trimIndent().replace("\n", " && ")
 
             runAdbCommand(resetCmd, "All adjustments reset to default") {
+                prefs.edit().putBoolean("FixedPerf", false).apply()
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
                 fetchSystemStatuses()
@@ -561,7 +701,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun runAdbCommand(command: String, successMessage: String, onSuccess: () -> Unit = {}) {
+    private fun showRemoveAdsDialog() {
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        val areAdsRemoved = prefs.getBoolean("AdsRemoved", false)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Remove Ads")
+            .setMessage("Ads are strictly intended to help support the developer and keep this app free.\n\nHowever, if you prefer to use the tool without interruptions, you can disable them here.")
+            .setPositiveButton(if (areAdsRemoved) "Ads Already Removed" else "Remove Ads") { _, _ ->
+                prefs.edit().putBoolean("AdsRemoved", true).apply()
+                findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews() // Clear Banner immediately
+                Toasty.success(this, "Ads have been disabled", Toast.LENGTH_SHORT, true).show()
+            }
+            .setNeutralButton("Re-Enable Ads") { _, _ ->
+                prefs.edit().putBoolean("AdsRemoved", false).apply()
+                setupBannerAd() // Bring banner back instantly
+                loadInterstitialAd()
+                Toasty.info(this, "Ads re-enabled. Thank you for your support!", Toast.LENGTH_SHORT, true).show()
+            }
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    // Extended with 'showAd' Boolean
+    private fun runAdbCommand(command: String, successMessage: String, showAd: Boolean = false, onSuccess: () -> Unit = {}) {
         if (!hasShizukuPermission()) return
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -572,6 +735,7 @@ class MainActivity : AppCompatActivity() {
                     if (exitCode == 0) {
                         Toasty.success(this@MainActivity, successMessage, Toast.LENGTH_SHORT, true).show()
                         onSuccess()
+                        if (showAd) showInterstitialAd()
                     } else {
                         Toasty.error(this@MainActivity, "Command failed (Exit code: $exitCode)", Toast.LENGTH_SHORT, true).show()
                     }
@@ -610,10 +774,10 @@ class MainActivity : AppCompatActivity() {
                 val selectedHostname = dnsHostnames[which]
                 if (selectedHostname.isEmpty()) {
                     val cmd = "settings put global private_dns_mode default && settings delete global private_dns_specifier"
-                    runAdbCommand(cmd, "DNS reset to Default") { fetchSystemStatuses() }
+                    runAdbCommand(cmd, "DNS reset to Default", showAd = false) { fetchSystemStatuses() }
                 } else {
                     val cmd = "settings put global private_dns_mode hostname && settings put global private_dns_specifier $selectedHostname"
-                    runAdbCommand(cmd, "DNS set to $selectedHostname") { fetchSystemStatuses() }
+                    runAdbCommand(cmd, "DNS set to $selectedHostname", showAd = true) { fetchSystemStatuses() }
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -651,7 +815,7 @@ class MainActivity : AppCompatActivity() {
                 val max = maxInput.text.toString().trim()
                 if (min.isNotEmpty() && max.isNotEmpty()) {
                     val cmd = "settings put system min_refresh_rate $min && settings put system peak_refresh_rate $max"
-                    runAdbCommand(cmd, "Refresh rate set to $min - $max Hz") {
+                    runAdbCommand(cmd, "Refresh rate set to $min - $max Hz", showAd = true) {
                         fetchSystemStatuses()
                     }
                 } else {
@@ -731,6 +895,7 @@ class MainActivity : AppCompatActivity() {
                 timerJob?.cancel()
                 Toasty.success(this, "Resolution saved", Toast.LENGTH_SHORT, true).show()
                 fetchSystemStatuses()
+                showInterstitialAd() // Triggers Ad ONLY on Save
             }
             .setNegativeButton("Revert") { _, _ ->
                 timerJob?.cancel()
@@ -826,6 +991,7 @@ class MainActivity : AppCompatActivity() {
         isCrosshairEnabled = true
         findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
         Toasty.success(this, "Crosshair Updated", Toast.LENGTH_SHORT, true).show()
+        showInterstitialAd() // Show Ad when Crosshair opens
     }
 
     private fun stopCrosshairService() {
@@ -877,7 +1043,6 @@ class MainActivity : AppCompatActivity() {
                 val pkgName = selectedApp.activityInfo.packageName
                 val appName = selectedApp.loadLabel(pm).toString()
 
-                // Show action dialog for optimization vs direct launch
                 MaterialAlertDialogBuilder(this@MainActivity)
                     .setTitle(appName)
                     .setMessage("Would you like to pre-compile the game code to prevent in-game stutters, or launch immediately?\n\n(Optimization takes 10-30 seconds)")
@@ -892,7 +1057,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     .setNeutralButton("Optimize") { _, _ ->
                         Toasty.info(this@MainActivity, "Optimizing $appName. Please wait...", Toast.LENGTH_LONG, true).show()
-                        runAdbCommand("cmd package compile -m speed -f $pkgName", "$appName optimized successfully!")
+                        runAdbCommand("cmd package compile -m speed -f $pkgName", "$appName optimized successfully!", showAd = true)
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
@@ -1010,12 +1175,10 @@ class MainActivity : AppCompatActivity() {
 
     // --- Dynamic Color Theming Routine ---
     private fun applyDynamicColors(isDark: Boolean) {
-        // Red theme for Dark Mode, Blue theme for Light Mode
         val primaryAccent = Color.parseColor(if (isDark) "#E53935" else "#1976D2")
         val secondaryText = Color.parseColor(if (isDark) "#FFCDD2" else "#BBDEFB")
         val dividerAccent = Color.parseColor(if (isDark) "#EF5350" else "#64B5F6")
 
-        // 1. Update the top Device Info Card
         findViewById<androidx.cardview.widget.CardView>(R.id.cardDeviceInfo).setCardBackgroundColor(primaryAccent)
         findViewById<View>(R.id.divDeviceInfo).setBackgroundColor(dividerAccent)
         findViewById<TextView>(R.id.tvAndroidVersion).setTextColor(secondaryText)
@@ -1023,15 +1186,21 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvLabelStorage).setTextColor(secondaryText)
         findViewById<TextView>(R.id.tvLabelBattery).setTextColor(secondaryText)
 
-        // 2. Loop through and update all Status Indicator texts inside the standard cards
-        val statusViews = arrayOf(
-            R.id.tvStatusFixedPerf, R.id.tvStatusOptimize, R.id.tvStatusRefresh,
-            R.id.tvStatusNetwork, R.id.tvStatusTouch, R.id.tvStatusResolution,
-            R.id.tvStatusDns, R.id.tvStatusCrosshair, R.id.tvStatusAnimations,
-            R.id.tvStatusBlurs, R.id.tvStatusDnd
+        val coloredViews = arrayOf(
+            R.id.tvStatusFixedPerf, R.id.btnResetFixedPerf,
+            R.id.tvStatusOptimize, R.id.btnResetOptimize,
+            R.id.tvStatusRefresh, R.id.btnResetRefresh,
+            R.id.tvStatusNetwork, R.id.btnResetNetwork,
+            R.id.tvStatusTouch, R.id.btnResetTouch,
+            R.id.tvStatusResolution, R.id.btnResetResolution,
+            R.id.tvStatusDns, R.id.btnResetDns,
+            R.id.tvStatusCrosshair, R.id.btnResetCrosshair,
+            R.id.tvStatusAnimations, R.id.btnResetAnimations,
+            R.id.tvStatusBlurs, R.id.btnResetBlurs,
+            R.id.tvStatusDnd, R.id.btnResetDnd
         )
 
-        for (id in statusViews) {
+        for (id in coloredViews) {
             findViewById<TextView>(id).setTextColor(primaryAccent)
         }
     }

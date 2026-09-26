@@ -1,6 +1,6 @@
 {
-  "versionCode": 6,
-  "versionName": "1.6",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.6/BenimaruTool-v1.6.apk",
-  "releaseNotes": "- Added Light/Dark Mode toggle & Material UI upgrades\n- Added UI Animation Speed tweak (0.5x)\n- Added Disable Window Blurs (Android 12+)\n- Added Gaming Focus Mode (Blocks notification banners)\n- Added Game Optimizer (Pre-compiles code to reduce stutters)\n- Updated Dashboard and Reset Button"
+  "versionCode": 7,
+  "versionName": "1.7",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.7/BenimaruTool-v1.7.apk",
+  "releaseNotes": "- Added smart Unity Ads to support development\n- Added a 'Remove Ads' button for an ad-free option\n- Fixed 'Status: Unknown' bug on app restart (App now remembers your settings)\n- Improved Light/Dark mode color dynamic UI logic"
 }

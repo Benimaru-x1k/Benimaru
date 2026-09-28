@@ -209,6 +209,7 @@ class MainActivity : AppCompatActivity() {
         try {
             val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
             val androidVersion = "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+            val apiLevel = "API ${Build.VERSION.SDK_INT}"
 
             val actManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val memInfo = ActivityManager.MemoryInfo()
@@ -225,11 +226,17 @@ class MainActivity : AppCompatActivity() {
             val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
             val batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
+            val metrics = resources.displayMetrics
+            val currentRes = "${metrics.widthPixels}x${metrics.heightPixels}"
+
             findViewById<TextView>(R.id.tvDeviceModel).text = deviceName.uppercase()
             findViewById<TextView>(R.id.tvAndroidVersion).text = androidVersion
             findViewById<TextView>(R.id.tvRamUsage).text = String.format("%.1f/%.1f GB", usedRamGb, totalRamGb)
             findViewById<TextView>(R.id.tvStorageUsage).text = String.format("%.1f/%.1f GB", usedStorageGb, totalStorageGb)
             findViewById<TextView>(R.id.tvBattery).text = "$batLevel%"
+            findViewById<TextView>(R.id.tvApiLevel).text = apiLevel
+            findViewById<TextView>(R.id.tvResolutionDisplay).text = currentRes
+            findViewById<TextView>(R.id.tvFreeStorageDisplay).text = String.format("%.1f GB", availStorageGb)
         } catch (e: Exception) {}
     }
 
@@ -865,9 +872,23 @@ class MainActivity : AppCompatActivity() {
                 if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
                     if (!hasShizukuPermission()) return@setPositiveButton
 
-                    val newWidth = wStr.toInt()
-                    val newHeight = hStr.toInt()
-                    val newDpi = ((newWidth.toFloat() / currentWidth.toFloat()) * currentDpi).toInt()
+                    // 1. Force Portrait Orientation Logic
+                    // Ensures that even if the user types 1440x1080 (Landscape format),
+                    // the system processes it as 1080x1440 (Portrait format) to trigger the hardware stretch.
+                    val input1 = wStr.toInt()
+                    val input2 = hStr.toInt()
+
+                    val newWidth = minOf(input1, input2)
+                    val newHeight = maxOf(input1, input2)
+
+                    // 2. Dynamic DPI Scaling Logic
+                    // Calculates scaling based on the dimension that was reduced the most
+                    // to keep the UI proportional and prevent oversized elements.
+                    val widthRatio = newWidth.toFloat() / currentWidth.toFloat()
+                    val heightRatio = newHeight.toFloat() / currentHeight.toFloat()
+                    val scalingRatio = minOf(widthRatio, heightRatio)
+
+                    val newDpi = (scalingRatio * currentDpi).toInt()
 
                     val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
 
@@ -1185,6 +1206,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvLabelRam).setTextColor(secondaryText)
         findViewById<TextView>(R.id.tvLabelStorage).setTextColor(secondaryText)
         findViewById<TextView>(R.id.tvLabelBattery).setTextColor(secondaryText)
+        findViewById<TextView>(R.id.tvLabelApi).setTextColor(secondaryText)
+        findViewById<TextView>(R.id.tvLabelResolution).setTextColor(secondaryText)
+        findViewById<TextView>(R.id.tvLabelFreeStorage).setTextColor(secondaryText)
 
         val coloredViews = arrayOf(
             R.id.tvStatusFixedPerf, R.id.btnResetFixedPerf,

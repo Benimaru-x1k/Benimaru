@@ -13,6 +13,7 @@
     </queries>
 
     <application
+        android:name=".MainApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -46,6 +47,10 @@
         </provider>
 
         <service android:name=".CrosshairService" android:exported="false" />
+
+        <service android:name=".FloatingResolutionService"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 

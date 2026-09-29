@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="primaryAccent">#1976D2</color>
+    <color name="secondaryText">#BBDEFB</color>
+    <color name="dividerAccent">#64B5F6</color>
+
+    <color name="statusText">#E53935</color>
+
+    <color name="translucentSurface">#E6FFFFFF</color>
 </resources>

@@ -83,13 +83,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
-        val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
-
-        if (isDarkModeSaved) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        }
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -106,8 +99,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        applyDynamicColors(currentNightMode)
 
         val btnThemeToggle = findViewById<ImageView>(R.id.btnThemeToggle)
 
@@ -130,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         // Initialize Unity Ads
         initializeUnityAds()
 
-        verifyAppSignature()
+        //verifyAppSignature()
         checkForUpdates()
         updateDeviceInfo()
 
@@ -237,7 +228,9 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvApiLevel).text = apiLevel
             findViewById<TextView>(R.id.tvResolutionDisplay).text = currentRes
             findViewById<TextView>(R.id.tvFreeStorageDisplay).text = String.format("%.1f GB", availStorageGb)
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.e("BenimaruTool", "Error in updateDeviceInfo", e)
+        }
     }
 
     // --- Security & Signature Checker ---
@@ -326,7 +319,9 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.e("BenimaruTool", "Failed to check for updates", e)
+            }
         }
     }
 
@@ -629,7 +624,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
-        findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener { showResolutionDialog() }
+        findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener { showResolutionModeDialog() }
         findViewById<CardView>(R.id.cardCustomDns).setOnClickListener { showDnsDialog() }
         findViewById<CardView>(R.id.cardCrosshair).setOnClickListener { showCrosshairConfigDialog() }
 
@@ -705,6 +700,35 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
                 fetchSystemStatuses()
             }
+        }
+    }
+
+    private fun showResolutionModeDialog() {
+        val options = arrayOf("Direct Change (In-App)", "Floating Menu (Overlay)")
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Change Resolution")
+            .setItems(options) { _, which ->
+                if (which == 0) {
+                    // If they click the first option (Index 0), run your old dialog
+                    showResolutionDialog()
+                } else if (which == 1) {
+                    // If they click the second option (Index 1), launch the floating service
+                    launchFloatingResolution()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun launchFloatingResolution() {
+        if (!android.provider.Settings.canDrawOverlays(this)) {
+            val intent = Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+            startActivity(intent)
+            Toasty.info(this, "Please allow 'Display over other apps'", Toast.LENGTH_LONG, true).show()
+        } else {
+            startService(Intent(this, FloatingResolutionService::class.java))
+            Toasty.success(this, "Floating menu enabled", Toast.LENGTH_SHORT, true).show()
         }
     }
 
@@ -1194,38 +1218,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Dynamic Color Theming Routine ---
-    private fun applyDynamicColors(isDark: Boolean) {
-        val primaryAccent = Color.parseColor(if (isDark) "#E53935" else "#1976D2")
-        val secondaryText = Color.parseColor(if (isDark) "#FFCDD2" else "#BBDEFB")
-        val dividerAccent = Color.parseColor(if (isDark) "#EF5350" else "#64B5F6")
-
-        findViewById<androidx.cardview.widget.CardView>(R.id.cardDeviceInfo).setCardBackgroundColor(primaryAccent)
-        findViewById<View>(R.id.divDeviceInfo).setBackgroundColor(dividerAccent)
-        findViewById<TextView>(R.id.tvAndroidVersion).setTextColor(secondaryText)
-        findViewById<TextView>(R.id.tvLabelRam).setTextColor(secondaryText)
-        findViewById<TextView>(R.id.tvLabelStorage).setTextColor(secondaryText)
-        findViewById<TextView>(R.id.tvLabelBattery).setTextColor(secondaryText)
-        findViewById<TextView>(R.id.tvLabelApi).setTextColor(secondaryText)
-        findViewById<TextView>(R.id.tvLabelResolution).setTextColor(secondaryText)
-        findViewById<TextView>(R.id.tvLabelFreeStorage).setTextColor(secondaryText)
-
-        val coloredViews = arrayOf(
-            R.id.tvStatusFixedPerf, R.id.btnResetFixedPerf,
-            R.id.tvStatusOptimize, R.id.btnResetOptimize,
-            R.id.tvStatusRefresh, R.id.btnResetRefresh,
-            R.id.tvStatusNetwork, R.id.btnResetNetwork,
-            R.id.tvStatusTouch, R.id.btnResetTouch,
-            R.id.tvStatusResolution, R.id.btnResetResolution,
-            R.id.tvStatusDns, R.id.btnResetDns,
-            R.id.tvStatusCrosshair, R.id.btnResetCrosshair,
-            R.id.tvStatusAnimations, R.id.btnResetAnimations,
-            R.id.tvStatusBlurs, R.id.btnResetBlurs,
-            R.id.tvStatusDnd, R.id.btnResetDnd
-        )
-
-        for (id in coloredViews) {
-            findViewById<TextView>(id).setTextColor(primaryAccent)
-        }
-    }
 }

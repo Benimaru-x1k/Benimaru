@@ -64,7 +64,7 @@
         android:fadingEdgeLength="32dp"
         android:requiresFadingEdge="vertical"
         android:scrollbars="none"
-        app:layout_constraintBottom_toTopOf="@+id/btnResetAll"
+        app:layout_constraintBottom_toTopOf="@+id/floatingBottomBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
@@ -83,7 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#1976D2"
+                app:cardBackgroundColor="@color/primaryAccent"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp">
                 <LinearLayout
@@ -115,7 +115,7 @@
                         android:layout_height="1dp"
                         android:layout_marginTop="12dp"
                         android:layout_marginBottom="12dp"
-                        android:background="#64B5F6" />
+                        android:background="@color/dividerAccent" />
 
                     <!-- Row 1: RAM, Storage, Battery -->
                     <LinearLayout
@@ -134,7 +134,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="RAM"
-                                android:textColor="#BBDEFB"
+                                android:textColor="@color/secondaryText"
                                 android:textSize="12sp" />
                             <TextView
                                 android:id="@+id/tvRamUsage"
@@ -156,7 +156,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Storage"
-                                android:textColor="#BBDEFB"
+                                android:textColor="@color/secondaryText"
                                 android:textSize="12sp" />
                             <TextView
                                 android:id="@+id/tvStorageUsage"
@@ -178,7 +178,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Battery"
-                                android:textColor="#BBDEFB"
+                                android:textColor="@color/secondaryText"
                                 android:textSize="12sp" />
                             <TextView
                                 android:id="@+id/tvBattery"
@@ -209,7 +209,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Android SDK"
-                                android:textColor="#BBDEFB"
+                                android:textColor="@color/secondaryText"
                                 android:textSize="12sp" />
                             <TextView
                                 android:id="@+id/tvApiLevel"
@@ -231,7 +231,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Resolution"
-                                android:textColor="#BBDEFB"
+                                android:textColor="@color/secondaryText"
                                 android:textSize="12sp" />
                             <TextView
                                 android:id="@+id/tvResolutionDisplay"
@@ -253,7 +253,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Free Storage"
-                                android:textColor="#BBDEFB"
+                                android:textColor="@color/secondaryText"
                                 android:textSize="12sp" />
                             <TextView
                                 android:id="@+id/tvFreeStorageDisplay"
@@ -319,7 +319,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Unknown"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -327,7 +327,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -388,7 +388,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Ready"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -396,7 +396,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -457,7 +457,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -465,7 +465,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -526,7 +526,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -534,7 +534,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -595,7 +595,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -603,7 +603,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -664,7 +664,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -672,7 +672,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -733,7 +733,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -741,7 +741,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -802,7 +802,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Disabled"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -810,7 +810,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -871,7 +871,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -879,7 +879,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -940,7 +940,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -948,7 +948,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -1009,7 +1009,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                         <TextView
@@ -1017,7 +1017,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="RESET"
-                            android:textColor="#1976D2"
+                            android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:padding="4dp"
@@ -1037,49 +1037,72 @@
                 android:gravity="center"
                 android:orientation="vertical" />
 
-            <!-- Launch Game Button -->
-            <Button
-                android:id="@+id/btnLaunchGame"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="#4CAF50"
-                android:padding="12dp"
-                android:text="Launch Game"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold" />
 
-            <!-- Remove Ads Button -->
-            <Button
-                android:id="@+id/btnRemoveAds"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="?attr/colorSurfaceVariant"
-                android:padding="12dp"
-                android:text="Remove Ads"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textStyle="bold" />
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- Reset All Button -->
-    <Button
-        android:id="@+id/btnResetAll"
+    <!-- Floating Bottom Action Bar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/floatingBottomBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="#E53935"
-        android:padding="12dp"
-        android:text="Reset All Adjustment"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <Button
+                    android:id="@+id/btnLaunchGame"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:backgroundTint="#4CAF50"
+                    android:text="Launch Game"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnRemoveAds"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:backgroundTint="?attr/colorSurfaceVariant"
+                    android:text="Remove Ads"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnResetAll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:backgroundTint="#E53935"
+                android:text="Reset All Adjustments"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- The Expanded Menu -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/menuContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/translucentSurface"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutlineVariant">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:baselineAligned="false">
+
+            <!-- LEFT SIDE: 4 Stacked Buttons -->
+            <LinearLayout
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginEnd="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFloatApply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="APPLY"
+                    android:textColor="?attr/colorPrimary"
+                    app:backgroundTint="?attr/colorSurfaceVariant"
+                    app:cornerRadius="8dp"
+                    android:fontFamily="@font/lexendregular"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFloatReset"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="RESET"
+                    android:textColor="?android:attr/textColorPrimary"
+                    app:backgroundTint="?attr/colorSurfaceVariant"
+                    app:cornerRadius="8dp"
+                    android:fontFamily="@font/lexendregular"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFloatMinimize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="MINIMIZE"
+                    android:textColor="?android:attr/textColorPrimary"
+                    app:backgroundTint="?attr/colorSurfaceVariant"
+                    app:cornerRadius="8dp"
+                    android:fontFamily="@font/lexendregular"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFloatKill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="KILL"
+                    android:textColor="?attr/colorError"
+                    app:backgroundTint="?attr/colorSurfaceVariant"
+                    app:cornerRadius="8dp"
+                    android:fontFamily="@font/lexendregular"
+                    android:textSize="12sp"/>
+            </LinearLayout>
+
+            <!-- Vertical Divider -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?attr/colorOutlineVariant"
+                android:layout_marginEnd="16dp"/>
+
+            <!-- RIGHT SIDE: Title & Inputs -->
+            <LinearLayout
+                android:layout_width="160dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
+
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="RESOLUTION"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:fontFamily="@font/lexendregular"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="16dp"
+                    android:padding="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    app:boxBackgroundColor="?attr/colorSurfaceVariant"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusBottomEnd="8dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFloatWidth"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Width"
+                        android:inputType="number"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:fontFamily="@font/lexendregular"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundColor="?attr/colorSurfaceVariant"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusBottomEnd="8dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFloatHeight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Height"
+                        android:inputType="number"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:fontFamily="@font/lexendregular"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- The 50x50 Draggable Icon -->
+    <ImageView
+        android:id="@+id/floatingIcon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/ic_launcher"
+        android:elevation="10dp"/>
+
+</FrameLayout>

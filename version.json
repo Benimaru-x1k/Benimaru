@@ -1,6 +1,6 @@
 {
-  "versionCode": 8,
-  "versionName": "1.8",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.8/BenimaruTool-v1.8.apk",
-  "releaseNotes": "- Expanded the Dashboard with 3 new device info metrics (SDK level, current resolution, and free storage)\n- Added smart dynamic DPI scaling when changing screen resolution to keep UI layouts proportional\n- Improved overall app stability and performance"
+  "versionCode": 9,
+  "versionName": "1.9",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.9/BenimaruTool-v1.9.apk",
+  "releaseNotes": "- Added Floating Resolution Overlay with smart background touch passthrough\n- Upgraded UI to Material 3 with a new Floating Bottom Action Bar\n- Added Dual-Mode Resolution Adjuster (Direct vs Floating)\n- Fixed Dark Mode dialog bugs using a persistent MainApplication class\n- Replaced programmatic theming with native Android XML resources\n- Improved stability by removing silent exceptions and fixing overlay edge margins"
 }

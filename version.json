@@ -1,6 +1,6 @@
 {
-  "versionCode": 9,
-  "versionName": "1.9",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v1.9/BenimaruTool-v1.9.apk",
-  "releaseNotes": "- Added Floating Resolution Overlay with smart background touch passthrough\n- Upgraded UI to Material 3 with a new Floating Bottom Action Bar\n- Added Dual-Mode Resolution Adjuster (Direct vs Floating)\n- Fixed Dark Mode dialog bugs using a persistent MainApplication class\n- Replaced programmatic theming with native Android XML resources\n- Improved stability by removing silent exceptions and fixing overlay edge margins"
+  "versionCode": 10,
+  "versionName": "2.0",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.0/BenimaruTool-v2.0.apk",
+  "releaseNotes": "- Real-time Crosshair slider customization with instant preview\n- Fixed canvas rendering for custom crosshair shapes and colors\n- Added cloud-based premium login via GitHub JSON\n- Enforced strict 2-device limit per premium account\n- Integrated dynamic PayPal Web Checkout passing account details\n- Redesigned Remove Ads dialog with Material 3 outlined inputs and Copy Device ID button"
 }

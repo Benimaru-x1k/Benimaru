@@ -58,6 +58,10 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import android.provider.Settings.Secure
+import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -121,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         // Initialize Unity Ads
         initializeUnityAds()
 
-        //verifyAppSignature()
+        verifyAppSignature()
         checkForUpdates()
         updateDeviceInfo()
 
@@ -521,6 +525,18 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.tvStatusAnimations).text = animStatus
                 findViewById<TextView>(R.id.tvStatusBlurs).text = blursStatus
                 findViewById<TextView>(R.id.tvStatusDnd).text = headsUpStatus
+
+                // Restore Crosshair State
+                val isCrosshairOn = prefs.getBoolean("CrosshairEnabled", false)
+                isCrosshairEnabled = isCrosshairOn // Sync the global variable
+                if (isCrosshairOn) {
+                    val style = prefs.getString("CrosshairStyle", "Cross")
+                    val color = prefs.getString("CrosshairColor", "Red")
+                    val size = prefs.getString("CrosshairSize", "Medium")
+                    findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
+                } else {
+                    findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
+                }
             }
         }
     }
@@ -734,24 +750,228 @@ class MainActivity : AppCompatActivity() {
 
     private fun showRemoveAdsDialog() {
         val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-        val areAdsRemoved = prefs.getBoolean("AdsRemoved", false)
+        if (prefs.getBoolean("AdsRemoved", false)) {
+            Toasty.info(this, "Ads are already removed on this device!", Toast.LENGTH_SHORT, true).show()
+            return
+        }
+
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
+        val scrollContainer = android.widget.ScrollView(this)
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(64, 48, 64, 32)
+        }
+
+        // Material 3 Outlined Username Input Box
+        val usernameLayout = TextInputLayout(this).apply {
+            hint = "Username"
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            setBoxCornerRadii(24f, 24f, 24f, 24f) // Smooth rounded corners
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        val usernameInput = TextInputEditText(usernameLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            maxLines = 1
+        }
+        usernameLayout.addView(usernameInput)
+
+        // Material 3 Outlined Password Input Box with Toggle Eye
+        val passwordLayout = TextInputLayout(this).apply {
+            hint = "Password"
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            setBoxCornerRadii(24f, 24f, 24f, 24f)
+            endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE // Adds the eye icon
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 32 }
+        }
+        val passwordInput = TextInputEditText(passwordLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            maxLines = 1
+        }
+        passwordLayout.addView(passwordInput)
+
+        // Device ID Display
+        val tvDeviceId = TextView(this).apply {
+            text = "Your Device ID: $deviceId"
+            textSize = 13f
+            setTextColor(Color.GRAY)
+            gravity = android.view.Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = 48
+                bottomMargin = 16
+            }
+        }
+
+        // Material 3 Outlined Style Button
+        val copyIdButton = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "Copy Device ID"
+            cornerRadius = 50 // Pill shape
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = 8 }
+            setOnClickListener {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Device ID", deviceId)
+                clipboard.setPrimaryClip(clip)
+                Toasty.success(this@MainActivity, "Device ID Copied!", Toast.LENGTH_SHORT, true).show()
+            }
+        }
+
+        // Material 3 Filled Style Button
+        val buyPremiumButton = MaterialButton(this).apply {
+            text = "Buy Premium via PayPal"
+            cornerRadius = 50 // Pill shape
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 8 }
+
+            setOnClickListener {
+                val user = usernameInput.text.toString().trim()
+                val pass = passwordInput.text.toString().trim()
+
+                // 1. Force them to fill out the form before paying
+                if (user.isEmpty() || pass.isEmpty()) {
+                    Toasty.warning(this@MainActivity, "Please enter your desired Username and Password first!", Toast.LENGTH_LONG, true).show()
+                    return@setOnClickListener
+                }
+
+                // 2. Encode the text so spaces and symbols don't break the web link
+                val encodedUser = Uri.encode(user)
+                val encodedPass = Uri.encode(pass)
+                val encodedDevice = Uri.encode(deviceId)
+
+                // ⚠️ IMPORTANT: Replace with your actual PayPal email and price!
+                val paypalEmail = "vestalkimqq02@gmail.com"
+                val price = "5.00"
+
+                val paymentUrl = "https://www.paypal.com/cgi-bin/webscr" +
+                        "?cmd=_xclick" +
+                        "&business=$paypalEmail" + // Ensure this is your REAL PayPal email
+                        "&item_name=Benimaru+Premium+Unlock" +
+                        "&amount=$price" +
+                        "&currency_code=USD" +
+                        "&on0=Username&os0=$encodedUser" +
+                        "&on1=Device+ID&os1=$encodedDevice" +
+                        "&on2=Password&os2=$encodedPass" +
+                        "&custom=$encodedUser|$encodedPass|$encodedDevice"
+
+
+                // 4. Open the link in their browser
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl))
+                startActivity(intent)
+            }
+        }
+
+        layout.addView(usernameLayout)
+        layout.addView(passwordLayout)
+        layout.addView(tvDeviceId)
+        layout.addView(copyIdButton)
+        layout.addView(buyPremiumButton)
+
+        scrollContainer.addView(layout)
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Remove Ads")
-            .setMessage("Ads are strictly intended to help support the developer and keep this app free.\n\nHowever, if you prefer to use the tool without interruptions, you can disable them here.")
-            .setPositiveButton(if (areAdsRemoved) "Ads Already Removed" else "Remove Ads") { _, _ ->
-                prefs.edit().putBoolean("AdsRemoved", true).apply()
-                findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews() // Clear Banner immediately
-                Toasty.success(this, "Ads have been disabled", Toast.LENGTH_SHORT, true).show()
+            .setTitle("Premium Login")
+            .setMessage("Enter your authorized account to remove ads permanently.")
+            .setView(scrollContainer)
+            .setPositiveButton("Login") { _, _ ->
+                val user = usernameInput.text.toString().trim()
+                val pass = passwordInput.text.toString().trim()
+                if (user.isNotEmpty() && pass.isNotEmpty()) {
+                    verifyPremiumAccount(user, pass) // Calls your existing verification logic
+                } else {
+                    Toasty.warning(this, "Please fill in all fields", Toast.LENGTH_SHORT, true).show()
+                }
             }
-            .setNeutralButton("Re-Enable Ads") { _, _ ->
-                prefs.edit().putBoolean("AdsRemoved", false).apply()
-                setupBannerAd() // Bring banner back instantly
-                loadInterstitialAd()
-                Toasty.info(this, "Ads re-enabled. Thank you for your support!", Toast.LENGTH_SHORT, true).show()
-            }
-            .setNegativeButton("Close", null)
+            .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun verifyPremiumAccount(username: String, pass: String) {
+        val deviceId = Secure.getString(contentResolver, Secure.ANDROID_ID)
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Verifying...")
+            .setMessage("Checking account on server...")
+            .setCancelable(false)
+            .show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // IMPORTANT: Replace this URL with your actual raw GitHub JSON link
+                val url = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/users.json")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                if (conn.responseCode == 200) {
+                    val jsonString = conn.inputStream.bufferedReader().readText()
+                    val jsonObject = JSONObject(jsonString)
+                    val usersArray = jsonObject.getJSONArray("users")
+
+                    var isValid = false
+                    var reason = "Invalid username or password."
+
+                    for (i in 0 until usersArray.length()) {
+                        val userObj = usersArray.getJSONObject(i)
+                        if (userObj.getString("username") == username && userObj.getString("password") == pass) {
+                            val devices = userObj.getJSONArray("devices")
+                            if (devices.length() > 2) {
+                                reason = "Account limits exceeded (Max 2 devices allowed)."
+                            } else {
+                                var deviceFound = false
+                                for (j in 0 until devices.length()) {
+                                    if (devices.getString(j) == deviceId) {
+                                        deviceFound = true
+                                        break
+                                    }
+                                }
+                                if (deviceFound) {
+                                    isValid = true
+                                } else {
+                                    reason = "Device not authorized. Send this ID to admin: $deviceId"
+                                }
+                            }
+                            break
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        dialog.dismiss()
+                        if (isValid) {
+                            val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+                            prefs.edit().putBoolean("AdsRemoved", true).apply()
+                            findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
+                            Toasty.success(this@MainActivity, "Premium Activated! Ads Removed.", Toast.LENGTH_LONG, true).show()
+                        } else {
+                            Toasty.error(this@MainActivity, reason, Toast.LENGTH_LONG, true).show()
+                        }
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        dialog.dismiss()
+                        Toasty.error(this@MainActivity, "Server Error: ${conn.responseCode}", Toast.LENGTH_SHORT, true).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    dialog.dismiss()
+                    Toasty.error(this@MainActivity, "Network Error. Please check connection.", Toast.LENGTH_SHORT, true).show()
+                }
+            }
+        }
     }
 
     // Extended with 'showAd' Boolean
@@ -968,7 +1188,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Crosshair & Launch Game logic Below ---
+    // --- Updated Crosshair Config for Real-Time Updates ---
     private fun showCrosshairConfigDialog() {
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
@@ -977,50 +1197,76 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(64, 32, 64, 32)
         }
 
-        val styleLabel = TextView(this).apply { text = "Shape"; setPadding(0, 0, 0, 8) }
-        val styleSpinner = Spinner(this)
-        val styles = arrayOf("Cross", "Dot", "Cross with Circle")
-        styleSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, styles)
+        val styles = arrayOf("Cross", "Dot", "Circle", "Cross with Circle", "Square", "Target")
+        val colors = arrayOf("White", "Black", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
+        val sizes = arrayOf("Tiny", "Small", "Medium", "Large", "Extra Large")
 
-        val colorLabel = TextView(this).apply { text = "Color"; setPadding(0, 32, 0, 8) }
-        val colorSpinner = Spinner(this)
-        val colors = arrayOf("White", "Black", "Blue", "Red", "Green")
-        colorSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, colors)
-        colorSpinner.setSelection(3)
+        // Helper function for real-time updating
+        fun updateLive(sIdx: Int, cIdx: Int, szIdx: Int) {
+            if (isCrosshairEnabled) {
+                startCrosshairService(styles[sIdx], colors[cIdx], sizes[szIdx])
+            }
+        }
 
-        val sizeLabel = TextView(this).apply { text = "Size"; setPadding(0, 32, 0, 8) }
-        val sizeSpinner = Spinner(this)
-        val sizes = arrayOf("Small", "Medium", "Large")
-        sizeSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sizes)
-        sizeSpinner.setSelection(1)
+        var currentStyleIdx = prefs.getInt("CrosshairStyleIdx", 0)
+        var currentColorIdx = prefs.getInt("CrosshairColorIdx", 2)
+        var currentSizeIdx = prefs.getInt("CrosshairSizeIdx", 2)
 
-        layout.addView(styleLabel)
-        layout.addView(styleSpinner)
-        layout.addView(colorLabel)
-        layout.addView(colorSpinner)
-        layout.addView(sizeLabel)
-        layout.addView(sizeSpinner)
+        fun createSlider(title: String, options: Array<String>, defaultIdx: Int, onProgress: (Int) -> Unit): android.widget.SeekBar {
+            val label = TextView(this).apply {
+                text = "$title: ${options[defaultIdx]}"
+                setPadding(0, 24, 0, 8)
+                textSize = 16f
+                setTextColor(Color.parseColor("#808080"))
+            }
+            val seekBar = android.widget.SeekBar(this).apply {
+                max = options.size - 1
+                progress = defaultIdx
+                setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                        label.text = "$title: ${options[progress]}"
+                        if (fromUser) {
+                            onProgress(progress)
+                            updateLive(currentStyleIdx, currentColorIdx, currentSizeIdx)
+                        }
+                    }
+                    override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                    override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                })
+            }
+            layout.addView(label)
+            layout.addView(seekBar)
+            return seekBar
+        }
+
+        createSlider("Shape", styles, currentStyleIdx) { currentStyleIdx = it }
+        createSlider("Color", colors, currentColorIdx) { currentColorIdx = it }
+        createSlider("Size", sizes, currentSizeIdx) { currentSizeIdx = it }
+
+        val isEnabled = prefs.getBoolean("CrosshairEnabled", false)
 
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle("Customize Crosshair")
             .setView(layout)
-            .setPositiveButton(if (isCrosshairEnabled) "Apply" else "Start") { _, _ ->
-                val selectedStyle = styles[styleSpinner.selectedItemPosition]
-                val selectedColor = colors[colorSpinner.selectedItemPosition]
-                val selectedSize = sizes[sizeSpinner.selectedItemPosition]
-                startCrosshairService(selectedStyle, selectedColor, selectedSize)
+            .setPositiveButton(if (isEnabled) "Save" else "Start") { _, _ ->
+                prefs.edit()
+                    .putInt("CrosshairStyleIdx", currentStyleIdx)
+                    .putInt("CrosshairColorIdx", currentColorIdx)
+                    .putInt("CrosshairSizeIdx", currentSizeIdx)
+                    .apply()
+
+                startCrosshairService(styles[currentStyleIdx], colors[currentColorIdx], sizes[currentSizeIdx])
             }
             .setNegativeButton("Cancel", null)
 
-        if (isCrosshairEnabled) {
-            dialog.setNeutralButton("Turn Off") { _, _ ->
-                stopCrosshairService()
-            }
+        if (isEnabled) {
+            dialog.setNeutralButton("Turn Off") { _, _ -> stopCrosshairService() }
         }
 
         dialog.show()
@@ -1033,16 +1279,33 @@ class MainActivity : AppCompatActivity() {
             putExtra("SIZE", size)
         }
         startService(intent)
+
         isCrosshairEnabled = true
+
+        // Save the active state and exact strings to memory
+        getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
+            .putBoolean("CrosshairEnabled", true)
+            .putString("CrosshairStyle", style)
+            .putString("CrosshairColor", color)
+            .putString("CrosshairSize", size)
+            .apply()
+
         findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
         Toasty.success(this, "Crosshair Updated", Toast.LENGTH_SHORT, true).show()
-        showInterstitialAd() // Show Ad when Crosshair opens
+        showInterstitialAd()
     }
 
     private fun stopCrosshairService() {
         val intent = Intent(this, CrosshairService::class.java)
         stopService(intent)
+
         isCrosshairEnabled = false
+
+        // Erase the active state from memory
+        getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
+            .putBoolean("CrosshairEnabled", false)
+            .apply()
+
         findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
         Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
     }

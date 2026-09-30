@@ -1,99 +1,30 @@
 package com.benimaru.official
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.IBinder
-import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
 
 class CrosshairService : Service() {
+
     private lateinit var windowManager: WindowManager
-    private lateinit var crosshairView: FrameLayout
+    private lateinit var crosshairView: CrosshairView
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-    }
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        crosshairView = CrosshairView(this)
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val style = intent?.getStringExtra("STYLE") ?: "Cross"
-        val colorName = intent?.getStringExtra("COLOR") ?: "Red"
-        val sizeStr = intent?.getStringExtra("SIZE") ?: "Medium"
-
-        val color = when (colorName) {
-            "White" -> Color.WHITE
-            "Black" -> Color.BLACK
-            "Blue" -> Color.BLUE
-            "Green" -> Color.GREEN
-            else -> Color.RED
-        }
-
-        val scale = when (sizeStr) {
-            "Small" -> 0.6f
-            "Large" -> 1.5f
-            else -> 1.0f // Medium
-        }
-
-        drawCrosshair(style, color, scale)
-        return START_STICKY
-    }
-
-    private fun drawCrosshair(style: String, color: Int, scale: Float) {
-        // Remove existing crosshair if we are just updating the style
-        if (::crosshairView.isInitialized && crosshairView.isAttachedToWindow) {
-            windowManager.removeView(crosshairView)
-        }
-
-        crosshairView = FrameLayout(this)
-
-        val dotSize = (16 * scale).toInt()
-        val lineThick = (4 * scale).toInt().coerceAtLeast(1)
-        val lineLength = (40 * scale).toInt()
-        val circleSize = (64 * scale).toInt()
-        val strokeThick = (4 * scale).toInt().coerceAtLeast(1)
-
-        when (style) {
-            "Dot" -> {
-                val dot = View(this).apply {
-                    background = GradientDrawable().apply {
-                        shape = GradientDrawable.OVAL
-                        setColor(color)
-                    }
-                }
-                crosshairView.addView(dot, FrameLayout.LayoutParams(dotSize, dotSize, Gravity.CENTER))
-            }
-            "Cross" -> {
-                val vLine = View(this).apply { setBackgroundColor(color) }
-                val hLine = View(this).apply { setBackgroundColor(color) }
-                crosshairView.addView(vLine, FrameLayout.LayoutParams(lineThick, lineLength, Gravity.CENTER))
-                crosshairView.addView(hLine, FrameLayout.LayoutParams(lineLength, lineThick, Gravity.CENTER))
-            }
-            "Cross with Circle" -> {
-                val circle = View(this).apply {
-                    background = GradientDrawable().apply {
-                        shape = GradientDrawable.OVAL
-                        setStroke(strokeThick, color)
-                        setColor(Color.TRANSPARENT)
-                    }
-                }
-                val vLine = View(this).apply { setBackgroundColor(color) }
-                val hLine = View(this).apply { setBackgroundColor(color) }
-
-                crosshairView.addView(circle, FrameLayout.LayoutParams(circleSize, circleSize, Gravity.CENTER))
-                crosshairView.addView(vLine, FrameLayout.LayoutParams(lineThick, lineLength, Gravity.CENTER))
-                crosshairView.addView(hLine, FrameLayout.LayoutParams(lineLength, lineThick, Gravity.CENTER))
-            }
-        }
-
-        val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val layoutFlag: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
             @Suppress("DEPRECATION")
@@ -101,21 +32,114 @@ class CrosshairService : Service() {
         }
 
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT
         )
-        params.gravity = Gravity.CENTER
 
         windowManager.addView(crosshairView, params)
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent?.let {
+            val style = it.getStringExtra("STYLE") ?: "Cross"
+            val color = it.getStringExtra("COLOR") ?: "Red"
+            val size = it.getStringExtra("SIZE") ?: "Medium"
+
+            crosshairView.updateCrosshair(style, color, size)
+        }
+        return START_STICKY
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        if (::crosshairView.isInitialized && crosshairView.isAttachedToWindow) {
+        if (::crosshairView.isInitialized) {
             windowManager.removeView(crosshairView)
+        }
+    }
+
+    // Custom View to handle the exact drawing mechanics
+    private inner class CrosshairView(context: Context) : View(context) {
+        private var paint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+        }
+
+        private var style = "Cross"
+        private var sizePx = 30f
+
+        fun updateCrosshair(newStyle: String, newColor: String, newSize: String) {
+            this.style = newStyle
+
+            // Set Color
+            paint.color = when (newColor) {
+                "White" -> Color.WHITE
+                "Black" -> Color.BLACK
+                "Red" -> Color.RED
+                "Green" -> Color.GREEN
+                "Blue" -> Color.BLUE
+                "Yellow" -> Color.YELLOW
+                "Cyan" -> Color.CYAN
+                "Magenta" -> Color.MAGENTA
+                else -> Color.RED
+            }
+
+            // Set Size
+            sizePx = when (newSize) {
+                "Tiny" -> 15f
+                "Small" -> 25f
+                "Medium" -> 40f
+                "Large" -> 60f
+                "Extra Large" -> 90f
+                else -> 40f
+            }
+
+            paint.strokeWidth = sizePx / 8f
+
+            // Force redraw immediately for real-time updates
+            invalidate()
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            val cx = width / 2f
+            val cy = height / 2f
+            val halfSize = sizePx / 2f
+
+            when (style) {
+                "Cross" -> {
+                    canvas.drawLine(cx - halfSize, cy, cx + halfSize, cy, paint)
+                    canvas.drawLine(cx, cy - halfSize, cx, cy + halfSize, paint)
+                }
+                "Dot" -> {
+                    paint.style = Paint.Style.FILL
+                    canvas.drawCircle(cx, cy, paint.strokeWidth * 1.5f, paint)
+                    paint.style = Paint.Style.STROKE
+                }
+                "Circle" -> {
+                    canvas.drawCircle(cx, cy, halfSize, paint)
+                }
+                "Cross with Circle" -> {
+                    canvas.drawLine(cx - halfSize, cy, cx + halfSize, cy, paint)
+                    canvas.drawLine(cx, cy - halfSize, cx, cy + halfSize, paint)
+                    canvas.drawCircle(cx, cy, halfSize, paint)
+                }
+                "Square" -> {
+                    canvas.drawRect(cx - halfSize, cy - halfSize, cx + halfSize, cy + halfSize, paint)
+                }
+                "Target" -> {
+                    canvas.drawCircle(cx, cy, halfSize, paint)
+                    paint.style = Paint.Style.FILL
+                    canvas.drawCircle(cx, cy, paint.strokeWidth, paint)
+                    paint.style = Paint.Style.STROKE
+                }
+            }
         }
     }
 }

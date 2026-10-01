@@ -6,6 +6,8 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 
 *   🌗 **Dynamic Theme Engine**: Modern Light/Dark mode toggle with beautifully outlined Material Design cards that adapt to your system aesthetic.
 *   🚀 **Fixed Performance Mode**: Locks device performance to a fixed state to maintain consistent frame rates during heavy workloads or gaming.
+*   🔥 **Disable Thermal Throttling**: Tricks the device into thinking it is cool to prevent sudden frame drops and CPU throttling during long, intense gaming sessions.
+*   🕹️ **Native Game Mode API**: (Android 12+) Unlocks kernel-level performance by dropping system power limits and heavily prioritizing CPU/GPU resources for your selected game.
 *   💨 **UI Animation Speedup**: Cuts system animation scales in half (0.5x) to make app launches and system navigation feel twice as fast.
 *   🌫️ **Disable Window Blurs**: Frees up valuable GPU resources by disabling expensive real-time background blurs on Android 12+ devices.
 *   🔕 **Gaming Focus Mode**: Blocks intrusive heads-up notification banners from dropping down over your screen mid-match.
@@ -13,7 +15,7 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   📶 **Network Tweaks**: Prioritizes network traffic and reduces ping for a lag-free mobile data experience.
 *   ⚡ **Touch Latency Reduction**: Increases touch sampling rate and reduces long-press timeouts for faster, more precise screen interactions.
 *   🔄 **Custom Refresh Rate**: Force specific Minimum and Maximum screen refresh rates (e.g., lock to 120Hz).
-*   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic DPI calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
+*   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic aspect ratio calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
 *   🌐 **Custom DNS Selector**: Set a system-wide private DNS (Cloudflare, Quad9, Control D, etc.) via ADB for reliable ad blocking, tracker protection, and lower latency without needing a VPN.
 *   🎯 **FPS Crosshair Overlay**: Enable a customizable, center-screen crosshair to improve accuracy in FPS games.
 *   🎮 **Game Launcher & Optimizer**: Automatically detects installed games and allows you to either launch them instantly or **Pre-Compile their DEX code (Speed Profile)** to eliminate in-game stutters.
@@ -32,7 +34,7 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 Because Benimaru Tool modifies secure system settings, it requires **Shizuku** to function. 
 * If you do not have Shizuku installed, Benimaru Tool will automatically prompt you to download and install it safely from the official GitHub repository.
 * **Note:** You must start the Shizuku service via Wireless Debugging (Android 11+) or via ADB from a computer. [Read the official Shizuku setup guide here](https://shizuku.rikka.app/guide/setup/).
-* **Overlay Permission:** To use the Crosshair Overlay, you must grant the "Display over other apps" permission when prompted.
+* **Overlay Permission:** To use the Crosshair Overlay and Floating Menu, you must grant the "Display over other apps" permission when prompted.
 
 ## 🛠️ Built With
 
@@ -50,9 +52,9 @@ Because Benimaru Tool modifies secure system settings, it requires **Shizuku** t
 4. Ensure the **Shizuku** app is installed and running.
 5. Open Benimaru Tool and tap **Allow** when prompted for Shizuku access.
 
-## ⚠️ Disclaimer
+## ⚠️️ Disclaimer
 
-**Use at your own risk.** While Benimaru Tool is built with safety features (like the 6-second resolution revert timer), forcing unsupported refresh rates or extreme resolutions on certain hardware can cause system instability or UI glitches. The developer is not responsible for any bricked devices, bootloops, or hardware damage.
+**Use at your own risk.** While Benimaru Tool is built with safety features (like the 6-second resolution revert timer), forcing unsupported refresh rates, extreme resolutions, or disabling thermal limits on certain hardware can cause system instability, overheating, or UI glitches. The developer is not responsible for any bricked devices, bootloops, or hardware damage.
 
 ## 📝 License
 

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
@@ -15,7 +16,9 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.StatFs
 import android.provider.Settings
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -23,7 +26,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -37,6 +39,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.IUnityAdsLoadListener
 import com.unity3d.ads.IUnityAdsShowListener
@@ -72,6 +75,7 @@ class MainActivity : AppCompatActivity() {
     private val unityGameId = "5781189"
     private val adUnitInterstitial = "Interstitial_Android"
     private val adUnitBanner = "Banner_Android"
+    private val adUnitRewarded = "Rewarded_Android" // Added Rewarded Ad Unit
     private val testMode = false
 
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
@@ -122,7 +126,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Initialize Unity Ads
+        updatePremiumButtonUI() // Check and update button color on startup
         initializeUnityAds()
 
         verifyAppSignature()
@@ -134,14 +138,53 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
+    // --- Premium Logic ---
+    private fun isPremium(): Boolean {
+        return getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).getBoolean("AdsRemoved", false)
+    }
+
+    private fun updatePremiumButtonUI() {
+        if (isPremium()) {
+            val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
+            btnPremium.text = "✔ Premium"
+            btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700")) // Gold
+            btnPremium.setTextColor(Color.parseColor("#000000")) // Black text for contrast
+
+            // Re-assign click listener to tell them they are already premium
+            btnPremium.setOnClickListener {
+                Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
+            }
+        }
+    }
+
+    // Helper method to enforce Premium or Rewarded Ad check
+    private fun handlePremiumFeature(action: () -> Unit) {
+        if (isPremium()) {
+            action()
+            return
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Premium Feature Locked")
+            .setMessage("This feature requires Premium access.\n\nYou can temporarily unlock it right now by watching a short video ad, or permanently unlock all features by purchasing a Premium Login.")
+            .setPositiveButton("Watch Ad") { _, _ ->
+                showRewardedAd { action() }
+            }
+            .setNeutralButton("Buy Premium") { _, _ ->
+                showRemoveAdsDialog()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     // --- Unity Ads Implementation ---
     private fun initializeUnityAds() {
-        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("AdsRemoved", false)) return // Don't init if removed
+        if (isPremium()) return // Don't init if removed
 
         UnityAds.initialize(this, unityGameId, testMode, object : IUnityAdsInitializationListener {
             override fun onInitializationComplete() {
                 loadInterstitialAd()
+                loadRewardedAd()
                 setupBannerAd()
             }
             override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {}
@@ -149,19 +192,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadInterstitialAd() {
-        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("AdsRemoved", false)) return
-
+        if (isPremium()) return
         UnityAds.load(adUnitInterstitial, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String) {}
             override fun onUnityAdsFailedToLoad(placementId: String, error: UnityAds.UnityAdsLoadError, message: String) {}
         })
     }
 
-    private fun showInterstitialAd() {
-        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("AdsRemoved", false)) return
+    private fun loadRewardedAd() {
+        if (isPremium()) return
+        UnityAds.load(adUnitRewarded, object : IUnityAdsLoadListener {
+            override fun onUnityAdsAdLoaded(placementId: String) {}
+            override fun onUnityAdsFailedToLoad(placementId: String, error: UnityAds.UnityAdsLoadError, message: String) {}
+        })
+    }
 
+    private fun showInterstitialAd() {
+        if (isPremium()) return
         UnityAds.show(this, adUnitInterstitial, object : IUnityAdsShowListener {
             override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
                 loadInterstitialAd()
@@ -174,11 +221,37 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun showRewardedAd(onSuccess: () -> Unit) {
+        if (isPremium()) {
+            onSuccess()
+            return
+        }
+
+        Toasty.info(this, "Loading Ad...", Toast.LENGTH_SHORT, true).show()
+
+        UnityAds.show(this, adUnitRewarded, object : IUnityAdsShowListener {
+            override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
+                Toasty.error(this@MainActivity, "Ad failed to load. Please try again later.", Toast.LENGTH_SHORT, true).show()
+                loadRewardedAd()
+            }
+            override fun onUnityAdsShowStart(placementId: String) {}
+            override fun onUnityAdsShowClick(placementId: String) {}
+            override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
+                if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                    Toasty.success(this@MainActivity, "Unlocked successfully!", Toast.LENGTH_SHORT, true).show()
+                    onSuccess()
+                } else {
+                    Toasty.warning(this@MainActivity, "Ad skipped. Feature remains locked.", Toast.LENGTH_LONG, true).show()
+                }
+                loadRewardedAd()
+            }
+        })
+    }
+
     private fun setupBannerAd() {
-        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
         val bannerContainer = findViewById<LinearLayout>(R.id.bannerAdContainer)
 
-        if (prefs.getBoolean("AdsRemoved", false)) {
+        if (isPremium()) {
             bannerContainer.removeAllViews() // Ensure it's clear
             return
         }
@@ -192,6 +265,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateDeviceInfo()
+        updatePremiumButtonUI()
     }
 
     override fun onDestroy() {
@@ -473,6 +547,12 @@ class MainActivity : AppCompatActivity() {
             val isFixedPerf = prefs.getBoolean("FixedPerf", false)
             val fixedPerfStatus = if (isFixedPerf) "Status: Enabled" else "Status: Default"
 
+            val isThermalDisabled = prefs.getBoolean("ThermalDisabled", false)
+            val thermalStatus = if (isThermalDisabled) "Status: Throttling Disabled" else "Status: Default"
+
+            val lastGameMode = prefs.getString("LastGameMode", "")
+            val gameModeStatus = if (lastGameMode.isNullOrEmpty()) "Status: Default" else "Status: Active ($lastGameMode)"
+
             val minRefresh = runAdbCommandWithResult("settings get system min_refresh_rate")
             val maxRefresh = runAdbCommandWithResult("settings get system peak_refresh_rate")
 
@@ -517,6 +597,8 @@ class MainActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = fixedPerfStatus
+                findViewById<TextView>(R.id.tvStatusThermal).text = thermalStatus
+                findViewById<TextView>(R.id.tvStatusGameMode).text = gameModeStatus
                 findViewById<TextView>(R.id.tvStatusRefresh).text = refreshStatus
                 findViewById<TextView>(R.id.tvStatusResolution).text = resStatus
                 findViewById<TextView>(R.id.tvStatusNetwork).text = netStatus
@@ -561,6 +643,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
 
+        // --- Free Features ---
         findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusFixedPerf).text.toString()
             if (status.contains("Enabled")) {
@@ -640,15 +723,67 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
-        findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener { showResolutionModeDialog() }
-        findViewById<CardView>(R.id.cardCustomDns).setOnClickListener { showDnsDialog() }
-        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener { showCrosshairConfigDialog() }
+
+        // --- Premium Features with Rewarded Ad Alternative ---
+        findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener {
+            handlePremiumFeature { showResolutionModeDialog() }
+        }
+
+        findViewById<CardView>(R.id.cardCustomDns).setOnClickListener {
+            handlePremiumFeature { showDnsDialog() }
+        }
+
+        findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
+            handlePremiumFeature { showCrosshairConfigDialog() }
+        }
+
+        findViewById<CardView>(R.id.cardThermalThrottling).setOnClickListener {
+            handlePremiumFeature {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Warning: High Temperatures")
+                    .setMessage("Disabling Thermal Throttling tricks the device into thinking it is cool, forcing maximum performance. Your device WILL get hot. Use with caution.\n\nProceed?")
+                    .setPositiveButton("Enable") { _, _ ->
+                        runAdbCommand("cmd thermalservice override-status 0", "Thermal Throttling Disabled") {
+                            prefs.edit().putBoolean("ThermalDisabled", true).apply()
+                            fetchSystemStatuses()
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+
+        findViewById<CardView>(R.id.cardGameMode).setOnClickListener {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) { // S is Android 12
+                Toasty.error(this, "This feature requires Android 12 or newer.", Toast.LENGTH_LONG, true).show()
+                return@setOnClickListener
+            }
+
+            handlePremiumFeature { showGameModeSelectorDialog() }
+        }
 
         // --- Individual Reset Button Clicks ---
         findViewById<TextView>(R.id.btnResetFixedPerf).setOnClickListener {
             runAdbCommand("cmd power set-fixed-performance-mode-enabled false", "Fixed Performance Reset") {
                 prefs.edit().putBoolean("FixedPerf", false).apply()
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
+            }
+        }
+        findViewById<TextView>(R.id.btnResetThermal).setOnClickListener {
+            runAdbCommand("cmd thermalservice reset", "Thermal limits restored") {
+                prefs.edit().putBoolean("ThermalDisabled", false).apply()
+                fetchSystemStatuses()
+            }
+        }
+        findViewById<TextView>(R.id.btnResetGameMode).setOnClickListener {
+            val lastGame = prefs.getString("LastGameMode", "")
+            if (!lastGame.isNullOrEmpty()) {
+                runAdbCommand("cmd game mode standard $lastGame", "Game Mode Reset") {
+                    prefs.edit().putString("LastGameMode", "").apply()
+                    fetchSystemStatuses()
+                }
+            } else {
+                Toasty.info(this, "No active Game Mode found", Toast.LENGTH_SHORT, true).show()
             }
         }
         findViewById<TextView>(R.id.btnResetOptimize).setOnClickListener {
@@ -689,12 +824,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnRemoveAds).setOnClickListener {
-            showRemoveAdsDialog()
+            if (isPremium()) {
+                Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
+            } else {
+                showRemoveAdsDialog()
+            }
         }
 
         findViewById<Button>(R.id.btnResetAll).setOnClickListener {
+            val lastGame = prefs.getString("LastGameMode", "")
+            val gameModeReset = if (lastGame.isNullOrEmpty()) "" else "cmd game mode standard $lastGame && "
+
             val resetCmd = """
                 cmd power set-fixed-performance-mode-enabled false
+                cmd thermalservice reset
+                $gameModeReset
                 settings delete system min_refresh_rate
                 settings delete system peak_refresh_rate
                 wm size reset
@@ -708,10 +852,14 @@ class MainActivity : AppCompatActivity() {
                 settings put global animator_duration_scale 1
                 settings put global disable_window_blurs 0
                 settings put global heads_up_notifications_enabled 1
-            """.trimIndent().replace("\n", " && ")
+            """.trimIndent().replace("\n", " && ").replace("&&  &&", "&&")
 
-            runAdbCommand(resetCmd, "All adjustments reset to default") {
-                prefs.edit().putBoolean("FixedPerf", false).apply()
+            runAdbCommand(resetCmd, "All functions reset to default") {
+                prefs.edit()
+                    .putBoolean("FixedPerf", false)
+                    .putBoolean("ThermalDisabled", false)
+                    .putString("LastGameMode", "")
+                    .apply()
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
                 fetchSystemStatuses()
@@ -726,10 +874,8 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Change Resolution")
             .setItems(options) { _, which ->
                 if (which == 0) {
-                    // If they click the first option (Index 0), run your old dialog
                     showResolutionDialog()
                 } else if (which == 1) {
-                    // If they click the second option (Index 1), launch the floating service
                     launchFloatingResolution()
                 }
             }
@@ -749,12 +895,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showRemoveAdsDialog() {
-        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("AdsRemoved", false)) {
-            Toasty.info(this, "Ads are already removed on this device!", Toast.LENGTH_SHORT, true).show()
-            return
-        }
-
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
         val scrollContainer = android.widget.ScrollView(this)
@@ -841,24 +981,21 @@ class MainActivity : AppCompatActivity() {
                 val user = usernameInput.text.toString().trim()
                 val pass = passwordInput.text.toString().trim()
 
-                // 1. Force them to fill out the form before paying
                 if (user.isEmpty() || pass.isEmpty()) {
                     Toasty.warning(this@MainActivity, "Please enter your desired Username and Password first!", Toast.LENGTH_LONG, true).show()
                     return@setOnClickListener
                 }
 
-                // 2. Encode the text so spaces and symbols don't break the web link
                 val encodedUser = Uri.encode(user)
                 val encodedPass = Uri.encode(pass)
                 val encodedDevice = Uri.encode(deviceId)
 
-                // ⚠️ IMPORTANT: Replace with your actual PayPal email and price!
                 val paypalEmail = "vestalkimqq02@gmail.com"
                 val price = "5.00"
 
                 val paymentUrl = "https://www.paypal.com/cgi-bin/webscr" +
                         "?cmd=_xclick" +
-                        "&business=$paypalEmail" + // Ensure this is your REAL PayPal email
+                        "&business=$paypalEmail" +
                         "&item_name=Benimaru+Premium+Unlock" +
                         "&amount=$price" +
                         "&currency_code=USD" +
@@ -867,8 +1004,6 @@ class MainActivity : AppCompatActivity() {
                         "&on2=Password&os2=$encodedPass" +
                         "&custom=$encodedUser|$encodedPass|$encodedDevice"
 
-
-                // 4. Open the link in their browser
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl))
                 startActivity(intent)
             }
@@ -884,13 +1019,13 @@ class MainActivity : AppCompatActivity() {
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Premium Login")
-            .setMessage("Enter your authorized account to remove ads permanently.")
+            .setMessage("Login to permanently unlock all Premium Cards and remove ads.")
             .setView(scrollContainer)
             .setPositiveButton("Login") { _, _ ->
                 val user = usernameInput.text.toString().trim()
                 val pass = passwordInput.text.toString().trim()
                 if (user.isNotEmpty() && pass.isNotEmpty()) {
-                    verifyPremiumAccount(user, pass) // Calls your existing verification logic
+                    verifyPremiumAccount(user, pass)
                 } else {
                     Toasty.warning(this, "Please fill in all fields", Toast.LENGTH_SHORT, true).show()
                 }
@@ -910,7 +1045,6 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // IMPORTANT: Replace this URL with your actual raw GitHub JSON link
                 val url = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/users.json")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.connectTimeout = 5000
@@ -954,7 +1088,8 @@ class MainActivity : AppCompatActivity() {
                             val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
                             prefs.edit().putBoolean("AdsRemoved", true).apply()
                             findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
-                            Toasty.success(this@MainActivity, "Premium Activated! Ads Removed.", Toast.LENGTH_LONG, true).show()
+                            updatePremiumButtonUI()
+                            Toasty.success(this@MainActivity, "Premium Activated! Ads Removed & Features Unlocked.", Toast.LENGTH_LONG, true).show()
                         } else {
                             Toasty.error(this@MainActivity, reason, Toast.LENGTH_LONG, true).show()
                         }
@@ -974,7 +1109,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Extended with 'showAd' Boolean
     private fun runAdbCommand(command: String, successMessage: String, showAd: Boolean = false, onSuccess: () -> Unit = {}) {
         if (!hasShizukuPermission()) return
 
@@ -999,7 +1133,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Custom Dialogs ---
     private fun showDnsDialog() {
         val dnsOptions = arrayOf(
             "Control D (Blocks ads/trackers)",
@@ -1038,25 +1171,41 @@ class MainActivity : AppCompatActivity() {
     private fun showRefreshRateDialog() {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 32)
+            setPadding(64, 48, 64, 32)
         }
 
-        val minInput = EditText(this).apply {
+        val minLayout = TextInputLayout(this).apply {
             hint = "Min Refresh Rate (e.g., 60)"
-            inputType = InputType.TYPE_CLASS_NUMBER
-        }
-
-        val maxInput = EditText(this).apply {
-            hint = "Max Refresh Rate (e.g., 120)"
-            inputType = InputType.TYPE_CLASS_NUMBER
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            setBoxCornerRadii(24f, 24f, 24f, 24f)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 16 }
+            )
         }
+        val minInput = TextInputEditText(minLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            maxLines = 1
+        }
+        minLayout.addView(minInput)
 
-        layout.addView(minInput)
-        layout.addView(maxInput)
+        val maxLayout = TextInputLayout(this).apply {
+            hint = "Max Refresh Rate (e.g., 120)"
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            setBoxCornerRadii(24f, 24f, 24f, 24f)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 32 }
+        }
+        val maxInput = TextInputEditText(maxLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            maxLines = 1
+        }
+        maxLayout.addView(maxInput)
+
+        layout.addView(minLayout)
+        layout.addView(maxLayout)
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Adjust Refresh Rate")
@@ -1079,31 +1228,127 @@ class MainActivity : AppCompatActivity() {
 
     private fun showResolutionDialog() {
         val metrics = resources.displayMetrics
-        val currentWidth = metrics.widthPixels
-        val currentHeight = metrics.heightPixels
+
         val currentDpi = metrics.densityDpi
+        val nativePortraitWidth = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        val nativePortraitHeight = maxOf(metrics.widthPixels, metrics.heightPixels).toFloat()
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 32)
+            setPadding(64, 48, 64, 32)
         }
 
-        val widthInput = EditText(this).apply {
-            hint = "Width (Current: $currentWidth)"
-            inputType = InputType.TYPE_CLASS_NUMBER
-        }
-
-        val heightInput = EditText(this).apply {
-            hint = "Height (Current: $currentHeight)"
-            inputType = InputType.TYPE_CLASS_NUMBER
+        val autoMatchSwitch = MaterialSwitch(this).apply {
+            text = "Auto-match aspect ratio"
+            isChecked = false
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 16 }
+            ).apply { bottomMargin = 32 }
+        }
+        layout.addView(autoMatchSwitch)
+
+        val widthLayout = TextInputLayout(this).apply {
+            hint = "Width (Current: ${nativePortraitWidth.toInt()})"
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            setBoxCornerRadii(24f, 24f, 24f, 24f)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        val widthInput = TextInputEditText(widthLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            maxLines = 1
+        }
+        widthLayout.addView(widthInput)
+
+        val heightLayout = TextInputLayout(this).apply {
+            hint = "Height (Current: ${nativePortraitHeight.toInt()})"
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            setBoxCornerRadii(24f, 24f, 24f, 24f)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 32 }
+        }
+        val heightInput = TextInputEditText(heightLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            maxLines = 1
+        }
+        heightLayout.addView(heightInput)
+
+        layout.addView(widthLayout)
+        layout.addView(heightLayout)
+
+        var isAutoCalculating = false
+
+        val widthWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (autoMatchSwitch.isChecked && !isAutoCalculating) {
+                    val wStr = s.toString()
+                    isAutoCalculating = true
+                    if (wStr.isNotEmpty()) {
+                        val w = wStr.toIntOrNull()
+                        if (w != null) {
+                            val calculatedHeight = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                            heightInput.setText(calculatedHeight.toString())
+                        }
+                    } else {
+                        heightInput.setText("")
+                    }
+                    isAutoCalculating = false
+                }
+            }
         }
 
-        layout.addView(widthInput)
-        layout.addView(heightInput)
+        val heightWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (autoMatchSwitch.isChecked && !isAutoCalculating) {
+                    val hStr = s.toString()
+                    isAutoCalculating = true
+                    if (hStr.isNotEmpty()) {
+                        val h = hStr.toIntOrNull()
+                        if (h != null) {
+                            val calculatedWidth = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
+                            widthInput.setText(calculatedWidth.toString())
+                        }
+                    } else {
+                        widthInput.setText("")
+                    }
+                    isAutoCalculating = false
+                }
+            }
+        }
+
+        widthInput.addTextChangedListener(widthWatcher)
+        heightInput.addTextChangedListener(heightWatcher)
+
+        autoMatchSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !isAutoCalculating) {
+                if (heightInput.text?.isNotEmpty() == true) {
+                    val h = heightInput.text.toString().toIntOrNull()
+                    if (h != null) {
+                        isAutoCalculating = true
+                        val w = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
+                        widthInput.setText(w.toString())
+                        isAutoCalculating = false
+                    }
+                } else if (widthInput.text?.isNotEmpty() == true) {
+                    val w = widthInput.text.toString().toIntOrNull()
+                    if (w != null) {
+                        isAutoCalculating = true
+                        val h = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                        heightInput.setText(h.toString())
+                        isAutoCalculating = false
+                    }
+                }
+            }
+        }
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Change Resolution")
@@ -1116,20 +1361,14 @@ class MainActivity : AppCompatActivity() {
                 if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
                     if (!hasShizukuPermission()) return@setPositiveButton
 
-                    // 1. Force Portrait Orientation Logic
-                    // Ensures that even if the user types 1440x1080 (Landscape format),
-                    // the system processes it as 1080x1440 (Portrait format) to trigger the hardware stretch.
                     val input1 = wStr.toInt()
                     val input2 = hStr.toInt()
 
                     val newWidth = minOf(input1, input2)
                     val newHeight = maxOf(input1, input2)
 
-                    // 2. Dynamic DPI Scaling Logic
-                    // Calculates scaling based on the dimension that was reduced the most
-                    // to keep the UI proportional and prevent oversized elements.
-                    val widthRatio = newWidth.toFloat() / currentWidth.toFloat()
-                    val heightRatio = newHeight.toFloat() / currentHeight.toFloat()
+                    val widthRatio = newWidth.toFloat() / nativePortraitWidth
+                    val heightRatio = newHeight.toFloat() / nativePortraitHeight
                     val scalingRatio = minOf(widthRatio, heightRatio)
 
                     val newDpi = (scalingRatio * currentDpi).toInt()
@@ -1188,7 +1427,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Updated Crosshair Config for Real-Time Updates ---
     private fun showCrosshairConfigDialog() {
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
@@ -1207,7 +1445,6 @@ class MainActivity : AppCompatActivity() {
         val colors = arrayOf("White", "Black", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
         val sizes = arrayOf("Tiny", "Small", "Medium", "Large", "Extra Large")
 
-        // Helper function for real-time updating
         fun updateLive(sIdx: Int, cIdx: Int, szIdx: Int) {
             if (isCrosshairEnabled) {
                 startCrosshairService(styles[sIdx], colors[cIdx], sizes[szIdx])
@@ -1282,7 +1519,6 @@ class MainActivity : AppCompatActivity() {
 
         isCrosshairEnabled = true
 
-        // Save the active state and exact strings to memory
         getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
             .putBoolean("CrosshairEnabled", true)
             .putString("CrosshairStyle", style)
@@ -1301,13 +1537,63 @@ class MainActivity : AppCompatActivity() {
 
         isCrosshairEnabled = false
 
-        // Erase the active state from memory
         getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
             .putBoolean("CrosshairEnabled", false)
             .apply()
 
         findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
         Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
+    }
+
+    private fun showGameModeSelectorDialog() {
+        val pm = packageManager
+        val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+        val allApps = pm.queryIntentActivities(intent, 0)
+
+        val gameApps = allApps.filter {
+            val appInfo = it.activityInfo.applicationInfo
+            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
+            val isGameCategory = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                appInfo.category == ApplicationInfo.CATEGORY_GAME
+            } else false
+            isGameFlag || isGameCategory
+        }
+
+        if (gameApps.isEmpty()) {
+            Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
+            return
+        }
+
+        val adapter = object : ArrayAdapter<ResolveInfo>(this, android.R.layout.select_dialog_item, android.R.id.text1, gameApps) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                val app = gameApps[position]
+                view.text = app.loadLabel(pm)
+
+                val icon = app.loadIcon(pm)
+                icon.setBounds(0, 0, 96, 96)
+                view.setCompoundDrawables(icon, null, null, null)
+                view.compoundDrawablePadding = 24
+
+                return view
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Select a game to optimize")
+            .setAdapter(adapter) { _, which ->
+                val selectedApp = gameApps[which]
+                val pkgName = selectedApp.activityInfo.packageName
+                val appName = selectedApp.loadLabel(pm).toString()
+
+                runAdbCommand("cmd game mode performance $pkgName", "Performance Mode enabled for $appName", showAd = true) {
+                    val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("LastGameMode", pkgName).apply()
+                    fetchSystemStatuses()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showGameLauncherDialog() {
@@ -1480,5 +1766,4 @@ class MainActivity : AppCompatActivity() {
             finishAffinity()
         }
     }
-
 }

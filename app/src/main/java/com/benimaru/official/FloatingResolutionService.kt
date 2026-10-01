@@ -6,6 +6,8 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -15,6 +17,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import com.google.android.material.materialswitch.MaterialSwitch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,15 +82,91 @@ class FloatingResolutionService : Service() {
         val etWidth = floatingView.findViewById<EditText>(R.id.etFloatWidth)
         val etHeight = floatingView.findViewById<EditText>(R.id.etFloatHeight)
 
+        // Connect the switch from your floating layout
+        val switchAutoMatch = floatingView.findViewById<MaterialSwitch>(R.id.switchFloatAutoMatch)
+
         val btnApply = floatingView.findViewById<Button>(R.id.btnFloatApply)
         val btnReset = floatingView.findViewById<Button>(R.id.btnFloatReset)
         val btnMinimize = floatingView.findViewById<Button>(R.id.btnFloatMinimize)
         val btnKill = floatingView.findViewById<Button>(R.id.btnFloatKill)
 
         val metrics = resources.displayMetrics
-        val currentWidth = metrics.widthPixels
-        val currentHeight = metrics.heightPixels
+
+        // Use portrait bounds to establish consistent native aspect ratio
         val currentDpi = metrics.densityDpi
+        val nativePortraitWidth = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        val nativePortraitHeight = maxOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+
+        // --- Auto Match Aspect Ratio Logic ---
+        var isAutoCalculating = false
+
+        val widthWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (switchAutoMatch?.isChecked == true && !isAutoCalculating) {
+                    val wStr = s.toString()
+                    isAutoCalculating = true
+                    if (wStr.isNotEmpty()) {
+                        val w = wStr.toIntOrNull()
+                        if (w != null) {
+                            val calculatedHeight = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                            etHeight.setText(calculatedHeight.toString())
+                        }
+                    } else {
+                        etHeight.setText("")
+                    }
+                    isAutoCalculating = false
+                }
+            }
+        }
+
+        val heightWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (switchAutoMatch?.isChecked == true && !isAutoCalculating) {
+                    val hStr = s.toString()
+                    isAutoCalculating = true
+                    if (hStr.isNotEmpty()) {
+                        val h = hStr.toIntOrNull()
+                        if (h != null) {
+                            val calculatedWidth = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
+                            etWidth.setText(calculatedWidth.toString())
+                        }
+                    } else {
+                        etWidth.setText("")
+                    }
+                    isAutoCalculating = false
+                }
+            }
+        }
+
+        etWidth.addTextChangedListener(widthWatcher)
+        etHeight.addTextChangedListener(heightWatcher)
+
+        switchAutoMatch?.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !isAutoCalculating) {
+                if (etHeight.text?.isNotEmpty() == true) {
+                    val h = etHeight.text.toString().toIntOrNull()
+                    if (h != null) {
+                        isAutoCalculating = true
+                        val w = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
+                        etWidth.setText(w.toString())
+                        isAutoCalculating = false
+                    }
+                } else if (etWidth.text?.isNotEmpty() == true) {
+                    val w = etWidth.text.toString().toIntOrNull()
+                    if (w != null) {
+                        isAutoCalculating = true
+                        val h = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                        etHeight.setText(h.toString())
+                        isAutoCalculating = false
+                    }
+                }
+            }
+        }
+        // ------------------------------------
 
         // Variables to calculate drag movement
         var initialX = 0
@@ -96,7 +175,6 @@ class FloatingResolutionService : Service() {
         var initialTouchY = 0f
         var isDragging = false
 
-        // We explicitly declare the object to prevent Kotlin type mismatch errors
         val dragTouchListener = object : View.OnTouchListener {
             override fun onTouch(view: View, event: MotionEvent): Boolean {
                 when (event.action) {
@@ -139,7 +217,6 @@ class FloatingResolutionService : Service() {
             }
         }
 
-        // Apply the drag listener to the Icon AND the entire Menu background
         floatingIcon.setOnTouchListener(dragTouchListener)
         menuContainer.setOnTouchListener(dragTouchListener)
 
@@ -149,9 +226,7 @@ class FloatingResolutionService : Service() {
             menuContainer.visibility = View.GONE
             floatingIcon.visibility = View.VISIBLE
 
-            // Put NOT_FOCUSABLE back on to prevent the invisible menu from blocking the keyboard
             params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-
             windowManager.updateViewLayout(floatingView, params)
         }
 
@@ -165,11 +240,12 @@ class FloatingResolutionService : Service() {
             if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
                 val input1 = wStr.toInt()
                 val input2 = hStr.toInt()
+
                 val newWidth = minOf(input1, input2)
                 val newHeight = maxOf(input1, input2)
 
-                val widthRatio = newWidth.toFloat() / currentWidth.toFloat()
-                val heightRatio = newHeight.toFloat() / currentHeight.toFloat()
+                val widthRatio = newWidth.toFloat() / nativePortraitWidth
+                val heightRatio = newHeight.toFloat() / nativePortraitHeight
                 val scalingRatio = minOf(widthRatio, heightRatio)
 
                 val newDpi = (scalingRatio * currentDpi).toInt()

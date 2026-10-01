@@ -107,6 +107,14 @@
                     android:layout_marginBottom="16dp"
                     android:padding="8dp"/>
 
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchFloatAutoMatch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Auto-match aspect ratio"
+                    android:layout_marginBottom="8dp"
+                    android:checked="false" />
+
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
                     android:layout_width="match_parent"

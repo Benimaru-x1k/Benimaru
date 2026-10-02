@@ -1,6 +1,6 @@
 {
-  "versionCode": 11,
-  "versionName": "2.1",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.1/BenimaruTool-v2.1.apk",
-  "releaseNotes": "- Added Native Game Mode API (Android 12+) & Disable Thermal Throttling\n- Smart Auto-Match Aspect Ratio calculator for Resolution tools\n- Epic new Glassmorphism Dashboard with live system metrics\n- Watch a quick Ad to temporarily unlock any Premium feature\n- Organized UI with clear 'Free' and 'Premium' tags\n- Upgraded dialogs to sleek Material 3 Outlined styling"
+  "versionCode": 12,
+  "versionName": "2.2",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.2/BenimaruTool-v2.2.apk",
+  "releaseNotes": "- Fixed dashboard layout unevenness across varying screen sizes\n- Fixed Native Game Mode (Exit Code 255) with smart OEM fallback support\n- Upgraded 'Optimize & Launch' with a Material 3 loading screen\n- Games now automatically launch immediately after optimization finishes"
 }

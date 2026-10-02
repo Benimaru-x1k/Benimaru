@@ -1219,8 +1219,11 @@ class MainActivity : AppCompatActivity() {
         val metrics = resources.displayMetrics
 
         val currentDpi = metrics.densityDpi
-        val nativePortraitWidth = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
-        val nativePortraitHeight = maxOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        val currentWidth = metrics.widthPixels.toFloat()
+        val currentHeight = metrics.heightPixels.toFloat()
+
+        // Exact physical aspect ratio at this very moment
+        val aspectRatio = currentHeight / currentWidth
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -1238,7 +1241,7 @@ class MainActivity : AppCompatActivity() {
         layout.addView(autoMatchSwitch)
 
         val widthLayout = TextInputLayout(this).apply {
-            hint = "Width (Current: ${nativePortraitWidth.toInt()})"
+            hint = "Width (Current: ${currentWidth.toInt()})"
             boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
             setBoxCornerRadii(24f, 24f, 24f, 24f)
             layoutParams = LinearLayout.LayoutParams(
@@ -1253,7 +1256,7 @@ class MainActivity : AppCompatActivity() {
         widthLayout.addView(widthInput)
 
         val heightLayout = TextInputLayout(this).apply {
-            hint = "Height (Current: ${nativePortraitHeight.toInt()})"
+            hint = "Height (Current: ${currentHeight.toInt()})"
             boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
             setBoxCornerRadii(24f, 24f, 24f, 24f)
             layoutParams = LinearLayout.LayoutParams(
@@ -1282,7 +1285,7 @@ class MainActivity : AppCompatActivity() {
                     if (wStr.isNotEmpty()) {
                         val w = wStr.toIntOrNull()
                         if (w != null) {
-                            val calculatedHeight = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                            val calculatedHeight = (w * aspectRatio).toInt()
                             heightInput.setText(calculatedHeight.toString())
                         }
                     } else {
@@ -1303,7 +1306,7 @@ class MainActivity : AppCompatActivity() {
                     if (hStr.isNotEmpty()) {
                         val h = hStr.toIntOrNull()
                         if (h != null) {
-                            val calculatedWidth = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
+                            val calculatedWidth = (h / aspectRatio).toInt()
                             widthInput.setText(calculatedWidth.toString())
                         }
                     } else {
@@ -1319,20 +1322,20 @@ class MainActivity : AppCompatActivity() {
 
         autoMatchSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !isAutoCalculating) {
-                if (heightInput.text?.isNotEmpty() == true) {
-                    val h = heightInput.text.toString().toIntOrNull()
-                    if (h != null) {
-                        isAutoCalculating = true
-                        val w = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
-                        widthInput.setText(w.toString())
-                        isAutoCalculating = false
-                    }
-                } else if (widthInput.text?.isNotEmpty() == true) {
+                if (widthInput.text?.isNotEmpty() == true) {
                     val w = widthInput.text.toString().toIntOrNull()
                     if (w != null) {
                         isAutoCalculating = true
-                        val h = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                        val h = (w * aspectRatio).toInt()
                         heightInput.setText(h.toString())
+                        isAutoCalculating = false
+                    }
+                } else if (heightInput.text?.isNotEmpty() == true) {
+                    val h = heightInput.text.toString().toIntOrNull()
+                    if (h != null) {
+                        isAutoCalculating = true
+                        val w = (h / aspectRatio).toInt()
+                        widthInput.setText(w.toString())
                         isAutoCalculating = false
                     }
                 }
@@ -1350,14 +1353,12 @@ class MainActivity : AppCompatActivity() {
                 if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
                     if (!hasShizukuPermission()) return@setPositiveButton
 
-                    val input1 = wStr.toInt()
-                    val input2 = hStr.toInt()
+                    // Take exact user input. No minOf/maxOf forcing portrait!
+                    val newWidth = wStr.toInt()
+                    val newHeight = hStr.toInt()
 
-                    val newWidth = minOf(input1, input2)
-                    val newHeight = maxOf(input1, input2)
-
-                    val widthRatio = newWidth.toFloat() / nativePortraitWidth
-                    val heightRatio = newHeight.toFloat() / nativePortraitHeight
+                    val widthRatio = newWidth.toFloat() / currentWidth
+                    val heightRatio = newHeight.toFloat() / currentHeight
                     val scalingRatio = minOf(widthRatio, heightRatio)
 
                     val newDpi = (scalingRatio * currentDpi).toInt()
@@ -1577,11 +1578,9 @@ class MainActivity : AppCompatActivity() {
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        // Attempt Android 13+ AOSP Game Mode
                         var process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode performance $pkgName"), null, null)
                         var exitCode = process.waitFor()
 
-                        // Fallback to Android 12 syntax if the first fails
                         if (exitCode != 0) {
                             process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode 2 $pkgName"), null, null)
                             exitCode = process.waitFor()
@@ -1595,8 +1594,7 @@ class MainActivity : AppCompatActivity() {
                                 fetchSystemStatuses()
                                 showInterstitialAd()
                             } else {
-                                // Gracefully handle OEM blocks instead of throwing Exit Code 255
-                                Toasty.warning(this@MainActivity, "Your device's custom OS (e.g. MIUI/OneUI) blocks Native Game Mode. Please use the 'Optimize System' or 'Launch Game' buttons instead.", Toast.LENGTH_LONG, true).show()
+                                Toasty.warning(this@MainActivity, "Your device's custom OS blocks Native Game Mode. Please use the 'Optimize System' or 'Launch Game' buttons instead.", Toast.LENGTH_LONG, true).show()
                             }
                         }
                     } catch (e: Exception) {
@@ -1665,7 +1663,6 @@ class MainActivity : AppCompatActivity() {
                     }
                     .setNeutralButton("Optimize & Launch") { _, _ ->
 
-                        // Show Material 3 Progress Dialog
                         val layout = LinearLayout(this@MainActivity).apply {
                             orientation = LinearLayout.VERTICAL
                             setPadding(64, 64, 64, 64)
@@ -1691,7 +1688,6 @@ class MainActivity : AppCompatActivity() {
                             .setCancelable(false)
                             .show()
 
-                        // Run ADB compilation in the background, then launch automatically
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
                                 val process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd package compile -m speed -f $pkgName"), null, null)

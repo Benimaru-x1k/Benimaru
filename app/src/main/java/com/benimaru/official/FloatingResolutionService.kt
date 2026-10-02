@@ -37,11 +37,9 @@ class FloatingResolutionService : Service() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        // 1. Read the user's manual theme preference
         val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
         val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
 
-        // 2. Clone the system configuration and force it into the chosen mode
         val config = android.content.res.Configuration(resources.configuration)
         val nightModeFlag = if (isDarkModeSaved) {
             android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -50,7 +48,6 @@ class FloatingResolutionService : Service() {
         }
         config.uiMode = nightModeFlag or (config.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK.inv())
 
-        // 3. Apply the forced configuration, THEN wrap it in the Material Theme
         val localizedContext = createConfigurationContext(config)
         val themeContext = android.view.ContextThemeWrapper(localizedContext, R.style.Theme_Benimaru)
 
@@ -82,7 +79,6 @@ class FloatingResolutionService : Service() {
         val etWidth = floatingView.findViewById<EditText>(R.id.etFloatWidth)
         val etHeight = floatingView.findViewById<EditText>(R.id.etFloatHeight)
 
-        // Connect the switch from your floating layout
         val switchAutoMatch = floatingView.findViewById<MaterialSwitch>(R.id.switchFloatAutoMatch)
 
         val btnApply = floatingView.findViewById<Button>(R.id.btnFloatApply)
@@ -91,13 +87,13 @@ class FloatingResolutionService : Service() {
         val btnKill = floatingView.findViewById<Button>(R.id.btnFloatKill)
 
         val metrics = resources.displayMetrics
-
-        // Use portrait bounds to establish consistent native aspect ratio
         val currentDpi = metrics.densityDpi
-        val nativePortraitWidth = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
-        val nativePortraitHeight = maxOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        val currentWidth = metrics.widthPixels.toFloat()
+        val currentHeight = metrics.heightPixels.toFloat()
 
-        // --- Auto Match Aspect Ratio Logic ---
+        // Exact physical aspect ratio at this very moment
+        val aspectRatio = currentHeight / currentWidth
+
         var isAutoCalculating = false
 
         val widthWatcher = object : TextWatcher {
@@ -110,7 +106,7 @@ class FloatingResolutionService : Service() {
                     if (wStr.isNotEmpty()) {
                         val w = wStr.toIntOrNull()
                         if (w != null) {
-                            val calculatedHeight = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                            val calculatedHeight = (w * aspectRatio).toInt()
                             etHeight.setText(calculatedHeight.toString())
                         }
                     } else {
@@ -131,7 +127,7 @@ class FloatingResolutionService : Service() {
                     if (hStr.isNotEmpty()) {
                         val h = hStr.toIntOrNull()
                         if (h != null) {
-                            val calculatedWidth = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
+                            val calculatedWidth = (h / aspectRatio).toInt()
                             etWidth.setText(calculatedWidth.toString())
                         }
                     } else {
@@ -147,28 +143,26 @@ class FloatingResolutionService : Service() {
 
         switchAutoMatch?.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !isAutoCalculating) {
-                if (etHeight.text?.isNotEmpty() == true) {
-                    val h = etHeight.text.toString().toIntOrNull()
-                    if (h != null) {
-                        isAutoCalculating = true
-                        val w = (h * (nativePortraitWidth / nativePortraitHeight)).toInt()
-                        etWidth.setText(w.toString())
-                        isAutoCalculating = false
-                    }
-                } else if (etWidth.text?.isNotEmpty() == true) {
+                if (etWidth.text?.isNotEmpty() == true) {
                     val w = etWidth.text.toString().toIntOrNull()
                     if (w != null) {
                         isAutoCalculating = true
-                        val h = (w * (nativePortraitHeight / nativePortraitWidth)).toInt()
+                        val h = (w * aspectRatio).toInt()
                         etHeight.setText(h.toString())
+                        isAutoCalculating = false
+                    }
+                } else if (etHeight.text?.isNotEmpty() == true) {
+                    val h = etHeight.text.toString().toIntOrNull()
+                    if (h != null) {
+                        isAutoCalculating = true
+                        val w = (h / aspectRatio).toInt()
+                        etWidth.setText(w.toString())
                         isAutoCalculating = false
                     }
                 }
             }
         }
-        // ------------------------------------
 
-        // Variables to calculate drag movement
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -204,9 +198,7 @@ class FloatingResolutionService : Service() {
                                 floatingIcon.visibility = View.GONE
                                 menuContainer.visibility = View.VISIBLE
 
-                                // Remove NOT_FOCUSABLE so we can type, but ADD NOT_TOUCH_MODAL so we can click outside
                                 params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()) or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-
                                 windowManager.updateViewLayout(floatingView, params)
                             }
                         }
@@ -219,8 +211,6 @@ class FloatingResolutionService : Service() {
 
         floatingIcon.setOnTouchListener(dragTouchListener)
         menuContainer.setOnTouchListener(dragTouchListener)
-
-        // --- Button Click Listeners ---
 
         btnMinimize.setOnClickListener {
             menuContainer.visibility = View.GONE
@@ -238,14 +228,12 @@ class FloatingResolutionService : Service() {
             val wStr = etWidth.text.toString()
             val hStr = etHeight.text.toString()
             if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
-                val input1 = wStr.toInt()
-                val input2 = hStr.toInt()
+                // NO LONGER FORCING PORTRAIT MODE! Accepts exact input.
+                val newWidth = wStr.toInt()
+                val newHeight = hStr.toInt()
 
-                val newWidth = minOf(input1, input2)
-                val newHeight = maxOf(input1, input2)
-
-                val widthRatio = newWidth.toFloat() / nativePortraitWidth
-                val heightRatio = newHeight.toFloat() / nativePortraitHeight
+                val widthRatio = newWidth.toFloat() / currentWidth
+                val heightRatio = newHeight.toFloat() / currentHeight
                 val scalingRatio = minOf(widthRatio, heightRatio)
 
                 val newDpi = (scalingRatio * currentDpi).toInt()

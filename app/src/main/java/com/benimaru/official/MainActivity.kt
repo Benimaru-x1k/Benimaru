@@ -23,7 +23,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -39,6 +38,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.IUnityAdsLoadListener
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
     private val unityGameId = "5781189"
     private val adUnitInterstitial = "Interstitial_Android"
     private val adUnitBanner = "Banner_Android"
-    private val adUnitRewarded = "Rewarded_Android" // Added Rewarded Ad Unit
+    private val adUnitRewarded = "Rewarded_Android"
     private val testMode = false
 
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        updatePremiumButtonUI() // Check and update button color on startup
+        updatePremiumButtonUI()
         initializeUnityAds()
 
         verifyAppSignature()
@@ -147,17 +147,15 @@ class MainActivity : AppCompatActivity() {
         if (isPremium()) {
             val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
             btnPremium.text = "✔ Premium"
-            btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700")) // Gold
-            btnPremium.setTextColor(Color.parseColor("#000000")) // Black text for contrast
+            btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700"))
+            btnPremium.setTextColor(Color.parseColor("#000000"))
 
-            // Re-assign click listener to tell them they are already premium
             btnPremium.setOnClickListener {
                 Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
             }
         }
     }
 
-    // Helper method to enforce Premium or Rewarded Ad check
     private fun handlePremiumFeature(action: () -> Unit) {
         if (isPremium()) {
             action()
@@ -179,7 +177,7 @@ class MainActivity : AppCompatActivity() {
 
     // --- Unity Ads Implementation ---
     private fun initializeUnityAds() {
-        if (isPremium()) return // Don't init if removed
+        if (isPremium()) return
 
         UnityAds.initialize(this, unityGameId, testMode, object : IUnityAdsInitializationListener {
             override fun onInitializationComplete() {
@@ -252,7 +250,7 @@ class MainActivity : AppCompatActivity() {
         val bannerContainer = findViewById<LinearLayout>(R.id.bannerAdContainer)
 
         if (isPremium()) {
-            bannerContainer.removeAllViews() // Ensure it's clear
+            bannerContainer.removeAllViews()
             return
         }
 
@@ -260,7 +258,6 @@ class MainActivity : AppCompatActivity() {
         bannerContainer.addView(bannerView)
         bannerView.load()
     }
-    // --------------------------------
 
     override fun onResume() {
         super.onResume()
@@ -610,7 +607,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Restore Crosshair State
                 val isCrosshairOn = prefs.getBoolean("CrosshairEnabled", false)
-                isCrosshairEnabled = isCrosshairOn // Sync the global variable
+                isCrosshairEnabled = isCrosshairOn
                 if (isCrosshairOn) {
                     val style = prefs.getString("CrosshairStyle", "Cross")
                     val color = prefs.getString("CrosshairColor", "Red")
@@ -758,7 +755,6 @@ class MainActivity : AppCompatActivity() {
                 Toasty.error(this, "This feature requires Android 12 or newer.", Toast.LENGTH_LONG, true).show()
                 return@setOnClickListener
             }
-
             handlePremiumFeature { showGameModeSelectorDialog() }
         }
 
@@ -896,19 +892,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun showRemoveAdsDialog() {
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-
         val scrollContainer = android.widget.ScrollView(this)
-
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(64, 48, 64, 32)
         }
 
-        // Material 3 Outlined Username Input Box
         val usernameLayout = TextInputLayout(this).apply {
             hint = "Username"
             boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f) // Smooth rounded corners
+            setBoxCornerRadii(24f, 24f, 24f, 24f)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -920,12 +913,11 @@ class MainActivity : AppCompatActivity() {
         }
         usernameLayout.addView(usernameInput)
 
-        // Material 3 Outlined Password Input Box with Toggle Eye
         val passwordLayout = TextInputLayout(this).apply {
             hint = "Password"
             boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
             setBoxCornerRadii(24f, 24f, 24f, 24f)
-            endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE // Adds the eye icon
+            endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -937,7 +929,6 @@ class MainActivity : AppCompatActivity() {
         }
         passwordLayout.addView(passwordInput)
 
-        // Device ID Display
         val tvDeviceId = TextView(this).apply {
             text = "Your Device ID: $deviceId"
             textSize = 13f
@@ -952,10 +943,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Material 3 Outlined Style Button
         val copyIdButton = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
             text = "Copy Device ID"
-            cornerRadius = 50 // Pill shape
+            cornerRadius = 50
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -968,10 +958,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Material 3 Filled Style Button
         val buyPremiumButton = MaterialButton(this).apply {
             text = "Buy Premium via PayPal"
-            cornerRadius = 50 // Pill shape
+            cornerRadius = 50
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -1586,10 +1575,35 @@ class MainActivity : AppCompatActivity() {
                 val pkgName = selectedApp.activityInfo.packageName
                 val appName = selectedApp.loadLabel(pm).toString()
 
-                runAdbCommand("cmd game mode performance $pkgName", "Performance Mode enabled for $appName", showAd = true) {
-                    val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-                    prefs.edit().putString("LastGameMode", pkgName).apply()
-                    fetchSystemStatuses()
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        // Attempt Android 13+ AOSP Game Mode
+                        var process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode performance $pkgName"), null, null)
+                        var exitCode = process.waitFor()
+
+                        // Fallback to Android 12 syntax if the first fails
+                        if (exitCode != 0) {
+                            process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode 2 $pkgName"), null, null)
+                            exitCode = process.waitFor()
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            if (exitCode == 0) {
+                                Toasty.success(this@MainActivity, "Performance Mode enabled for $appName", Toast.LENGTH_SHORT, true).show()
+                                val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+                                prefs.edit().putString("LastGameMode", pkgName).apply()
+                                fetchSystemStatuses()
+                                showInterstitialAd()
+                            } else {
+                                // Gracefully handle OEM blocks instead of throwing Exit Code 255
+                                Toasty.warning(this@MainActivity, "Your device's custom OS (e.g. MIUI/OneUI) blocks Native Game Mode. Please use the 'Optimize System' or 'Launch Game' buttons instead.", Toast.LENGTH_LONG, true).show()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toasty.error(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT, true).show()
+                        }
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -1639,7 +1653,7 @@ class MainActivity : AppCompatActivity() {
 
                 MaterialAlertDialogBuilder(this@MainActivity)
                     .setTitle(appName)
-                    .setMessage("Would you like to pre-compile the game code to prevent in-game stutters, or launch immediately?\n\n(Optimization takes 10-30 seconds)")
+                    .setMessage("Would you like to pre-compile the game code to prevent in-game stutters, or launch immediately?")
                     .setPositiveButton("Launch") { _, _ ->
                         val launchIntent = pm.getLaunchIntentForPackage(pkgName)
                         if (launchIntent != null) {
@@ -1649,9 +1663,59 @@ class MainActivity : AppCompatActivity() {
                             Toasty.error(this@MainActivity, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
                         }
                     }
-                    .setNeutralButton("Optimize") { _, _ ->
-                        Toasty.info(this@MainActivity, "Optimizing $appName. Please wait...", Toast.LENGTH_LONG, true).show()
-                        runAdbCommand("cmd package compile -m speed -f $pkgName", "$appName optimized successfully!", showAd = true)
+                    .setNeutralButton("Optimize & Launch") { _, _ ->
+
+                        // Show Material 3 Progress Dialog
+                        val layout = LinearLayout(this@MainActivity).apply {
+                            orientation = LinearLayout.VERTICAL
+                            setPadding(64, 64, 64, 64)
+                            gravity = android.view.Gravity.CENTER
+                        }
+
+                        val progressIndicator = CircularProgressIndicator(this@MainActivity).apply {
+                            isIndeterminate = true
+                        }
+
+                        val tvLoading = TextView(this@MainActivity).apply {
+                            text = "Pre-Compiling DEX Code...\nThis usually takes 10-30 seconds."
+                            gravity = android.view.Gravity.CENTER
+                            setPadding(0, 32, 0, 0)
+                        }
+
+                        layout.addView(progressIndicator)
+                        layout.addView(tvLoading)
+
+                        val progressDialog = MaterialAlertDialogBuilder(this@MainActivity)
+                            .setTitle("Optimizing $appName")
+                            .setView(layout)
+                            .setCancelable(false)
+                            .show()
+
+                        // Run ADB compilation in the background, then launch automatically
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd package compile -m speed -f $pkgName"), null, null)
+                                process.waitFor()
+
+                                withContext(Dispatchers.Main) {
+                                    progressDialog.dismiss()
+                                    Toasty.success(this@MainActivity, "$appName optimized successfully!", Toast.LENGTH_SHORT, true).show()
+                                    showInterstitialAd()
+
+                                    val launchIntent = pm.getLaunchIntentForPackage(pkgName)
+                                    if (launchIntent != null) {
+                                        startActivity(launchIntent)
+                                    } else {
+                                        Toasty.error(this@MainActivity, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    progressDialog.dismiss()
+                                    Toasty.error(this@MainActivity, "Optimization failed: ${e.message}", Toast.LENGTH_LONG, true).show()
+                                }
+                            }
+                        }
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
@@ -1660,7 +1724,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // --- Shizuku Download Logic Below ---
     private fun showShizukuRequiredDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Shizuku Required")

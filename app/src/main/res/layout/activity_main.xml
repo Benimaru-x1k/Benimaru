@@ -150,13 +150,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
+                        android:baselineAligned="false"
                         android:orientation="horizontal"
                         android:weightSum="3">
 
                         <!-- RAM Widget -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginEnd="6dp"
                             app:cardBackgroundColor="#20FFFFFF"
@@ -165,7 +166,7 @@
                             app:cardElevation="0dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:padding="12dp">
@@ -173,6 +174,7 @@
                                     android:id="@+id/tvLabelRam"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:maxLines="1"
                                     android:text="RAM"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
@@ -182,9 +184,10 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
+                                    android:maxLines="1"
+                                    app:autoSizeTextType="uniform"
                                     android:text="-- GB"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="14sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
@@ -192,7 +195,7 @@
                         <!-- Storage Widget -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginStart="3dp"
                             android:layout_marginEnd="3dp"
@@ -202,7 +205,7 @@
                             app:cardElevation="0dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:padding="12dp">
@@ -210,6 +213,7 @@
                                     android:id="@+id/tvLabelStorage"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:maxLines="1"
                                     android:text="STORAGE"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
@@ -219,9 +223,10 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
+                                    android:maxLines="1"
+                                    app:autoSizeTextType="uniform"
                                     android:text="-- GB"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="14sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
@@ -229,7 +234,7 @@
                         <!-- Battery Widget -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginStart="6dp"
                             app:cardBackgroundColor="#20FFFFFF"
@@ -238,7 +243,7 @@
                             app:cardElevation="0dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:padding="12dp">
@@ -246,6 +251,7 @@
                                     android:id="@+id/tvLabelBattery"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:maxLines="1"
                                     android:text="BATTERY"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
@@ -255,9 +261,10 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
+                                    android:maxLines="1"
+                                    app:autoSizeTextType="uniform"
                                     android:text="-- %"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="14sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
@@ -268,13 +275,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
+                        android:baselineAligned="false"
                         android:orientation="horizontal"
                         android:weightSum="3">
 
                         <!-- SDK Level Widget -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginEnd="6dp"
                             app:cardBackgroundColor="#20FFFFFF"
@@ -283,7 +291,7 @@
                             app:cardElevation="0dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:padding="12dp">
@@ -291,6 +299,7 @@
                                     android:id="@+id/tvLabelApi"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:maxLines="1"
                                     android:text="SDK LEVEL"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
@@ -300,9 +309,10 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
+                                    android:maxLines="1"
+                                    app:autoSizeTextType="uniform"
                                     android:text="API --"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="14sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
@@ -310,7 +320,7 @@
                         <!-- Resolution Widget -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginStart="3dp"
                             android:layout_marginEnd="3dp"
@@ -320,7 +330,7 @@
                             app:cardElevation="0dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:padding="12dp">
@@ -328,6 +338,7 @@
                                     android:id="@+id/tvLabelResolution"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:maxLines="1"
                                     android:text="DISPLAY"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
@@ -337,9 +348,10 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
+                                    android:maxLines="1"
+                                    app:autoSizeTextType="uniform"
                                     android:text="----x----"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="13sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
@@ -347,7 +359,7 @@
                         <!-- Free Space Widget -->
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginStart="6dp"
                             app:cardBackgroundColor="#20FFFFFF"
@@ -356,7 +368,7 @@
                             app:cardElevation="0dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:orientation="vertical"
                                 android:gravity="center"
                                 android:padding="12dp">
@@ -364,6 +376,7 @@
                                     android:id="@+id/tvLabelFreeStorage"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:maxLines="1"
                                     android:text="FREE SPACE"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
@@ -373,9 +386,10 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="4dp"
+                                    android:maxLines="1"
+                                    app:autoSizeTextType="uniform"
                                     android:text="-- GB"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="14sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>

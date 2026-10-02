@@ -1,6 +1,6 @@
 {
-  "versionCode": 12,
-  "versionName": "2.2",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.2/BenimaruTool-v2.2.apk",
-  "releaseNotes": "- Fixed dashboard layout unevenness across varying screen sizes\n- Fixed Native Game Mode (Exit Code 255) with smart OEM fallback support\n- Upgraded 'Optimize & Launch' with a Material 3 loading screen\n- Games now automatically launch immediately after optimization finishes"
+  "versionCode": 13,
+  "versionName": "2.3",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.3/BenimaruTool-v2.3.apk",
+  "releaseNotes": "- Removed forced portrait mode; custom resolutions now apply exactly as typed\n- Revamped Auto-Match Aspect Ratio logic for foolproof, exact ratio scaling\n- Fixed resolution bugs in both the main app and the Floating Overlay Service"
 }

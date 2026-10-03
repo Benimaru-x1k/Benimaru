@@ -1,6 +1,6 @@
 {
-  "versionCode": 13,
-  "versionName": "2.3",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.3/BenimaruTool-v2.3.apk",
-  "releaseNotes": "- Removed forced portrait mode; custom resolutions now apply exactly as typed\n- Revamped Auto-Match Aspect Ratio logic for foolproof, exact ratio scaling\n- Fixed resolution bugs in both the main app and the Floating Overlay Service"
+  "versionCode": 14,
+  "versionName": "2.4",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.4/BenimaruTool-v2.4.apk",
+  "releaseNotes": "- Added MSI Afterburner-style real-time hardware monitor overlay\n- Live draggable CPU, RAM, Battery, and Display FPS stats\n- Lexend typography integration for clear in-game readability\n- Premium unlock price reduced from $5 to $3 USD"
 }

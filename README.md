@@ -24,9 +24,9 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   ⏪ **One-Tap Reset**: Easily revert all tweaks back to your device's stock default settings.
 
 <p align="center">
-  <img src="images/photo1.png" width="30%" />
-  <img src="images/photo2.png" width="30%" />
-  <img src="images/photo3.png" width="30%" />
+  <img src="images/Screenshot_20261003_202802_Benimaru.png" width="30%" />
+  <img src="images/Screenshot_20261003_202812_Benimaru.png" width="30%" />
+  <img src="images/Screenshot_20261003_202817_Benimaru.png" width="30%" />
 </p>
 
 ## 📋 Prerequisites

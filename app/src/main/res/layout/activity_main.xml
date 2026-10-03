@@ -8,7 +8,6 @@
     android:background="?android:attr/colorBackground"
     tools:context=".MainActivity">
 
-    <!-- Header Title -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
@@ -24,7 +23,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Theme Toggle Button -->
     <ImageView
         android:id="@+id/btnThemeToggle"
         android:layout_width="36dp"
@@ -40,7 +38,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?android:attr/textColorPrimary" />
 
-    <!-- Header Subtitle -->
     <TextView
         android:id="@+id/tvSubtitle"
         android:layout_width="0dp"
@@ -55,7 +52,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
-    <!-- Scrollable Cards -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -77,7 +73,7 @@
             android:paddingEnd="16dp"
             android:paddingBottom="24dp">
 
-            <!-- DASHBOARD: Pro Gaming Style Device Info Card -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardDeviceInfo"
                 android:layout_width="match_parent"
@@ -94,7 +90,7 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Header Row: Device Name & Status Badge -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -124,7 +120,7 @@
                                 android:textSize="13sp" />
                         </LinearLayout>
 
-                        <!-- Live Status Pill Badge -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -145,7 +141,7 @@
                         </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
 
-                    <!-- Metrics Grid Row 1 -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -154,7 +150,7 @@
                         android:orientation="horizontal"
                         android:weightSum="3">
 
-                        <!-- RAM Widget -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -192,7 +188,7 @@
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
-                        <!-- Storage Widget -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -231,7 +227,7 @@
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
-                        <!-- Battery Widget -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -270,7 +266,7 @@
                         </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
 
-                    <!-- Metrics Grid Row 2 -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -279,7 +275,7 @@
                         android:orientation="horizontal"
                         android:weightSum="3">
 
-                        <!-- SDK Level Widget -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -317,7 +313,7 @@
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
-                        <!-- Resolution Widget -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -356,7 +352,7 @@
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
-                        <!-- Free Space Widget -->
+
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -398,9 +394,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ===================== FREE CARDS START ===================== -->
 
-            <!-- Free Card 1: Enabled Fixed Performance -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardFixedPerformance"
                 android:layout_width="match_parent"
@@ -477,7 +471,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 2: Optimize System Performance -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardOptimizeSystem"
                 android:layout_width="match_parent"
@@ -554,7 +547,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 3: Adjust Refresh Rate -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardAdjustRefreshRate"
                 android:layout_width="match_parent"
@@ -631,7 +623,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 4: Improve Network Performance -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardImproveNetwork"
                 android:layout_width="match_parent"
@@ -708,7 +699,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 5: Improve Touch Latency and Response -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardImproveTouch"
                 android:layout_width="match_parent"
@@ -785,7 +775,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 6: Speed Up Animations -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardFastAnimations"
                 android:layout_width="match_parent"
@@ -862,7 +851,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 7: Disable Window Blurs -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardDisableBlurs"
                 android:layout_width="match_parent"
@@ -939,7 +927,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Free Card 8: Gaming DND / Heads-up block -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardGamingDnd"
                 android:layout_width="match_parent"
@@ -1016,11 +1003,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ===================== FREE CARDS END ===================== -->
-
-            <!-- ===================== PREMIUM CARDS START ===================== -->
-
-            <!-- Premium Card 1: Change Screen Resolution -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardChangeResolution"
                 android:layout_width="match_parent"
@@ -1097,7 +1079,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Premium Card 2: Custom DNS -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCustomDns"
                 android:layout_width="match_parent"
@@ -1174,7 +1155,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Premium Card 3: Enable Crosshair Overlay -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCrosshair"
                 android:layout_width="match_parent"
@@ -1251,7 +1231,83 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Premium Card 4: Native Game Mode -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRealtimeMonitor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#30808080"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="★ PREMIUM"
+                        android:textColor="#FFB300"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Real-time Hardware Monitor"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#20808080" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Displays a floating, draggable overlay with live RAM, CPU freq, and Battery stats like MSI Afterburner."
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="14sp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:id="@+id/tvStatusMonitor"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Status: Disabled"
+                            android:textColor="@color/statusText"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/btnResetMonitor"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RESET"
+                            android:textColor="@color/statusText"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:padding="4dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardGameMode"
                 android:layout_width="match_parent"
@@ -1328,7 +1384,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Premium Card 5: Disable Thermal Throttling -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardThermalThrottling"
                 android:layout_width="match_parent"
@@ -1405,9 +1461,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ===================== PREMIUM CARDS END ===================== -->
-
-            <!-- Unity Banner Ad Container -->
             <LinearLayout
                 android:id="@+id/bannerAdContainer"
                 android:layout_width="match_parent"
@@ -1419,7 +1472,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Floating Bottom Action Bar -->
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/floatingBottomBar"
         android:layout_width="0dp"

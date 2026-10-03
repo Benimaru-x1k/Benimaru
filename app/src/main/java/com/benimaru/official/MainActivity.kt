@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
 
     private val SHIZUKU_REQUEST_CODE = 100
     private var isCrosshairEnabled = false
+    private var isMonitorEnabled = false
 
-    // Unity Ads IDs
     private val unityGameId = "5781189"
     private val adUnitInterstitial = "Interstitial_Android"
     private val adUnitBanner = "Banner_Android"
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
-    // --- Premium Logic ---
+
     private fun isPremium(): Boolean {
         return getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).getBoolean("AdsRemoved", false)
     }
@@ -175,7 +175,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // --- Unity Ads Implementation ---
     private fun initializeUnityAds() {
         if (isPremium()) return
 
@@ -270,7 +269,6 @@ class MainActivity : AppCompatActivity() {
         Shizuku.removeRequestPermissionResultListener(permissionListener)
     }
 
-    // --- Device Info Dashboard ---
     private fun updateDeviceInfo() {
         try {
             val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
@@ -308,7 +306,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Security & Signature Checker ---
     private fun verifyAppSignature() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -359,7 +356,6 @@ class MainActivity : AppCompatActivity() {
         return md.digest().joinToString("") { "%02x".format(it) }
     }
 
-    // --- Auto Updater Logic ---
     private fun checkForUpdates() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -484,7 +480,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Shizuku Setup & Logic ---
     private fun checkShizukuStatus() {
         if (isShizukuInstalled()) {
             if (Shizuku.pingBinder()) {
@@ -535,7 +530,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- System Status Fetching ---
     private fun fetchSystemStatuses() {
         if (!hasShizukuPermission()) return
 
@@ -605,7 +599,6 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.tvStatusBlurs).text = blursStatus
                 findViewById<TextView>(R.id.tvStatusDnd).text = headsUpStatus
 
-                // Restore Crosshair State
                 val isCrosshairOn = prefs.getBoolean("CrosshairEnabled", false)
                 isCrosshairEnabled = isCrosshairOn
                 if (isCrosshairOn) {
@@ -615,6 +608,15 @@ class MainActivity : AppCompatActivity() {
                     findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
                 } else {
                     findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
+                }
+
+
+                val isMonitorOn = prefs.getBoolean("MonitorEnabled", false)
+                isMonitorEnabled = isMonitorOn
+                if (isMonitorOn) {
+                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Enabled"
+                } else {
+                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Disabled"
                 }
             }
         }
@@ -636,11 +638,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Click Listeners & Commands ---
+
     private fun setupClickListeners() {
         val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
 
-        // --- Free Features ---
         findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusFixedPerf).text.toString()
             if (status.contains("Enabled")) {
@@ -721,7 +722,6 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
 
-        // --- Premium Features with Rewarded Ad Alternative ---
         findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener {
             handlePremiumFeature { showResolutionModeDialog() }
         }
@@ -732,6 +732,11 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<CardView>(R.id.cardCrosshair).setOnClickListener {
             handlePremiumFeature { showCrosshairConfigDialog() }
+        }
+
+
+        findViewById<CardView>(R.id.cardRealtimeMonitor).setOnClickListener {
+            handlePremiumFeature { toggleRealtimeMonitor() }
         }
 
         findViewById<CardView>(R.id.cardThermalThrottling).setOnClickListener {
@@ -751,14 +756,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<CardView>(R.id.cardGameMode).setOnClickListener {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) { // S is Android 12
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                 Toasty.error(this, "This feature requires Android 12 or newer.", Toast.LENGTH_LONG, true).show()
                 return@setOnClickListener
             }
             handlePremiumFeature { showGameModeSelectorDialog() }
         }
 
-        // --- Individual Reset Button Clicks ---
         findViewById<TextView>(R.id.btnResetFixedPerf).setOnClickListener {
             runAdbCommand("cmd power set-fixed-performance-mode-enabled false", "Fixed Performance Reset") {
                 prefs.edit().putBoolean("FixedPerf", false).apply()
@@ -804,6 +808,12 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnResetCrosshair).setOnClickListener {
             if (isCrosshairEnabled) stopCrosshairService()
         }
+
+
+        findViewById<TextView>(R.id.btnResetMonitor).setOnClickListener {
+            if (isMonitorEnabled) toggleRealtimeMonitor()
+        }
+
         findViewById<TextView>(R.id.btnResetAnimations).setOnClickListener {
             runAdbCommand("settings put global window_animation_scale 1 && settings put global transition_animation_scale 1 && settings put global animator_duration_scale 1", "Animations Reset") { fetchSystemStatuses() }
         }
@@ -814,7 +824,6 @@ class MainActivity : AppCompatActivity() {
             runAdbCommand("settings put global heads_up_notifications_enabled 1", "Gaming Focus Mode Reset") { fetchSystemStatuses() }
         }
 
-        // --- Global Buttons ---
         findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
             showGameLauncherDialog()
         }
@@ -856,10 +865,49 @@ class MainActivity : AppCompatActivity() {
                     .putBoolean("ThermalDisabled", false)
                     .putString("LastGameMode", "")
                     .apply()
+
+
+                if (isMonitorEnabled) {
+                    stopService(Intent(this@MainActivity, RealtimeMonitorService::class.java))
+                    isMonitorEnabled = false
+                    prefs.edit().putBoolean("MonitorEnabled", false).apply()
+                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Disabled"
+                }
+
+                if (isCrosshairEnabled) stopCrosshairService()
+
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
                 fetchSystemStatuses()
             }
+        }
+    }
+
+
+    private fun toggleRealtimeMonitor() {
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+            startActivity(intent)
+            Toasty.info(this, "Please allow 'Display over other apps'", Toast.LENGTH_LONG, true).show()
+            return
+        }
+
+        val intent = Intent(this, RealtimeMonitorService::class.java)
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+
+        if (isMonitorEnabled) {
+            stopService(intent)
+            isMonitorEnabled = false
+            prefs.edit().putBoolean("MonitorEnabled", false).apply()
+            findViewById<TextView>(R.id.tvStatusMonitor).text = "Status: Disabled"
+            Toasty.success(this, "Monitor Disabled", Toast.LENGTH_SHORT, true).show()
+        } else {
+            startService(intent)
+            isMonitorEnabled = true
+            prefs.edit().putBoolean("MonitorEnabled", true).apply()
+            findViewById<TextView>(R.id.tvStatusMonitor).text = "Status: Enabled"
+            Toasty.success(this, "Monitor Enabled", Toast.LENGTH_SHORT, true).show()
+            showInterstitialAd()
         }
     }
 
@@ -980,7 +1028,7 @@ class MainActivity : AppCompatActivity() {
                 val encodedDevice = Uri.encode(deviceId)
 
                 val paypalEmail = "vestalkimqq02@gmail.com"
-                val price = "5.00"
+                val price = "3.00"
 
                 val paymentUrl = "https://www.paypal.com/cgi-bin/webscr" +
                         "?cmd=_xclick" +
@@ -1008,7 +1056,7 @@ class MainActivity : AppCompatActivity() {
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Premium Login")
-            .setMessage("Login to permanently unlock all Premium Cards and remove ads.")
+            .setMessage("Buy Premium Login for only 3 usd to permanently unlock all Premium Cards and remove ads.")
             .setView(scrollContainer)
             .setPositiveButton("Login") { _, _ ->
                 val user = usernameInput.text.toString().trim()
@@ -1222,7 +1270,7 @@ class MainActivity : AppCompatActivity() {
         val currentWidth = metrics.widthPixels.toFloat()
         val currentHeight = metrics.heightPixels.toFloat()
 
-        // Exact physical aspect ratio at this very moment
+
         val aspectRatio = currentHeight / currentWidth
 
         val layout = LinearLayout(this).apply {
@@ -1353,7 +1401,7 @@ class MainActivity : AppCompatActivity() {
                 if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
                     if (!hasShizukuPermission()) return@setPositiveButton
 
-                    // Take exact user input. No minOf/maxOf forcing portrait!
+
                     val newWidth = wStr.toInt()
                     val newHeight = hStr.toInt()
 
@@ -1389,7 +1437,7 @@ class MainActivity : AppCompatActivity() {
                 timerJob?.cancel()
                 Toasty.success(this, "Resolution saved", Toast.LENGTH_SHORT, true).show()
                 fetchSystemStatuses()
-                showInterstitialAd() // Triggers Ad ONLY on Save
+                showInterstitialAd()
             }
             .setNegativeButton("Revert") { _, _ ->
                 timerJob?.cancel()

@@ -18,10 +18,12 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   📱 **Safe Resolution Changer**: Adjust your display resolution to improve gaming performance or battery life. Includes an **automatic aspect ratio calculator** and a **6-second safe-revert countdown** to prevent permanent black screens.
 *   🌐 **Custom DNS Selector**: Set a system-wide private DNS (Cloudflare, Quad9, Control D, etc.) via ADB for reliable ad blocking, tracker protection, and lower latency without needing a VPN.
 *   🎯 **FPS Crosshair Overlay**: Enable a customizable, center-screen crosshair to improve accuracy in FPS games.
+*   📊 **Floating Hardware Monitor**: An MSI Afterburner-style draggable HUD showing live CPU clock & thermals, RAM consumption, battery temperature/percentage, and display refresh rate. Freely position it anywhere on your screen without obstructing gameplay.
 *   🎮 **Game Launcher & Optimizer**: Automatically detects installed games and allows you to either launch them instantly or **Pre-Compile their DEX code (Speed Profile)** to eliminate in-game stutters.
 *   🛡️ **Anti-Tamper Security**: Built-in SHA-256 signature verification to prevent the execution of modified, repackaged, or unofficial APKs.
 *   📲 **In-App Auto Updater**: Automatically checks the official GitHub repository for new releases and handles seamless updates within the app.
 *   ⏪ **One-Tap Reset**: Easily revert all tweaks back to your device's stock default settings.
+*   💎 **Premium Lifetime Unlock**: Access advanced features permanently (Now permanently reduced to $3.00 USD).
 
 <p align="center">
   <img src="images/Screenshot_20261003_202802_Benimaru.png" width="30%" />
@@ -34,7 +36,7 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 Because Benimaru Tool modifies secure system settings, it requires **Shizuku** to function. 
 * If you do not have Shizuku installed, Benimaru Tool will automatically prompt you to download and install it safely from the official GitHub repository.
 * **Note:** You must start the Shizuku service via Wireless Debugging (Android 11+) or via ADB from a computer. [Read the official Shizuku setup guide here](https://shizuku.rikka.app/guide/setup/).
-* **Overlay Permission:** To use the Crosshair Overlay and Floating Menu, you must grant the "Display over other apps" permission when prompted.
+* **Overlay Permission:** To use the new Floating Hardware Monitor, Crosshair Overlay, and Floating Menu, you must grant the "Display over other apps" permission when prompted.
 
 ## 🛠️ Built With
 
@@ -51,8 +53,9 @@ Because Benimaru Tool modifies secure system settings, it requires **Shizuku** t
 3. Install the APK on your Android device.
 4. Ensure the **Shizuku** app is installed and running.
 5. Open Benimaru Tool and tap **Allow** when prompted for Shizuku access.
+6. Grant the **"Display over other apps"** permission to enable the floating monitor and overlay services.
 
-## ⚠️️ Disclaimer
+## ⚠ Disclaimer
 
 **Use at your own risk.** While Benimaru Tool is built with safety features (like the 6-second resolution revert timer), forcing unsupported refresh rates, extreme resolutions, or disabling thermal limits on certain hardware can cause system instability, overheating, or UI glitches. The developer is not responsible for any bricked devices, bootloops, or hardware damage.
 

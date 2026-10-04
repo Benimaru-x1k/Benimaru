@@ -38,9 +38,17 @@ class CrosshairService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT
         )
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            params.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+
 
         windowManager.addView(crosshairView, params)
     }
@@ -63,7 +71,7 @@ class CrosshairService : Service() {
         }
     }
 
-    // Custom View to handle the exact drawing mechanics
+
     private inner class CrosshairView(context: Context) : View(context) {
         private var paint = Paint().apply {
             isAntiAlias = true
@@ -77,7 +85,7 @@ class CrosshairService : Service() {
         fun updateCrosshair(newStyle: String, newColor: String, newSize: String) {
             this.style = newStyle
 
-            // Set Color
+
             paint.color = when (newColor) {
                 "White" -> Color.WHITE
                 "Black" -> Color.BLACK
@@ -90,7 +98,7 @@ class CrosshairService : Service() {
                 else -> Color.RED
             }
 
-            // Set Size
+
             sizePx = when (newSize) {
                 "Tiny" -> 15f
                 "Small" -> 25f
@@ -102,7 +110,7 @@ class CrosshairService : Service() {
 
             paint.strokeWidth = sizePx / 8f
 
-            // Force redraw immediately for real-time updates
+
             invalidate()
         }
 

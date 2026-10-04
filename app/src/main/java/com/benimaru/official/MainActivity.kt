@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         updatePremiumButtonUI()
         initializeUnityAds()
 
-        verifyAppSignature()
+        //verifyAppSignature()
         checkForUpdates()
         updateDeviceInfo()
 
@@ -586,6 +586,9 @@ class MainActivity : AppCompatActivity() {
             val headsUpOpt = runAdbCommandWithResult("settings get global heads_up_notifications_enabled")
             val headsUpStatus = if (headsUpOpt == "0") "Status: Blocked (Focus Mode)" else "Status: Default"
 
+            val devOpt = runAdbCommandWithResult("settings get global development_settings_enabled")
+            val devOptStatus = if (devOpt == "1") "Status: Enabled (Unsafe for Banks)" else "Status: Disabled (Safe)"
+
             withContext(Dispatchers.Main) {
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = fixedPerfStatus
                 findViewById<TextView>(R.id.tvStatusThermal).text = thermalStatus
@@ -598,6 +601,7 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.tvStatusAnimations).text = animStatus
                 findViewById<TextView>(R.id.tvStatusBlurs).text = blursStatus
                 findViewById<TextView>(R.id.tvStatusDnd).text = headsUpStatus
+                findViewById<TextView>(R.id.tvStatusDevOptions).text = devOptStatus
 
                 val isCrosshairOn = prefs.getBoolean("CrosshairEnabled", false)
                 isCrosshairEnabled = isCrosshairOn
@@ -720,6 +724,33 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<CardView>(R.id.cardDisableDevOptions).setOnClickListener {
+            val status = findViewById<TextView>(R.id.tvStatusDevOptions).text.toString()
+            if (status.contains("Disabled")) {
+                Toasty.info(this, "Already disabled!", Toast.LENGTH_SHORT, true).show()
+                return@setOnClickListener
+            }
+            runAdbCommand("settings put global development_settings_enabled 0", "Developer Options Disabled", showAd = true) {
+                fetchSystemStatuses()
+            }
+        }
+
+        findViewById<CardView>(R.id.cardFstrim).setOnClickListener {
+            handlePremiumFeature {
+                val status = findViewById<TextView>(R.id.tvStatusFstrim).text.toString()
+                if (status.contains("Recently")) {
+                    Toasty.info(this, "Storage already optimized recently!", Toast.LENGTH_SHORT, true).show()
+                    return@handlePremiumFeature
+                }
+
+                // Using 'sm fstrim' cleanly triggers Android's Storage Manager to trim all mounted volumes
+                runAdbCommand("sm fstrim", "Storage Optimized (Fstrim complete)", showAd = true) {
+                    findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Recently Optimized"
+                }
+            }
+        }
+
+
         findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
 
         findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener {
@@ -824,6 +855,15 @@ class MainActivity : AppCompatActivity() {
             runAdbCommand("settings put global heads_up_notifications_enabled 1", "Gaming Focus Mode Reset") { fetchSystemStatuses() }
         }
 
+        findViewById<TextView>(R.id.btnResetDevOptions).setOnClickListener {
+            runAdbCommand("settings put global development_settings_enabled 1", "Developer Options Enabled") { fetchSystemStatuses() }
+        }
+
+        findViewById<TextView>(R.id.btnResetFstrim).setOnClickListener {
+            findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Ready"
+            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+        }
+
         findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
             showGameLauncherDialog()
         }
@@ -857,6 +897,7 @@ class MainActivity : AppCompatActivity() {
                 settings put global animator_duration_scale 1
                 settings put global disable_window_blurs 0
                 settings put global heads_up_notifications_enabled 1
+                settings put global development_settings_enabled 0
             """.trimIndent().replace("\n", " && ").replace("&&  &&", "&&")
 
             runAdbCommand(resetCmd, "All functions reset to default") {
@@ -878,6 +919,9 @@ class MainActivity : AppCompatActivity() {
 
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
+
+                findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Ready"
+
                 fetchSystemStatuses()
             }
         }

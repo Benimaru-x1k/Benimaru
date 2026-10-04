@@ -11,7 +11,9 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   💨 **UI Animation Speedup**: Cuts system animation scales in half (0.5x) to make app launches and system navigation feel twice as fast.
 *   🌫️ **Disable Window Blurs**: Frees up valuable GPU resources by disabling expensive real-time background blurs on Android 12+ devices.
 *   🔕 **Gaming Focus Mode**: Blocks intrusive heads-up notification banners from dropping down over your screen mid-match.
+*   🏦 **Hide Developer Options**: Instantly turns off Developer Options to allow banking apps and anti-cheat games to run properly.
 *   🧹 **System Optimization**: Clears background processes and reallocates resources to your active applications.
+*   💽 **Storage Optimizer (Fstrim)**: Forces the storage controller to wipe deleted data blocks, instantly restoring read/write speeds.
 *   📶 **Network Tweaks**: Prioritizes network traffic and reduces ping for a lag-free mobile data experience.
 *   ⚡ **Touch Latency Reduction**: Increases touch sampling rate and reduces long-press timeouts for faster, more precise screen interactions.
 *   🔄 **Custom Refresh Rate**: Force specific Minimum and Maximum screen refresh rates (e.g., lock to 120Hz).

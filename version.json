@@ -1,6 +1,6 @@
 {
-  "versionCode": 14,
-  "versionName": "2.4",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.4/BenimaruTool-v2.4.apk",
-  "releaseNotes": "- Added MSI Afterburner-style real-time hardware monitor overlay\n- Live draggable CPU, RAM, Battery, and Display FPS stats\n- Lexend typography integration for clear in-game readability\n- Premium unlock price reduced from $5 to $3 USD"
+  "versionCode": 15,
+  "versionName": "2.5",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.5/BenimaruTool-v2.5.apk",
+  "releaseNotes": "- Added \"Disable Developer Option\" to bypass banking app restrictions\n- Added Storage Optimizer (Fstrim)\n- Fixed crosshair center-alignment in landscape mode"
 }

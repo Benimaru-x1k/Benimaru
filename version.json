@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "2.5",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.5/BenimaruTool-v2.5.apk",
-  "releaseNotes": "- Added \"Disable Developer Option\" to bypass banking app restrictions\n- Added Storage Optimizer (Fstrim)\n- Fixed crosshair center-alignment in landscape mode"
+  "versionCode": 16,
+  "versionName": "2.6",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.6/BenimaruTool-v2.6.apk",
+  "releaseNotes": "- Added \"Buy Premium via Telegram\" purchasing option\n- Hardware Monitor perfectly centered in both portrait and landscape modes\n- Hardware Monitor is now click-through and position-locked for zero gaming interference"
 }

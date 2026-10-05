@@ -12,8 +12,8 @@ android {
         applicationId = "com.benimaru.official"
         minSdk = 24
         targetSdk = 37
-        versionCode = 15
-        versionName = "2.5"
+        versionCode = 16
+        versionName = "2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

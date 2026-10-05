@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         updatePremiumButtonUI()
         initializeUnityAds()
 
-        //verifyAppSignature()
+        verifyAppSignature()
         checkForUpdates()
         updateDeviceInfo()
 
@@ -1090,11 +1090,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+        val telegramButton = MaterialButton(this).apply {
+            text = "Buy Direct to Developer"
+            cornerRadius = 50
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 8 }
+
+            setOnClickListener {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benimarux1k"))
+                startActivity(intent)
+            }
+        }
+
         layout.addView(usernameLayout)
         layout.addView(passwordLayout)
         layout.addView(tvDeviceId)
         layout.addView(copyIdButton)
         layout.addView(buyPremiumButton)
+        layout.addView(telegramButton)
 
         scrollContainer.addView(layout)
 

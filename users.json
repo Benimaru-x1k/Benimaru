@@ -1,13 +1,13 @@
 {
   "users": [
     {
-      "username": "admin",
-      "password": "admin",
-      "devices": [
-        "15a37a9ca7598d0e",
+  "username": "admin",
+  "passwordHash": "75187a1704b694641b2c0e162f557a3f502d6626de77707524dcb9142a239dcf",
+  "devices": [
+    "15a37a9ca7598d0e",
         "1d928aaf321ac908"
-      ]
-    },
+  ]
+},
     {
       "username": "SCHARYS",
       "password": "Metinmert3031+",

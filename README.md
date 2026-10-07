@@ -28,9 +28,9 @@ Benimaru Tool is a powerful, rootless Android utility application designed to en
 *   💎 **Premium Lifetime Unlock**: Access advanced features permanently (Now permanently reduced to $3.00 USD).
 
 <p align="center">
-  <img src="images/Screenshot_20261003_202802_Benimaru.png" width="30%" />
-  <img src="images/Screenshot_20261003_202812_Benimaru.png" width="30%" />
-  <img src="images/Screenshot_20261003_202817_Benimaru.png" width="30%" />
+  <img src="images/Screenshot_20261007_135942_Benimaru.png" width="30%" />
+  <img src="images/Screenshot_20261007_140005_Benimaru.png" width="30%" />
+  <img src="images/Screenshot_20261007_140013_Benimaru.png" width="30%" />
 </p>
 
 ## 📋 Prerequisites

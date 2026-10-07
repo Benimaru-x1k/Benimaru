@@ -1,46 +1,32 @@
 {
   "users": [
     {
-  "username": "admin",
-  "passwordHash": "75187a1704b694641b2c0e162f557a3f502d6626de77707524dcb9142a239dcf",
-  "devices": [
-    "15a37a9ca7598d0e",
+      "username": "admin",
+      "passwordHash": "75187a1704b694641b2c0e162f557a3f502d6626de77707524dcb9142a239dcf",
+      "devices": [
+        "15a37a9ca7598d0e",
         "1d928aaf321ac908"
-  ]
-},
+      ]
+    },
     {
       "username": "SCHARYS",
-      "password": "Metinmert3031+",
+      "passwordHash": "44966b971d06a3091bbd218a6f6eb3a05138ee480e15aa6b338bb056540f2711",
       "devices": [
         "8f85381cb78b6a7f"
       ]
     },
     {
       "username": "lmods",
-      "password": "zxcv.1234",
+      "passwordHash": "61a66523a37be07ac0311ba6dc987e66ddbd54019d2ce3020fd598dde9274d84",
       "devices": [
         "35d24241723f0f68"
       ]
     },
     {
-      "username": "charles",
-      "password": "zxcv.1234",
-      "devices": [
-        "609a2524cffb9031"
-      ]
-    },
-    {
       "username": "Glennny00",
-      "password": "SUPERMARIO1000",
+      "passwordHash": "52211ea43698a47859f5b5495191cfa561aaf26a2fe439baacf57741b0f3f2f3",
       "devices": [
         "3575d1dd5439a14c"
-      ]
-    },
-    {
-      "username": "sp4rks",
-      "password": "gaineagers31",
-      "devices": [
-        "9270d6dc0facb443"
       ]
     }
   ]

@@ -47,7 +47,6 @@
 *   **🛡️ Anti-Tamper Security:** Built-in SHA-256 signature verification prevents the execution of modified, repackaged, or unofficial APKs.
 *   **📲 In-App Auto Updater:** Automatically pings the official GitHub repository for new releases and handles seamless updates internally.
 *   **⏪ One-Tap Reset:** Panic button to instantly revert all tweaks back to your device's stock default settings.
-*   **💎 Premium Lifetime Unlock:** Access all advanced features permanently (Now permanently reduced to $3.00 USD).
 
 ---
 

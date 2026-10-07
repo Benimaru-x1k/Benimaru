@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity() {
     private fun updatePremiumButtonUI() {
         if (isPremium()) {
             val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
-            btnPremium.text = "✔ Premium"
+            btnPremium.text = " Premium"
             btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700"))
             btnPremium.setTextColor(Color.parseColor("#000000"))
             (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)

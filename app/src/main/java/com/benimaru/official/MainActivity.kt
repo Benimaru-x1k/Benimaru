@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity() {
     private fun updatePremiumButtonUI() {
         if (isPremium()) {
             val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
-            btnPremium.text = " Premium"
+            btnPremium.text = "✔ Premium"
             btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700"))
             btnPremium.setTextColor(Color.parseColor("#000000"))
             (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)
@@ -826,6 +826,21 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+        findViewById<CardView>(R.id.cardRamBooster).setOnClickListener {
+            handlePremiumFeature { showRamBoosterSheet() }
+        }
+        findViewById<CardView>(R.id.cardClearCache).setOnClickListener {
+            handlePremiumFeature { confirmClearCaches() }
+        }
+        findViewById<TextView>(R.id.btnResetRamBooster).setOnClickListener {
+            findViewById<TextView>(R.id.tvStatusRamBooster).text = "Status: Ready"
+            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+        }
+        findViewById<TextView>(R.id.btnResetCache).setOnClickListener {
+            findViewById<TextView>(R.id.tvStatusCache).text = "Status: Ready"
+            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+        }
+
         findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
 
         findViewById<CardView>(R.id.cardChangeResolution).setOnClickListener {
@@ -1009,12 +1024,224 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
 
                 findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Ready"
+                findViewById<TextView>(R.id.tvStatusRamBooster).text = "Status: Ready"
+                findViewById<TextView>(R.id.tvStatusCache).text = "Status: Ready"
 
                 fetchSystemStatuses()
             }
         }
     }
 
+
+
+    private class MemApp(
+        val pkg: String,
+        val label: CharSequence,
+        val icon: android.graphics.drawable.Drawable?,
+        val mb: Int
+    )
+
+    private fun availRamMb(): Long {
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val info = ActivityManager.MemoryInfo()
+        am.getMemoryInfo(info)
+        return info.availMem / (1024 * 1024)
+    }
+
+    private fun freeStorageBytes(): Long = StatFs(Environment.getDataDirectory().path).availableBytes
+
+    private fun formatSize(bytes: Long): String =
+        if (bytes >= 1024L * 1024 * 1024) String.format("%.1f GB", bytes / (1024.0 * 1024 * 1024))
+        else String.format("%.0f MB", bytes / (1024.0 * 1024))
+
+
+    private fun fontify(view: View) {
+        ResourcesCompat.getFont(this, R.font.lexendregular)?.let { applyAppFont(view, it) }
+    }
+
+
+    private fun scanMemoryHogs(): List<MemApp> {
+        val pm = packageManager
+        val output = runAdbCommandWithResult("dumpsys meminfo")
+
+        val homePkg = pm.resolveActivity(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY
+        )?.activityInfo?.packageName
+        val imePkg = Settings.Secure.getString(contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD)?.substringBefore('/')
+
+        val protectedPkgs = setOfNotNull(
+            packageName, "moe.shizuku.privileged.api", "android", "com.android.systemui",
+            "com.android.phone", homePkg, imePkg
+        )
+
+        val line = Regex("""^\s*([\d,]+)K: (\S+)""")
+        val perPackage = LinkedHashMap<String, Int>()
+        var inSection = false
+        for (raw in output.lineSequence()) {
+            if (raw.startsWith("Total PSS by process")) { inSection = true; continue }
+            if (!inSection) continue
+            if (raw.isBlank()) break
+            val m = line.find(raw) ?: continue
+            val kb = m.groupValues[1].replace(",", "").toLongOrNull() ?: continue
+            val pkg = m.groupValues[2].substringBefore(':')
+            perPackage[pkg] = (perPackage[pkg] ?: 0) + (kb / 1024).toInt()
+        }
+
+        val safeName = Regex("^[A-Za-z0-9._]+$")
+        return perPackage.entries
+            .asSequence()
+            .filter { it.key !in protectedPkgs && it.value >= 20 && safeName.matches(it.key) }
+            .sortedByDescending { it.value }
+            .mapNotNull { (pkg, mb) ->
+                try {
+                    if (pm.getLaunchIntentForPackage(pkg) == null) return@mapNotNull null
+                    val ai = pm.getApplicationInfo(pkg, 0)
+                    MemApp(pkg, pm.getApplicationLabel(ai), pm.getApplicationIcon(ai), mb)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            .take(12)
+            .toList()
+    }
+
+    private fun showRamBoosterSheet() {
+        if (!hasShizukuPermission()) return
+
+        val scanning = ProgressSheet(this)
+            .icon(R.drawable.ic_tune)
+            .title("Scanning memory")
+            .message("Checking which apps use the most RAM…")
+        scanning.show(indeterminate = true)
+        scanning.setIndeterminate("This takes a few seconds")
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val apps = try { scanMemoryHogs() } catch (e: Exception) { emptyList() }
+            withContext(Dispatchers.Main) {
+                scanning.dismiss()
+                if (apps.isEmpty()) {
+                    Toasty.info(this@MainActivity, "No heavy background apps found", Toast.LENGTH_LONG, true).show()
+                } else {
+                    presentRamList(apps)
+                }
+            }
+        }
+    }
+
+    private fun presentRamList(apps: List<MemApp>) {
+        val selected = apps.map { it.pkg }.toMutableSet()
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val summary = infoCard(this, "")
+        val sheet = Sheet(this)
+
+        fun updateSummary() {
+            val mb = apps.filter { it.pkg in selected }.sumOf { it.mb }
+            summary.text = if (selected.isEmpty()) "Nothing selected."
+            else "${selected.size} selected  ·  up to about $mb MB in use. Free RAM now: ${availRamMb()} MB."
+            sheet.buttonViews.getOrNull(1)?.let {
+                it.isEnabled = selected.isNotEmpty()
+                it.text = if (selected.isEmpty()) "Boost" else "Boost (${selected.size})"
+            }
+        }
+
+        fun render() {
+            list.removeAllViews()
+            apps.forEach { a ->
+                list.addView(optionRow(
+                    this, a.label, "${a.mb} MB in use",
+                    icon = a.icon?.constantState?.newDrawable()?.mutate() ?: a.icon,
+                    tintIcon = false, selected = a.pkg in selected
+                ) {
+                    if (!selected.remove(a.pkg)) selected.add(a.pkg)
+                    render()
+                    updateSummary()
+                })
+            }
+            fontify(list)
+        }
+        render()
+
+        sheet.icon(R.drawable.ic_tune)
+            .title("RAM booster")
+            .message("Apps using the most memory right now. Tap to select or deselect. Stopped apps can start again on their own, so this is a temporary boost.")
+            .content(summary)
+            .content(list)
+            .button("Cancel", SheetStyle.TONAL)
+            .button("Boost", SheetStyle.PRIMARY) { boostApps(selected.toList()) }
+            .show()
+        updateSummary()
+    }
+
+    private fun boostApps(pkgs: List<String>) {
+        if (pkgs.isEmpty()) return
+        val safeName = Regex("^[A-Za-z0-9._]+$")
+        val valid = pkgs.filter { safeName.matches(it) }
+        if (valid.isEmpty()) return
+
+        val before = availRamMb()
+        val cmd = valid.joinToString("; ") { "am force-stop $it" }
+        runAdbCommand(cmd, "Stopped ${valid.size} apps", showAd = true) {
+            lifecycleScope.launch {
+                delay(1500) // let the system reclaim the memory
+                val freed = (availRamMb() - before).coerceAtLeast(0)
+                findViewById<TextView>(R.id.tvStatusRamBooster).text =
+                    if (freed > 0) "Status: Freed about $freed MB" else "Status: Stopped ${valid.size} apps"
+                updateDeviceInfo()
+            }
+        }
+    }
+
+    private fun confirmClearCaches() {
+        Sheet(this)
+            .icon(R.drawable.ic_reset)
+            .title("Clear all app caches?")
+            .message("This removes temporary files from every app to free up storage. Your accounts, settings and saved data are not touched. Apps may open a little slower the first time afterward.")
+            .button("Cancel", SheetStyle.TONAL)
+            .button("Clear caches", SheetStyle.PRIMARY) { clearAllCaches() }
+            .show()
+    }
+
+    private fun clearAllCaches() {
+        if (!hasShizukuPermission()) return
+
+        val progress = ProgressSheet(this)
+            .icon(R.drawable.ic_reset)
+            .title("Clearing caches")
+            .message("This can take up to a minute. Please keep the app open.")
+        progress.show(indeterminate = true)
+        progress.setIndeterminate("Working…")
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val before = freeStorageBytes()
+            var ok = false
+            try {
+
+                val process = Shizuku.newProcess(arrayOf("sh", "-c", "pm trim-caches 999G"), null, null)
+                ok = process.waitFor() == 0
+            } catch (e: Exception) {
+                ok = false
+            }
+            delay(1000)
+            val freed = (freeStorageBytes() - before).coerceAtLeast(0)
+
+            withContext(Dispatchers.Main) {
+                progress.dismiss()
+                if (ok) {
+                    findViewById<TextView>(R.id.tvStatusCache).text =
+                        if (freed > 0) "Status: Freed ${formatSize(freed)}" else "Status: Already clean"
+                    Toasty.success(
+                        this@MainActivity,
+                        if (freed > 0) "Freed ${formatSize(freed)} of cache" else "Caches were already clean",
+                        Toast.LENGTH_LONG, true
+                    ).show()
+                    updateDeviceInfo()
+                    showInterstitialAd()
+                } else {
+                    Toasty.error(this@MainActivity, "Your device blocked the cache cleaner", Toast.LENGTH_LONG, true).show()
+                }
+            }
+        }
+    }
 
     private fun toggleRealtimeMonitor() {
         if (!Settings.canDrawOverlays(this)) {
@@ -1302,7 +1529,6 @@ class MainActivity : AppCompatActivity() {
                     .openConnection() as HttpURLConnection
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
-
                 conn.useCaches = false
 
                 if (conn.responseCode == 200) {
@@ -1980,7 +2206,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<Chip>(id)?.typeface = customTypeface
         }
 
-        val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions)
+        val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions, R.id.cardRamBooster, R.id.cardClearCache)
         val displayCards = listOf(R.id.cardAdjustRefreshRate, R.id.cardFastAnimations, R.id.cardDisableBlurs, R.id.cardChangeResolution)
         val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
         val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardGameMode)
@@ -2012,7 +2238,8 @@ class MainActivity : AppCompatActivity() {
             R.id.tvStatusFixedPerf, R.id.tvStatusOptimize, R.id.tvStatusRefresh, R.id.tvStatusNetwork,
             R.id.tvStatusTouch, R.id.tvStatusAnimations, R.id.tvStatusBlurs, R.id.tvStatusDnd,
             R.id.tvStatusDevOptions, R.id.tvStatusResolution, R.id.tvStatusDns, R.id.tvStatusCrosshair,
-            R.id.tvStatusMonitor, R.id.tvStatusGameMode, R.id.tvStatusThermal, R.id.tvStatusFstrim
+            R.id.tvStatusMonitor, R.id.tvStatusGameMode, R.id.tvStatusThermal, R.id.tvStatusFstrim,
+            R.id.tvStatusRamBooster, R.id.tvStatusCache
         )
         val states = HashMap<Int, TweakState>()
         val green = Color.parseColor("#2E9E5B")

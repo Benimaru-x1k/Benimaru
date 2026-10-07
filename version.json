@@ -1,7 +1,7 @@
 {
-  "versionCode": 17,
-  "versionName": "2.7",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.7/BenimaruTool-v2.7.apk",
-  "mandatory": true,
-  "releaseNotes": "🚀 Massive 2.7 Update!\n\n- Dashboard redesign with live device stats, status dots, and a slim floating bottom bar\n- Sleek new Lexend-font bottom-sheet dialogs for all settings\n- 3 new Crosshair shapes (Gap Cross, Diamond, Triangle) with live preview\n- Gorgeous new glass-style real-time Hardware Monitor overlay\n- Bulletproof downloads with cancel support and smarter Shizuku setup\n- Upgraded Premium login with secure on-device password hashing\n- Accident-proof 'Reset All' warnings and tons of UI polish"
+  "versionCode": 18,
+  "versionName": "2.8",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.8/BenimaruTool-v2.8.apk",
+  "mandatory": false,
+  "releaseNotes": "⚡ 2.8 Update!\n\n- New Premium tool: RAM Booster. See which apps are using the most memory and stop the heavy ones in one tap\n- New Premium tool: Clear App Caches. Free up storage by clearing every app's cache safely\n- Both live under the Performance category and show how much they freed"
 }

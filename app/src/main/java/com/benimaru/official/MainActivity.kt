@@ -19,6 +19,7 @@ import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -65,10 +66,23 @@ import android.provider.Settings.Secure
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.card.MaterialCardView
+import androidx.core.widget.NestedScrollView
+import androidx.core.content.res.ResourcesCompat
+import com.google.android.material.chip.Chip
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.ensureActive
+import android.widget.HorizontalScrollView
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.DrawableCompat
+
 
 class MainActivity : AppCompatActivity() {
 
     private val SHIZUKU_REQUEST_CODE = 100
+    private var pendingApk: File? = null
     private var isCrosshairEnabled = false
     private var isMonitorEnabled = false
 
@@ -82,8 +96,10 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == SHIZUKU_REQUEST_CODE) {
             if (grantResult == PackageManager.PERMISSION_GRANTED) {
                 Toasty.success(this, "Shizuku permission granted! You can now apply settings.", Toast.LENGTH_SHORT, true).show()
+                updateShizukuBannerUI(true)
                 fetchSystemStatuses()
             } else {
+                updateShizukuBannerUI(false)
                 Toasty.error(this, "Shizuku permission denied. The app cannot function without it.", Toast.LENGTH_LONG, true).show()
             }
         }
@@ -136,6 +152,9 @@ class MainActivity : AppCompatActivity() {
         Shizuku.addRequestPermissionResultListener(permissionListener)
         checkShizukuStatus()
         setupClickListeners()
+        setupFilterChips()
+        setupBottomBarScrollBehavior()
+        setupStatusStyling()
     }
 
 
@@ -149,6 +168,7 @@ class MainActivity : AppCompatActivity() {
             btnPremium.text = "✔ Premium"
             btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700"))
             btnPremium.setTextColor(Color.parseColor("#000000"))
+            (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)
 
             btnPremium.setOnClickListener {
                 Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
@@ -162,16 +182,13 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Premium Feature Locked")
-            .setMessage("This feature requires Premium access.\n\nYou can temporarily unlock it right now by watching a short video ad, or permanently unlock all features by purchasing a Premium Login.")
-            .setPositiveButton("Watch Ad") { _, _ ->
-                showRewardedAd { action() }
-            }
-            .setNeutralButton("Buy Premium") { _, _ ->
-                showRemoveAdsDialog()
-            }
-            .setNegativeButton("Cancel", null)
+        Sheet(this)
+            .icon(R.drawable.ic_crown, Color.parseColor("#E0A800"))
+            .title("Premium feature")
+            .message("Unlock it once by watching a short video, or get Premium to unlock everything permanently and remove ads.")
+            .button("Watch ad to unlock", SheetStyle.PRIMARY) { showRewardedAd { action() } }
+            .button("Get Premium", SheetStyle.TONAL) { showRemoveAdsDialog() }
+            .button("Not now", SheetStyle.TEXT)
             .show()
     }
 
@@ -262,6 +279,13 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateDeviceInfo()
         updatePremiumButtonUI()
+
+
+        val apk = pendingApk
+        if (apk != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && packageManager.canRequestPackageInstalls()) {
+            pendingApk = null
+            installApk(apk, false)
+        }
     }
 
     override fun onDestroy() {
@@ -271,7 +295,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateDeviceInfo() {
         try {
-            val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
+            val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".replace("\n", "").trim()
             val androidVersion = "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
             val apiLevel = "API ${Build.VERSION.SDK_INT}"
 
@@ -301,6 +325,13 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvApiLevel).text = apiLevel
             findViewById<TextView>(R.id.tvResolutionDisplay).text = currentRes
             findViewById<TextView>(R.id.tvFreeStorageDisplay).text = String.format("%.1f GB", availStorageGb)
+
+            findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.pbRam)
+                .setProgressCompat(((usedRamGb / totalRamGb) * 100).toInt().coerceIn(0, 100), true)
+            findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.pbStorage)
+                .setProgressCompat(((usedStorageGb / totalStorageGb) * 100).toInt().coerceIn(0, 100), true)
+            findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.pbBattery)
+                .setProgressCompat(batLevel.coerceIn(0, 100), true)
         } catch (e: Exception) {
             android.util.Log.e("BenimaruTool", "Error in updateDeviceInfo", e)
         }
@@ -371,7 +402,8 @@ class MainActivity : AppCompatActivity() {
                     val latestVersionCode = jsonObject.getInt("versionCode")
                     val latestVersionName = jsonObject.getString("versionName")
                     val apkUrl = jsonObject.getString("apkUrl")
-                    val releaseNotes = jsonObject.getString("releaseNotes")
+                    val releaseNotes = jsonObject.optString("releaseNotes", "")
+                    val mandatory = jsonObject.optBoolean("mandatory", false)
 
                     val currentVersionCode = try {
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
@@ -386,7 +418,7 @@ class MainActivity : AppCompatActivity() {
 
                     if (latestVersionCode > currentVersionCode) {
                         withContext(Dispatchers.Main) {
-                            showUpdateDialog(latestVersionName, releaseNotes, apkUrl)
+                            showUpdateDialog(latestVersionName, releaseNotes, apkUrl, mandatory)
                         }
                     }
                 }
@@ -396,86 +428,122 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showUpdateDialog(versionName: String, releaseNotes: String, apkUrl: String) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Update Available (v$versionName)")
-            .setMessage("A new version of Benimaru Tool is available.\n\nWhat's new:\n$releaseNotes")
-            .setCancelable(false)
-            .setPositiveButton("Update Now") { _, _ -> downloadAppUpdate(apkUrl) }
-            .setNegativeButton("Later", null)
-            .show()
+    private fun showUpdateDialog(versionName: String, releaseNotes: String, apkUrl: String, mandatory: Boolean = false) {
+        if (isFinishing || isDestroyed) return
+        val notes = releaseNotes.trim().ifEmpty { "Bug fixes and improvements." }
+
+        val sheet = Sheet(this)
+            .icon(R.drawable.ic_download)
+            .title("Update available")
+            .message("Version $versionName is ready to install.")
+            .content(infoCard(this, "What's new\n$notes"))
+            .cancelable(!mandatory)
+        if (!mandatory) sheet.button("Later", SheetStyle.TONAL)
+        sheet.button("Update now", SheetStyle.PRIMARY) { downloadAppUpdate(apkUrl) }
+        sheet.show()
     }
 
     private fun downloadAppUpdate(downloadUrl: String) {
-        val fileName = "BenimaruTool-update.apk"
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 32)
+        downloadAndInstall("Downloading update", downloadUrl, "BenimaruTool-update.apk", finishAfterInstall = false)
+    }
+
+    private fun formatMb(bytes: Long): String = String.format("%.1f MB", bytes / (1024.0 * 1024.0))
+
+
+    private fun downloadAndInstall(title: String, url: String, fileName: String, finishAfterInstall: Boolean) {
+        val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        if (dir == null) {
+            Toasty.error(this, "Storage is not available", Toast.LENGTH_SHORT, true).show()
+            if (finishAfterInstall) showShizukuRequiredDialog()
+            return
         }
 
-        val tvProgress = TextView(this).apply {
-            text = "0%"
-            textSize = 16f
-        }
+        var job: Job? = null
+        val progress = ProgressSheet(this)
+            .icon(R.drawable.ic_download)
+            .title(title)
+            .message("Keep the app open until the download finishes.")
+            .cancelButton("Cancel") { job?.cancel() }
+        progress.show(indeterminate = true)
 
-        val progressIndicator = LinearProgressIndicator(this).apply {
-            isIndeterminate = false
-            max = 100
-            progress = 0
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 16 }
-        }
-
-        layout.addView(tvProgress)
-        layout.addView(progressIndicator)
-
-        val progressDialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Downloading Update")
-            .setView(layout)
-            .setCancelable(false)
-            .show()
-
-        lifecycleScope.launch(Dispatchers.IO) {
+        job = lifecycleScope.launch(Dispatchers.IO) {
+            val target = File(dir, fileName)
+            val part = File(dir, "$fileName.part")
+            var conn: HttpURLConnection? = null
             try {
-                val url = URL(downloadUrl)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.connect()
+                val c = (URL(url).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 15000
+                    readTimeout = 20000
+                    instanceFollowRedirects = true
+                }
+                conn = c
+                c.connect()
+                if (c.responseCode !in 200..299) {
+                    throw java.io.IOException("Server returned HTTP ${c.responseCode}")
+                }
 
-                val fileLength = connection.contentLength
-                val input = connection.inputStream
 
-                val outputFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
-                val output = FileOutputStream(outputFile)
+                val total = c.getHeaderField("Content-Length")?.toLongOrNull() ?: c.contentLength.toLong()
+                var downloaded = 0L
+                var lastPercent = -1
+                var lastMb = -1L
 
-                val data = ByteArray(4096)
-                var total: Long = 0
-                var count: Int
+                c.inputStream.use { input ->
+                    FileOutputStream(part).use { output ->
+                        val buffer = ByteArray(16 * 1024)
+                        while (true) {
+                            ensureActive()
+                            val n = input.read(buffer)
+                            if (n == -1) break
+                            output.write(buffer, 0, n)
+                            downloaded += n
 
-                while (input.read(data).also { count = it } != -1) {
-                    total += count
-                    val progress = ((total * 100) / fileLength).toInt()
-                    withContext(Dispatchers.Main) {
-                        progressIndicator.progress = progress
-                        tvProgress.text = "$progress%"
+                            if (total > 0) {
+                                val pct = ((downloaded * 100) / total).toInt()
+                                if (pct != lastPercent) {
+                                    lastPercent = pct
+                                    withContext(Dispatchers.Main) {
+                                        progress.update(pct, "$pct%  ·  ${formatMb(downloaded)} of ${formatMb(total)}")
+                                    }
+                                }
+                            } else {
+                                val mbNow = downloaded / (1024 * 1024)
+                                if (mbNow != lastMb) {
+                                    lastMb = mbNow
+                                    withContext(Dispatchers.Main) {
+                                        progress.setIndeterminate("${formatMb(downloaded)} downloaded")
+                                    }
+                                }
+                            }
+                        }
+                        output.flush()
                     }
-                    output.write(data, 0, count)
                 }
 
-                output.flush()
-                output.close()
-                input.close()
+                if (total > 0 && downloaded != total) throw java.io.IOException("Download was incomplete")
+                if (target.exists()) target.delete()
+                if (!part.renameTo(target)) throw java.io.IOException("Could not save the file")
 
                 withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    installApk(outputFile)
+                    progress.dismiss()
+                    installApk(target, finishAfterInstall)
                 }
+            } catch (e: CancellationException) {
+                part.delete()
+                withContext(NonCancellable + Dispatchers.Main) {
+                    progress.dismiss()
+                    if (finishAfterInstall) showShizukuRequiredDialog()
+                }
+                throw e
             } catch (e: Exception) {
+                part.delete()
                 withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    Toasty.error(this@MainActivity, "Update failed: ${e.message}", Toast.LENGTH_SHORT, true).show()
+                    progress.dismiss()
+                    Toasty.error(this@MainActivity, "Download failed: ${e.message}", Toast.LENGTH_LONG, true).show()
+                    if (finishAfterInstall) showShizukuRequiredDialog()
                 }
+            } finally {
+                conn?.disconnect()
             }
         }
     }
@@ -483,12 +551,19 @@ class MainActivity : AppCompatActivity() {
     private fun checkShizukuStatus() {
         if (isShizukuInstalled()) {
             if (Shizuku.pingBinder()) {
-                if (hasShizukuPermission()) fetchSystemStatuses()
+                if (hasShizukuPermission()) {
+                    updateShizukuBannerUI(true)
+                    fetchSystemStatuses()
+                } else {
+                    updateShizukuBannerUI(false)
+                }
             } else {
+                updateShizukuBannerUI(false)
                 Toasty.warning(this, "Shizuku is installed but not running. Launching app...", Toast.LENGTH_LONG, true).show()
                 launchShizukuApp()
             }
         } else {
+            updateShizukuBannerUI(false)
             showShizukuRequiredDialog()
         }
     }
@@ -743,7 +818,7 @@ class MainActivity : AppCompatActivity() {
                     return@handlePremiumFeature
                 }
 
-                // Using 'sm fstrim' cleanly triggers Android's Storage Manager to trim all mounted volumes
+
                 runAdbCommand("sm fstrim", "Storage Optimized (Fstrim complete)", showAd = true) {
                     findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Recently Optimized"
                 }
@@ -772,16 +847,17 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<CardView>(R.id.cardThermalThrottling).setOnClickListener {
             handlePremiumFeature {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Warning: High Temperatures")
-                    .setMessage("Disabling Thermal Throttling tricks the device into thinking it is cool, forcing maximum performance. Your device WILL get hot. Use with caution.\n\nProceed?")
-                    .setPositiveButton("Enable") { _, _ ->
+                Sheet(this)
+                    .icon(R.drawable.ic_warning, Color.parseColor("#E53935"))
+                    .title("Disable thermal throttling?")
+                    .message("This tricks the device into thinking it is cool, forcing maximum performance. Your device WILL get hot. Use with caution.")
+                    .button("Cancel", SheetStyle.TONAL)
+                    .button("Enable", SheetStyle.DANGER) {
                         runAdbCommand("cmd thermalservice override-status 0", "Thermal Throttling Disabled") {
                             prefs.edit().putBoolean("ThermalDisabled", true).apply()
                             fetchSystemStatuses()
                         }
                     }
-                    .setNegativeButton("Cancel", null)
                     .show()
             }
         }
@@ -877,6 +953,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnResetAll).setOnClickListener {
+            Sheet(this)
+                .icon(R.drawable.ic_reset, Color.parseColor("#E53935"))
+                .title("Reset all functions?")
+                .message("This restores every tweak to its default (refresh rate, resolution, DNS, animations, thermal limits, game mode and more) and stops the crosshair and monitor overlays.")
+                .button("Cancel", SheetStyle.TONAL)
+                .button("Reset all", SheetStyle.DANGER) { resetAllFunctions(prefs) }
+                .show()
+        }
+    }
+
+    private fun resetAllFunctions(prefs: android.content.SharedPreferences) {
+        run {
             val lastGame = prefs.getString("LastGameMode", "")
             val gameModeReset = if (lastGame.isNullOrEmpty()) "" else "cmd game mode standard $lastGame && "
 
@@ -956,18 +1044,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showResolutionModeDialog() {
-        val options = arrayOf("Direct Change (In-App)", "Floating Menu (Overlay)")
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Change Resolution")
-            .setItems(options) { _, which ->
-                if (which == 0) {
-                    showResolutionDialog()
-                } else if (which == 1) {
-                    launchFloatingResolution()
-                }
-            }
-            .setNegativeButton("Cancel", null)
+        val sheet = Sheet(this)
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        list.addView(optionRow(
+            this, "Direct change", "Set the resolution right here in the app",
+            icon = Ui.drawable(this, R.drawable.ic_tune)
+        ) {
+            sheet.dismiss()
+            showResolutionDialog()
+        })
+        list.addView(optionRow(
+            this, "Floating menu", "A draggable panel you can use on top of any game",
+            icon = Ui.drawable(this, R.drawable.ic_play)
+        ) {
+            sheet.dismiss()
+            launchFloatingResolution()
+        })
+        sheet.icon(R.drawable.ic_tune)
+            .title("Change resolution")
+            .message("Lower resolutions can boost frame rates and battery life.")
+            .content(list)
+            .button("Cancel", SheetStyle.TEXT)
             .show()
     }
 
@@ -983,225 +1080,283 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showRemoveAdsDialog() {
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-        val scrollContainer = android.widget.ScrollView(this)
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(64, 48, 64, 32)
-        }
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
+        val gold = Color.parseColor("#E0A800")
+        var buyMode = false
 
-        val usernameLayout = TextInputLayout(this).apply {
-            hint = "Username"
-            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-        val usernameInput = TextInputEditText(usernameLayout.context).apply {
-            inputType = InputType.TYPE_CLASS_TEXT
-            maxLines = 1
-        }
-        usernameLayout.addView(usernameInput)
 
-        val passwordLayout = TextInputLayout(this).apply {
-            hint = "Password"
-            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f)
-            endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 32 }
+        val toggle = com.google.android.material.button.MaterialButtonToggleGroup(this).apply {
+            isSingleSelection = true
+            isSelectionRequired = true
         }
-        val passwordInput = TextInputEditText(passwordLayout.context).apply {
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            maxLines = 1
+        val loginTab = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "Log in"
+            isAllCaps = false
+            id = View.generateViewId()
+            layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
         }
-        passwordLayout.addView(passwordInput)
+        val buyTab = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "Get Premium"
+            isAllCaps = false
+            id = View.generateViewId()
+            layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
+        }
+        toggle.addView(loginTab)
+        toggle.addView(buyTab)
 
-        val tvDeviceId = TextView(this).apply {
-            text = "Your Device ID: $deviceId"
+        val benefits = infoCard(
+            this,
+            "✓  No ads, ever\n✓  Every premium tweak unlocked\n✓  Works on up to 2 devices\n✓  One-time $3 payment, lifetime access",
+            gold
+        )
+
+        val (userLayout, userEdit) = styledField(this, "Username", InputType.TYPE_CLASS_TEXT)
+        val (passLayout, passEdit) = styledField(
+            this, "Password",
+            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD,
+            password = true
+        )
+
+        val errorView = TextView(this).apply {
+            visibility = View.GONE
             textSize = 13f
-            setTextColor(Color.GRAY)
-            gravity = android.view.Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = 48
-                bottomMargin = 16
-            }
+            setTextColor(Color.parseColor("#E53935"))
+            setPadding(dp(4), dp(8), dp(4), 0)
+        }
+        fun showError(msg: String?) {
+            errorView.text = msg ?: ""
+            errorView.visibility = if (msg.isNullOrEmpty()) View.GONE else View.VISIBLE
         }
 
-        val copyIdButton = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "Copy Device ID"
-            cornerRadius = 50
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = 8 }
-            setOnClickListener {
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                val clip = android.content.ClipData.newPlainText("Device ID", deviceId)
-                clipboard.setPrimaryClip(clip)
-                Toasty.success(this@MainActivity, "Device ID Copied!", Toast.LENGTH_SHORT, true).show()
-            }
+        val deviceRow = optionRow(
+            this, "Device ID", deviceId,
+            icon = Ui.drawable(this, R.drawable.ic_lock)
+        ) {
+            val cb = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            cb.setPrimaryClip(android.content.ClipData.newPlainText("Device ID", deviceId))
+            Toasty.success(this, "Device ID copied", Toast.LENGTH_SHORT, true).show()
         }
 
-        val buyPremiumButton = MaterialButton(this).apply {
-            text = "Buy Premium via PayPal"
-            cornerRadius = 50
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 8 }
+        val note = infoCard(
+            this,
+            "Your password is never sent or stored as text. It is turned into a one-way hash on this device before it is used."
+        )
 
-            setOnClickListener {
-                val user = usernameInput.text.toString().trim()
-                val pass = passwordInput.text.toString().trim()
+        val form = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(benefits)
+            addView(userLayout)
+            addView(passLayout)
+            addView(errorView)
+            addView(deviceRow)
+            addView(note, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(12) })
+        }
+        (benefits.layoutParams as? LinearLayout.LayoutParams)?.bottomMargin = dp(4)
 
-                if (user.isEmpty() || pass.isEmpty()) {
-                    Toasty.warning(this@MainActivity, "Please enter your desired Username and Password first!", Toast.LENGTH_LONG, true).show()
-                    return@setOnClickListener
+        val sheet = Sheet(this)
+        sheet.icon(R.drawable.ic_crown, gold)
+            .title("Premium")
+            .message("Log in with the account you created when you purchased.")
+            .content(toggle)
+            .content(form)
+
+
+        fun readFields(forPurchase: Boolean): Pair<String, String>? {
+            val user = userEdit.text.toString().trim()
+            val pass = passEdit.text.toString()
+            if (user.isEmpty() || pass.isEmpty()) {
+                showError("Please enter a username and password.")
+                return null
+            }
+            if (forPurchase) {
+                if (!Regex("^[A-Za-z0-9_.-]{3,32}\$").matches(user)) {
+                    showError("Username must be 3-32 letters, numbers, dots, dashes or underscores.")
+                    return null
                 }
+                if (pass.length < 6) {
+                    showError("Use a password with at least 6 characters.")
+                    return null
+                }
+            }
+            showError(null)
+            return user to pass
+        }
 
-                val encodedUser = Uri.encode(user)
-                val encodedPass = Uri.encode(pass)
-                val encodedDevice = Uri.encode(deviceId)
 
+        sheet.button("Log in", SheetStyle.PRIMARY, dismiss = false) { btn ->
+            val (user, pass) = readFields(false) ?: return@button
+            btn.isEnabled = false
+            btn.text = "Verifying…"
+            verifyPremiumAccount(user, pass) { ok, message ->
+                btn.isEnabled = true
+                btn.text = "Log in"
+                if (ok) sheet.dismiss() else showError(message)
+            }
+        }
+
+        sheet.button("Pay \$3 with PayPal", SheetStyle.PRIMARY, dismiss = false) { btn ->
+            val (user, pass) = readFields(true) ?: return@button
+            btn.isEnabled = false
+            lifecycleScope.launch {
+                val hash = withContext(Dispatchers.Default) { hashPassword(user, pass) }
+                btn.isEnabled = true
                 val paypalEmail = "vestalkimqq02@gmail.com"
                 val price = "3.00"
-
                 val paymentUrl = "https://www.paypal.com/cgi-bin/webscr" +
                         "?cmd=_xclick" +
                         "&business=$paypalEmail" +
                         "&item_name=Benimaru+Premium+Unlock" +
                         "&amount=$price" +
                         "&currency_code=USD" +
-                        "&on0=Username&os0=$encodedUser" +
-                        "&on1=Device+ID&os1=$encodedDevice" +
-                        "&on2=Password&os2=$encodedPass" +
-                        "&custom=$encodedUser|$encodedPass|$encodedDevice"
-
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl))
-                startActivity(intent)
+                        "&on0=Username&os0=${Uri.encode(user)}" +
+                        "&on1=Device+ID&os1=${Uri.encode(deviceId)}" +
+                        "&on2=Password+hash&os2=${Uri.encode(hash)}" +
+                        "&custom=${Uri.encode("$user|$hash|$deviceId")}"
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl)))
             }
         }
 
-
-        val telegramButton = MaterialButton(this).apply {
-            text = "Buy Direct to Developer"
-            cornerRadius = 50
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 8 }
-
-            setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benimarux1k"))
-                startActivity(intent)
+        sheet.button("Buy directly via Telegram", SheetStyle.TONAL, dismiss = false) { btn ->
+            val (user, pass) = readFields(true) ?: return@button
+            btn.isEnabled = false
+            lifecycleScope.launch {
+                val hash = withContext(Dispatchers.Default) { hashPassword(user, pass) }
+                btn.isEnabled = true
+                val cb = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cb.setPrimaryClip(
+                    android.content.ClipData.newPlainText(
+                        "Premium account",
+                        "Username: $user\nDevice ID: $deviceId\nPassword hash: $hash"
+                    )
+                )
+                Toasty.info(this@MainActivity, "Account details copied. Paste them in the chat.", Toast.LENGTH_LONG, true).show()
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benimarux1k")))
             }
         }
+        sheet.button("Close", SheetStyle.TEXT)
+        sheet.show()
 
-        layout.addView(usernameLayout)
-        layout.addView(passwordLayout)
-        layout.addView(tvDeviceId)
-        layout.addView(copyIdButton)
-        layout.addView(buyPremiumButton)
-        layout.addView(telegramButton)
-
-        scrollContainer.addView(layout)
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Premium Login")
-            .setMessage("Buy Premium Login for only 3 usd to permanently unlock all Premium Cards and remove ads.")
-            .setView(scrollContainer)
-            .setPositiveButton("Login") { _, _ ->
-                val user = usernameInput.text.toString().trim()
-                val pass = passwordInput.text.toString().trim()
-                if (user.isNotEmpty() && pass.isNotEmpty()) {
-                    verifyPremiumAccount(user, pass)
-                } else {
-                    Toasty.warning(this, "Please fill in all fields", Toast.LENGTH_SHORT, true).show()
-                }
+        fun applyMode() {
+            sheet.messageView?.text = if (buyMode)
+                "Choose a username and password. After you pay, your account is activated and you can log in."
+            else
+                "Log in with the account you created when you purchased."
+            benefits.visibility = if (buyMode) View.VISIBLE else View.GONE
+            sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
+            sheet.buttonViews[1].visibility = if (buyMode) View.VISIBLE else View.GONE
+            sheet.buttonViews[2].visibility = if (buyMode) View.VISIBLE else View.GONE
+            showError(null)
+        }
+        toggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                buyMode = checkedId == buyTab.id
+                applyMode()
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        toggle.check(loginTab.id)
+        applyMode()
     }
 
-    private fun verifyPremiumAccount(username: String, pass: String) {
-        val deviceId = Secure.getString(contentResolver, Secure.ANDROID_ID)
 
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Verifying...")
-            .setMessage("Checking account on server...")
-            .setCancelable(false)
-            .show()
+    private fun hashPassword(username: String, password: String): String {
+        val salt = "benimaru:${username.trim().lowercase()}".toByteArray(Charsets.UTF_8)
+        val key = pbkdf2HmacSha256(password.toByteArray(Charsets.UTF_8), salt, 100_000, 32)
+        return key.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun pbkdf2HmacSha256(password: ByteArray, salt: ByteArray, iterations: Int, dkLen: Int): ByteArray {
+        val mac = javax.crypto.Mac.getInstance("HmacSHA256")
+        mac.init(javax.crypto.spec.SecretKeySpec(password, "HmacSHA256"))
+        val result = ByteArray(dkLen)
+        var offset = 0
+        var block = 1
+        while (offset < dkLen) {
+            mac.update(salt)
+            mac.update(byteArrayOf((block ushr 24).toByte(), (block ushr 16).toByte(), (block ushr 8).toByte(), block.toByte()))
+            var u = mac.doFinal()
+            val t = u.copyOf()
+            for (i in 1 until iterations) {
+                u = mac.doFinal(u)
+                for (j in t.indices) t[j] = (t[j].toInt() xor u[j].toInt()).toByte()
+            }
+            val len = minOf(t.size, dkLen - offset)
+            System.arraycopy(t, 0, result, offset, len)
+            offset += len
+            block++
+        }
+        return result
+    }
+
+
+    private fun verifyPremiumAccount(username: String, pass: String, onDone: (Boolean, String) -> Unit) {
+        val deviceId = Secure.getString(contentResolver, Secure.ANDROID_ID) ?: ""
 
         lifecycleScope.launch(Dispatchers.IO) {
+            var ok = false
+            var reason = "Invalid username or password."
             try {
-                val url = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/users.json")
-                val conn = url.openConnection() as HttpURLConnection
+                val hash = hashPassword(username, pass)
+                val conn = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/users.json")
+                    .openConnection() as HttpURLConnection
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
 
-                if (conn.responseCode == 200) {
-                    val jsonString = conn.inputStream.bufferedReader().readText()
-                    val jsonObject = JSONObject(jsonString)
-                    val usersArray = jsonObject.getJSONArray("users")
+                conn.useCaches = false
 
-                    var isValid = false
-                    var reason = "Invalid username or password."
+                if (conn.responseCode == 200) {
+                    val jsonObject = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+                    val usersArray = jsonObject.getJSONArray("users")
 
                     for (i in 0 until usersArray.length()) {
                         val userObj = usersArray.getJSONObject(i)
-                        if (userObj.getString("username") == username && userObj.getString("password") == pass) {
-                            val devices = userObj.getJSONArray("devices")
-                            if (devices.length() > 2) {
-                                reason = "Account limits exceeded (Max 2 devices allowed)."
-                            } else {
-                                var deviceFound = false
+                        if (!userObj.optString("username").equals(username.trim(), ignoreCase = true)) continue
+
+                        val passwordMatches = if (userObj.has("passwordHash")) {
+                            MessageDigest.isEqual(
+                                hash.toByteArray(),
+                                userObj.getString("passwordHash").trim().lowercase().toByteArray()
+                            )
+                        } else {
+                            userObj.optString("password") == pass
+                        }
+                        if (!passwordMatches) break
+
+                        val devices = userObj.optJSONArray("devices")
+                        if (devices != null && devices.length() > 2) {
+                            reason = "Account limit exceeded (max 2 devices allowed)."
+                        } else {
+                            var deviceFound = false
+                            if (devices != null) {
                                 for (j in 0 until devices.length()) {
-                                    if (devices.getString(j) == deviceId) {
-                                        deviceFound = true
-                                        break
-                                    }
-                                }
-                                if (deviceFound) {
-                                    isValid = true
-                                } else {
-                                    reason = "Device not authorized. Send this ID to admin: $deviceId"
+                                    if (devices.getString(j) == deviceId) { deviceFound = true; break }
                                 }
                             }
-                            break
+                            if (deviceFound) ok = true
+                            else reason = "This device isn't authorized yet. Send this ID to the admin: $deviceId"
                         }
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        dialog.dismiss()
-                        if (isValid) {
-                            val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-                            prefs.edit().putBoolean("AdsRemoved", true).apply()
-                            findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
-                            updatePremiumButtonUI()
-                            Toasty.success(this@MainActivity, "Premium Activated! Ads Removed & Features Unlocked.", Toast.LENGTH_LONG, true).show()
-                        } else {
-                            Toasty.error(this@MainActivity, reason, Toast.LENGTH_LONG, true).show()
-                        }
+                        break
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        dialog.dismiss()
-                        Toasty.error(this@MainActivity, "Server Error: ${conn.responseCode}", Toast.LENGTH_SHORT, true).show()
-                    }
+                    reason = "Server error (${conn.responseCode}). Please try again."
                 }
+                conn.disconnect()
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    dialog.dismiss()
-                    Toasty.error(this@MainActivity, "Network Error. Please check connection.", Toast.LENGTH_SHORT, true).show()
+                reason = "Network error. Please check your connection."
+            }
+
+            withContext(Dispatchers.Main) {
+                if (ok) {
+                    getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
+                        .putBoolean("AdsRemoved", true)
+                        .putString("PremiumUser", username.trim())
+                        .apply()
+                    findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
+                    updatePremiumButtonUI()
+                    Toasty.success(this@MainActivity, "Premium activated. Ads removed and features unlocked.", Toast.LENGTH_LONG, true).show()
                 }
+                onDone(ok, reason)
             }
         }
     }
@@ -1231,296 +1386,223 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDnsDialog() {
-        val dnsOptions = arrayOf(
-            "Control D (Blocks ads/trackers)",
-            "Cloudflare (Fastest, no logs)",
-            "Quad9 (Blocks malicious links)",
-            "NextDNS (Personalized blocking)",
-            "Google (Stable and reliable)",
-            "Default (Off / Automatic)"
+        data class Dns(val name: String, val desc: String, val host: String)
+        val providers = listOf(
+            Dns("Control D", "Blocks ads and trackers", "p2.freedns.controld.com"),
+            Dns("Cloudflare", "Fastest, no logs", "one.one.one.one"),
+            Dns("Quad9", "Blocks malicious links", "dns.quad9.net"),
+            Dns("NextDNS", "Personalized blocking", "dns.nextdns.io"),
+            Dns("Google", "Stable and reliable", "dns.google")
         )
+        val current = findViewById<TextView>(R.id.tvStatusDns).text.toString()
 
-        val dnsHostnames = arrayOf(
-            "p2.freedns.controld.com",
-            "one.one.one.one",
-            "dns.quad9.net",
-            "dns.nextdns.io",
-            "dns.google",
-            ""
-        )
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val sheet = Sheet(this)
+            .icon(R.drawable.ic_lock)
+            .title("Private DNS")
+            .message("Choose a provider for ad blocking, tracker protection and lower latency.")
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Select Custom DNS")
-            .setItems(dnsOptions) { _, which ->
-                val selectedHostname = dnsHostnames[which]
-                if (selectedHostname.isEmpty()) {
-                    val cmd = "settings put global private_dns_mode default && settings delete global private_dns_specifier"
-                    runAdbCommand(cmd, "DNS reset to Default", showAd = false) { fetchSystemStatuses() }
-                } else {
-                    val cmd = "settings put global private_dns_mode hostname && settings put global private_dns_specifier $selectedHostname"
-                    runAdbCommand(cmd, "DNS set to $selectedHostname", showAd = true) { fetchSystemStatuses() }
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        providers.forEach { p ->
+            list.addView(optionRow(this, p.name, "${p.desc}  ·  ${p.host}", selected = current.contains(p.host)) {
+                sheet.dismiss()
+                val cmd = "settings put global private_dns_mode hostname && settings put global private_dns_specifier ${p.host}"
+                runAdbCommand(cmd, "DNS set to ${p.name}", showAd = true) { fetchSystemStatuses() }
+            })
+        }
+        list.addView(optionRow(this, "Default", "Turn private DNS off (automatic)", selected = current.contains("Default")) {
+            sheet.dismiss()
+            val cmd = "settings put global private_dns_mode default && settings delete global private_dns_specifier"
+            runAdbCommand(cmd, "DNS reset to default", showAd = false) { fetchSystemStatuses() }
+        })
+
+        sheet.content(list).button("Cancel", SheetStyle.TEXT).show()
     }
 
     private fun showRefreshRateDialog() {
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(64, 48, 64, 32)
+        val (minLayout, minInput) = styledField(this, "Minimum (Hz)", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+        val (maxLayout, maxInput) = styledField(this, "Maximum (Hz)", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+
+        val fields = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            minLayout.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            maxLayout.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                .apply { marginStart = dp(10) }
+            addView(minLayout)
+            addView(maxLayout)
         }
 
-        val minLayout = TextInputLayout(this).apply {
-            hint = "Min Refresh Rate (e.g., 60)"
-            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-        val minInput = TextInputEditText(minLayout.context).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            maxLines = 1
-        }
-        minLayout.addView(minInput)
 
-        val maxLayout = TextInputLayout(this).apply {
-            hint = "Max Refresh Rate (e.g., 120)"
-            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 32 }
+        val presetRates = listOf(60, 90, 120, 144)
+        val presets = presetRow(this, presetRates.map { "$it Hz" }) { i ->
+            minInput.setText(presetRates[i].toString())
+            maxInput.setText(presetRates[i].toString())
         }
-        val maxInput = TextInputEditText(maxLayout.context).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            maxLines = 1
-        }
-        maxLayout.addView(maxInput)
 
-        layout.addView(minLayout)
-        layout.addView(maxLayout)
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Adjust Refresh Rate")
-            .setView(layout)
-            .setPositiveButton("Apply") { _, _ ->
-                val min = minInput.text.toString().trim()
-                val max = maxInput.text.toString().trim()
-                if (min.isNotEmpty() && max.isNotEmpty()) {
-                    val cmd = "settings put system min_refresh_rate $min && settings put system peak_refresh_rate $max"
-                    runAdbCommand(cmd, "Refresh rate set to $min - $max Hz", showAd = true) {
-                        fetchSystemStatuses()
+        val sheet = Sheet(this)
+        sheet.icon(R.drawable.ic_tune)
+            .title("Refresh rate")
+            .message("Pick a preset or set your own range. Not every phone supports every rate.")
+            .content(presets)
+            .content(fields)
+            .button("Cancel", SheetStyle.TONAL)
+            .button("Apply", SheetStyle.PRIMARY, dismiss = false) {
+                val min = minInput.text.toString().trim().toIntOrNull()
+                val max = maxInput.text.toString().trim().toIntOrNull()
+                when {
+                    min == null || max == null -> Toasty.warning(this, "Please enter valid numbers", Toast.LENGTH_SHORT, true).show()
+                    min !in 30..240 || max !in 30..240 -> Toasty.warning(this, "Use a value between 30 and 240 Hz", Toast.LENGTH_SHORT, true).show()
+                    min > max -> Toasty.warning(this, "Minimum can't be higher than maximum", Toast.LENGTH_SHORT, true).show()
+                    else -> {
+                        sheet.dismiss()
+                        val cmd = "settings put system min_refresh_rate $min && settings put system peak_refresh_rate $max"
+                        runAdbCommand(cmd, "Refresh rate set to $min - $max Hz", showAd = true) { fetchSystemStatuses() }
                     }
-                } else {
-                    Toasty.warning(this, "Please enter valid numbers", Toast.LENGTH_SHORT, true).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
             .show()
     }
 
     private fun showResolutionDialog() {
         val metrics = resources.displayMetrics
-
         val currentDpi = metrics.densityDpi
         val currentWidth = metrics.widthPixels.toFloat()
         val currentHeight = metrics.heightPixels.toFloat()
-
-
         val aspectRatio = currentHeight / currentWidth
-
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(64, 48, 64, 32)
-        }
 
         val autoMatchSwitch = MaterialSwitch(this).apply {
             text = "Auto-match aspect ratio"
             isChecked = false
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = 32 }
         }
-        layout.addView(autoMatchSwitch)
+        val (widthLayout, widthInput) = styledField(this, "Width (now ${currentWidth.toInt()})", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+        val (heightLayout, heightInput) = styledField(this, "Height (now ${currentHeight.toInt()})", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
 
-        val widthLayout = TextInputLayout(this).apply {
-            hint = "Width (Current: ${currentWidth.toInt()})"
-            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
+        val fields = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            widthLayout.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            heightLayout.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                .apply { marginStart = dp(10) }
+            addView(widthLayout)
+            addView(heightLayout)
         }
-        val widthInput = TextInputEditText(widthLayout.context).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            maxLines = 1
-        }
-        widthLayout.addView(widthInput)
-
-        val heightLayout = TextInputLayout(this).apply {
-            hint = "Height (Current: ${currentHeight.toInt()})"
-            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-            setBoxCornerRadii(24f, 24f, 24f, 24f)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 32 }
-        }
-        val heightInput = TextInputEditText(heightLayout.context).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            maxLines = 1
-        }
-        heightLayout.addView(heightInput)
-
-        layout.addView(widthLayout)
-        layout.addView(heightLayout)
 
         var isAutoCalculating = false
-
-        val widthWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                if (autoMatchSwitch.isChecked && !isAutoCalculating) {
-                    val wStr = s.toString()
+        fun link(source: TextInputEditText, target: TextInputEditText, calc: (Int) -> Int) {
+            source.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable?) {
+                    if (!autoMatchSwitch.isChecked || isAutoCalculating) return
                     isAutoCalculating = true
-                    if (wStr.isNotEmpty()) {
-                        val w = wStr.toIntOrNull()
-                        if (w != null) {
-                            val calculatedHeight = (w * aspectRatio).toInt()
-                            heightInput.setText(calculatedHeight.toString())
-                        }
-                    } else {
-                        heightInput.setText("")
-                    }
+                    val v = s.toString().toIntOrNull()
+                    target.setText(if (v != null) calc(v).toString() else "")
                     isAutoCalculating = false
                 }
-            }
+            })
         }
-
-        val heightWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                if (autoMatchSwitch.isChecked && !isAutoCalculating) {
-                    val hStr = s.toString()
-                    isAutoCalculating = true
-                    if (hStr.isNotEmpty()) {
-                        val h = hStr.toIntOrNull()
-                        if (h != null) {
-                            val calculatedWidth = (h / aspectRatio).toInt()
-                            widthInput.setText(calculatedWidth.toString())
-                        }
-                    } else {
-                        widthInput.setText("")
-                    }
-                    isAutoCalculating = false
-                }
-            }
-        }
-
-        widthInput.addTextChangedListener(widthWatcher)
-        heightInput.addTextChangedListener(heightWatcher)
+        link(widthInput, heightInput) { (it * aspectRatio).toInt() }
+        link(heightInput, widthInput) { (it / aspectRatio).toInt() }
 
         autoMatchSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && !isAutoCalculating) {
-                if (widthInput.text?.isNotEmpty() == true) {
-                    val w = widthInput.text.toString().toIntOrNull()
-                    if (w != null) {
-                        isAutoCalculating = true
-                        val h = (w * aspectRatio).toInt()
-                        heightInput.setText(h.toString())
-                        isAutoCalculating = false
-                    }
-                } else if (heightInput.text?.isNotEmpty() == true) {
-                    val h = heightInput.text.toString().toIntOrNull()
-                    if (h != null) {
-                        isAutoCalculating = true
-                        val w = (h / aspectRatio).toInt()
-                        widthInput.setText(w.toString())
-                        isAutoCalculating = false
-                    }
-                }
-            }
+            if (!isChecked || isAutoCalculating) return@setOnCheckedChangeListener
+            val w = widthInput.text.toString().toIntOrNull()
+            val h = heightInput.text.toString().toIntOrNull()
+            isAutoCalculating = true
+            if (w != null) heightInput.setText((w * aspectRatio).toInt().toString())
+            else if (h != null) widthInput.setText((h / aspectRatio).toInt().toString())
+            isAutoCalculating = false
         }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Change Resolution")
-            .setMessage("DPI will be calculated automatically.")
-            .setView(layout)
-            .setPositiveButton("Preview") { _, _ ->
-                val wStr = widthInput.text.toString().trim()
-                val hStr = heightInput.text.toString().trim()
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(autoMatchSwitch, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dp(12) })
+            addView(fields)
+            addView(infoCard(this@MainActivity, "DPI is calculated automatically. You'll get 6 seconds to confirm, otherwise it reverts."),
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    .apply { topMargin = dp(14) })
+        }
 
-                if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
-                    if (!hasShizukuPermission()) return@setPositiveButton
+        val sheet = Sheet(this)
+        sheet.icon(R.drawable.ic_tune)
+            .title("Change resolution")
+            .content(content)
+            .button("Cancel", SheetStyle.TONAL)
+            .button("Preview", SheetStyle.PRIMARY, dismiss = false) {
+                val newWidth = widthInput.text.toString().trim().toIntOrNull()
+                val newHeight = heightInput.text.toString().trim().toIntOrNull()
+                if (newWidth == null || newHeight == null) {
+                    Toasty.warning(this, "Please enter width and height", Toast.LENGTH_SHORT, true).show()
+                    return@button
+                }
+                if (newWidth < 300 || newHeight < 300) {
+                    Toasty.warning(this, "That resolution is too small", Toast.LENGTH_SHORT, true).show()
+                    return@button
+                }
+                if (!hasShizukuPermission()) return@button
+                sheet.dismiss()
 
+                val scalingRatio = minOf(newWidth / currentWidth, newHeight / currentHeight)
+                val newDpi = (scalingRatio * currentDpi).toInt()
+                val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
 
-                    val newWidth = wStr.toInt()
-                    val newHeight = hStr.toInt()
-
-                    val widthRatio = newWidth.toFloat() / currentWidth
-                    val heightRatio = newHeight.toFloat() / currentHeight
-                    val scalingRatio = minOf(widthRatio, heightRatio)
-
-                    val newDpi = (scalingRatio * currentDpi).toInt()
-
-                    val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
-
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
-                        if (process.waitFor() == 0) {
-                            withContext(Dispatchers.Main) {
-                                showResolutionPreviewCountdown()
-                            }
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+                    if (process.waitFor() == 0) {
+                        withContext(Dispatchers.Main) { showResolutionPreviewCountdown() }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toasty.error(this@MainActivity, "Couldn't apply that resolution", Toast.LENGTH_SHORT, true).show()
                         }
                     }
                 }
             }
-            .setNegativeButton("Cancel", null)
             .show()
     }
 
     private fun showResolutionPreviewCountdown() {
         var timerJob: Job? = null
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Confirm Resolution")
-            .setMessage("Reverting to default in 6 seconds...")
-            .setCancelable(false)
-            .setPositiveButton("Save") { _, _ ->
+        var decided = false
+
+        val bar = LinearProgressIndicator(this).apply {
+            max = 6000
+            progress = 6000
+            isIndeterminate = false
+            trackThickness = dp(8)
+            trackCornerRadius = dp(4)
+            setIndicatorColor(Ui.accent(this@MainActivity))
+        }
+
+        val sheet = Sheet(this)
+        sheet.icon(R.drawable.ic_warning, Color.parseColor("#E09B00"))
+            .title("Keep this resolution?")
+            .message("Reverting in 6 seconds…")
+            .content(bar)
+            .cancelable(false)
+            .button("Revert", SheetStyle.TONAL) {
+                decided = true
+                timerJob?.cancel()
+                runAdbCommand("wm size reset && wm density reset", "Resolution reverted") { fetchSystemStatuses() }
+            }
+            .button("Keep", SheetStyle.PRIMARY) {
+                decided = true
                 timerJob?.cancel()
                 Toasty.success(this, "Resolution saved", Toast.LENGTH_SHORT, true).show()
                 fetchSystemStatuses()
                 showInterstitialAd()
             }
-            .setNegativeButton("Revert") { _, _ ->
-                timerJob?.cancel()
-                runAdbCommand("wm size reset && wm density reset", "Resolution Reverted") {
-                    fetchSystemStatuses()
-                }
-            }
-            .create()
-
-        dialog.show()
+            .show()
 
         timerJob = lifecycleScope.launch(Dispatchers.Main) {
-            for (i in 5 downTo 1) {
-                delay(1000)
-                dialog.setMessage("Reverting to default in $i seconds...")
+            for (step in 60 downTo 0) {
+                bar.progress = step * 100
+                sheet.messageView?.text = "Reverting in ${(step + 9) / 10} seconds…"
+                delay(100)
             }
-            delay(1000)
-
-            if (dialog.isShowing) {
-                dialog.dismiss()
-                runAdbCommand("wm size reset && wm density reset", "Auto-reverted due to timeout") {
-                    fetchSystemStatuses()
-                }
+            if (!decided) {
+                decided = true
+                sheet.dismiss()
+                runAdbCommand("wm size reset && wm density reset", "Auto-reverted: no confirmation") { fetchSystemStatuses() }
             }
         }
     }
@@ -1534,77 +1616,143 @@ class MainActivity : AppCompatActivity() {
         }
 
         val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-        val layout = LinearLayout(this).apply {
+        val styles = listOf(
+            "Cross", "Dot", "Circle", "Cross with Circle", "Square", "Target",
+            "Gap Cross", "Diamond", "Triangle"
+        )
+        val colors = listOf("White", "Black", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
+        val colorValues = listOf(
+            Color.WHITE, Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.CYAN, Color.MAGENTA
+        )
+        val sizes = listOf("Tiny", "Small", "Medium", "Large", "Extra Large")
+
+        var styleIdx = prefs.getInt("CrosshairStyleIdx", 0).coerceIn(styles.indices)
+        var colorIdx = prefs.getInt("CrosshairColorIdx", 2).coerceIn(colors.indices)
+        var sizeIdx = prefs.getInt("CrosshairSizeIdx", 2).coerceIn(sizes.indices)
+        val savedStyle = styleIdx
+        val savedColor = colorIdx
+        val savedSize = sizeIdx
+        val wasEnabled = prefs.getBoolean("CrosshairEnabled", false)
+        var saved = false
+
+        val preview = CrosshairPreviewView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(120))
+        }
+
+        fun refresh() {
+            preview.set(styles[styleIdx], colors[colorIdx], sizes[sizeIdx])
+
+            if (isCrosshairEnabled) pushCrosshair(styles[styleIdx], colors[colorIdx], sizes[sizeIdx])
+        }
+
+        fun sectionLabel(text: String) = TextView(this).apply {
+            this.text = text
+            textSize = 12f
+            letterSpacing = 0.08f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setTextColor(Ui.onSurfaceVariant(this@MainActivity))
+            setPadding(dp(4), dp(18), 0, dp(8))
+        }
+
+
+        val chipGroup = ChipGroup(this).apply {
+            isSingleSelection = true
+            isSelectionRequired = true
+            chipSpacingHorizontal = dp(8)
+        }
+        val chipIds = styles.map { View.generateViewId() }
+        styles.forEachIndexed { i, name ->
+            chipGroup.addView(Chip(this).apply {
+                id = chipIds[i]
+                text = name
+                isCheckable = true
+                isChecked = i == styleIdx
+                isCheckedIconVisible = false
+                ResourcesCompat.getFont(this@MainActivity, R.font.lexendregular)?.let { typeface = it }
+            })
+        }
+        chipGroup.setOnCheckedChangeListener { _, checkedId ->
+            val idx = chipIds.indexOf(checkedId)
+            if (idx >= 0) { styleIdx = idx; refresh() }
+        }
+
+
+        val swatchRow = colorSwatchRow(this, colorValues, colors, colorIdx) { i ->
+            colorIdx = i
+            refresh()
+        }
+
+
+        val sizeLabel = sectionLabel("SIZE  ·  ${sizes[sizeIdx]}")
+        val slider = com.google.android.material.slider.Slider(this).apply {
+            valueFrom = 0f
+            valueTo = (sizes.size - 1).toFloat()
+            stepSize = 1f
+            value = sizeIdx.toFloat()
+            setLabelFormatter { v -> sizes[v.toInt().coerceIn(sizes.indices)] }
+            addOnChangeListener { _, v, fromUser ->
+                if (fromUser) {
+                    sizeIdx = v.toInt()
+                    sizeLabel.text = "SIZE  ·  ${sizes[sizeIdx]}"
+                    refresh()
+                }
+            }
+        }
+
+        val hScroll = HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            addView(chipGroup)
+        }
+
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 32)
+            addView(preview)
+            addView(sectionLabel("SHAPE"))
+            addView(hScroll)
+            addView(sectionLabel("COLOR"))
+            addView(swatchRow)
+            addView(sizeLabel)
+            addView(slider)
         }
+        preview.set(styles[styleIdx], colors[colorIdx], sizes[sizeIdx])
 
-        val styles = arrayOf("Cross", "Dot", "Circle", "Cross with Circle", "Square", "Target")
-        val colors = arrayOf("White", "Black", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta")
-        val sizes = arrayOf("Tiny", "Small", "Medium", "Large", "Extra Large")
-
-        fun updateLive(sIdx: Int, cIdx: Int, szIdx: Int) {
-            if (isCrosshairEnabled) {
-                startCrosshairService(styles[sIdx], colors[cIdx], sizes[szIdx])
-            }
-        }
-
-        var currentStyleIdx = prefs.getInt("CrosshairStyleIdx", 0)
-        var currentColorIdx = prefs.getInt("CrosshairColorIdx", 2)
-        var currentSizeIdx = prefs.getInt("CrosshairSizeIdx", 2)
-
-        fun createSlider(title: String, options: Array<String>, defaultIdx: Int, onProgress: (Int) -> Unit): android.widget.SeekBar {
-            val label = TextView(this).apply {
-                text = "$title: ${options[defaultIdx]}"
-                setPadding(0, 24, 0, 8)
-                textSize = 16f
-                setTextColor(Color.parseColor("#808080"))
-            }
-            val seekBar = android.widget.SeekBar(this).apply {
-                max = options.size - 1
-                progress = defaultIdx
-                setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                        label.text = "$title: ${options[progress]}"
-                        if (fromUser) {
-                            onProgress(progress)
-                            updateLive(currentStyleIdx, currentColorIdx, currentSizeIdx)
-                        }
-                    }
-                    override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                    override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                })
-            }
-            layout.addView(label)
-            layout.addView(seekBar)
-            return seekBar
-        }
-
-        createSlider("Shape", styles, currentStyleIdx) { currentStyleIdx = it }
-        createSlider("Color", colors, currentColorIdx) { currentColorIdx = it }
-        createSlider("Size", sizes, currentSizeIdx) { currentSizeIdx = it }
-
-        val isEnabled = prefs.getBoolean("CrosshairEnabled", false)
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Customize Crosshair")
-            .setView(layout)
-            .setPositiveButton(if (isEnabled) "Save" else "Start") { _, _ ->
+        val sheet = Sheet(this)
+        sheet.icon(R.drawable.ic_tune)
+            .title("Crosshair")
+            .message("Changes show live on your screen once the crosshair is running.")
+            .content(content)
+            .button("Cancel", SheetStyle.TONAL)
+            .button(if (wasEnabled) "Save" else "Start", SheetStyle.PRIMARY) {
+                saved = true
                 prefs.edit()
-                    .putInt("CrosshairStyleIdx", currentStyleIdx)
-                    .putInt("CrosshairColorIdx", currentColorIdx)
-                    .putInt("CrosshairSizeIdx", currentSizeIdx)
+                    .putInt("CrosshairStyleIdx", styleIdx)
+                    .putInt("CrosshairColorIdx", colorIdx)
+                    .putInt("CrosshairSizeIdx", sizeIdx)
                     .apply()
-
-                startCrosshairService(styles[currentStyleIdx], colors[currentColorIdx], sizes[currentSizeIdx])
+                startCrosshairService(styles[styleIdx], colors[colorIdx], sizes[sizeIdx])
             }
-            .setNegativeButton("Cancel", null)
-
-        if (isEnabled) {
-            dialog.setNeutralButton("Turn Off") { _, _ -> stopCrosshairService() }
+        if (wasEnabled) {
+            sheet.button("Turn off", SheetStyle.DANGER) {
+                saved = true
+                stopCrosshairService()
+            }
         }
+        sheet.onDismiss {
 
-        dialog.show()
+            if (!saved && isCrosshairEnabled) {
+                pushCrosshair(styles[savedStyle], colors[savedColor], sizes[savedSize])
+            }
+        }
+        sheet.show()
+    }
+
+
+    private fun pushCrosshair(style: String, color: String, size: String) {
+        startService(Intent(this, CrosshairService::class.java).apply {
+            putExtra("STYLE", style)
+            putExtra("COLOR", color)
+            putExtra("SIZE", size)
+        })
     }
 
     private fun startCrosshairService(style: String, color: String, size: String) {
@@ -1643,294 +1791,324 @@ class MainActivity : AppCompatActivity() {
         Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
     }
 
-    private fun showGameModeSelectorDialog() {
+    private fun findGames(): List<ResolveInfo> {
         val pm = packageManager
         val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        val allApps = pm.queryIntentActivities(intent, 0)
+        return pm.queryIntentActivities(intent, 0)
+            .filter {
+                val appInfo = it.activityInfo.applicationInfo
+                val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
+                val isGameCategory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    appInfo.category == ApplicationInfo.CATEGORY_GAME
+                } else false
+                isGameFlag || isGameCategory
+            }
+            .sortedBy { it.loadLabel(pm).toString().lowercase() }
+    }
 
-        val gameApps = allApps.filter {
-            val appInfo = it.activityInfo.applicationInfo
-            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-            val isGameCategory = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                appInfo.category == ApplicationInfo.CATEGORY_GAME
-            } else false
-            isGameFlag || isGameCategory
-        }
-
-        if (gameApps.isEmpty()) {
+    private fun showGamePicker(title: String, message: String, onPick: (ResolveInfo) -> Unit) {
+        val games = findGames()
+        if (games.isEmpty()) {
             Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
             return
         }
-
-        val adapter = object : ArrayAdapter<ResolveInfo>(this, android.R.layout.select_dialog_item, android.R.id.text1, gameApps) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent) as TextView
-                val app = gameApps[position]
-                view.text = app.loadLabel(pm)
-
-                val icon = app.loadIcon(pm)
-                icon.setBounds(0, 0, 96, 96)
-                view.setCompoundDrawables(icon, null, null, null)
-                view.compoundDrawablePadding = 24
-
-                return view
-            }
+        val pm = packageManager
+        val sheet = Sheet(this)
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        games.forEach { app ->
+            list.addView(optionRow(
+                this, app.loadLabel(pm), app.activityInfo.packageName,
+                icon = app.loadIcon(pm), tintIcon = false
+            ) {
+                sheet.dismiss()
+                onPick(app)
+            })
         }
+        sheet.icon(R.drawable.ic_play)
+            .title(title)
+            .message(message)
+            .content(list)
+            .button("Close", SheetStyle.TEXT)
+            .show()
+    }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Select a game to optimize")
-            .setAdapter(adapter) { _, which ->
-                val selectedApp = gameApps[which]
-                val pkgName = selectedApp.activityInfo.packageName
-                val appName = selectedApp.loadLabel(pm).toString()
+    private fun showGameModeSelectorDialog() {
+        showGamePicker("Native Game Mode", "Pick a game to run in Performance mode.") { selectedApp ->
+            val pkgName = selectedApp.activityInfo.packageName
+            val appName = selectedApp.loadLabel(packageManager).toString()
 
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        var process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode performance $pkgName"), null, null)
-                        var exitCode = process.waitFor()
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    var process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode performance $pkgName"), null, null)
+                    var exitCode = process.waitFor()
 
-                        if (exitCode != 0) {
-                            process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode 2 $pkgName"), null, null)
-                            exitCode = process.waitFor()
+                    if (exitCode != 0) {
+                        process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd game mode 2 $pkgName"), null, null)
+                        exitCode = process.waitFor()
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        if (exitCode == 0) {
+                            Toasty.success(this@MainActivity, "Performance Mode enabled for $appName", Toast.LENGTH_SHORT, true).show()
+                            getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit().putString("LastGameMode", pkgName).apply()
+                            fetchSystemStatuses()
+                            showInterstitialAd()
+                        } else {
+                            Toasty.warning(this@MainActivity, "Your device's custom OS blocks Native Game Mode. Please use the 'Optimize System' or 'Launch Game' buttons instead.", Toast.LENGTH_LONG, true).show()
                         }
-
-                        withContext(Dispatchers.Main) {
-                            if (exitCode == 0) {
-                                Toasty.success(this@MainActivity, "Performance Mode enabled for $appName", Toast.LENGTH_SHORT, true).show()
-                                val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
-                                prefs.edit().putString("LastGameMode", pkgName).apply()
-                                fetchSystemStatuses()
-                                showInterstitialAd()
-                            } else {
-                                Toasty.warning(this@MainActivity, "Your device's custom OS blocks Native Game Mode. Please use the 'Optimize System' or 'Launch Game' buttons instead.", Toast.LENGTH_LONG, true).show()
-                            }
-                        }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            Toasty.error(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT, true).show()
-                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toasty.error(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT, true).show()
                     }
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
     }
 
     private fun showGameLauncherDialog() {
-        val pm = packageManager
-        val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        val allApps = pm.queryIntentActivities(intent, 0)
+        showGamePicker("Launch a game", "Choose a game to start.") { selectedApp ->
+            val pm = packageManager
+            val pkgName = selectedApp.activityInfo.packageName
+            val appName = selectedApp.loadLabel(pm).toString()
 
-        val gameApps = allApps.filter {
-            val appInfo = it.activityInfo.applicationInfo
-            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-            val isGameCategory = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                appInfo.category == ApplicationInfo.CATEGORY_GAME
-            } else false
-            isGameFlag || isGameCategory
-        }
-
-        if (gameApps.isEmpty()) {
-            Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
-            return
-        }
-
-        val adapter = object : ArrayAdapter<ResolveInfo>(this, android.R.layout.select_dialog_item, android.R.id.text1, gameApps) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent) as TextView
-                val app = gameApps[position]
-                view.text = app.loadLabel(pm)
-
-                val icon = app.loadIcon(pm)
-                icon.setBounds(0, 0, 96, 96)
-                view.setCompoundDrawables(icon, null, null, null)
-                view.compoundDrawablePadding = 24
-
-                return view
+            fun launchGame() {
+                val launchIntent = pm.getLaunchIntentForPackage(pkgName)
+                if (launchIntent != null) {
+                    startActivity(launchIntent)
+                } else {
+                    Toasty.error(this, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                }
             }
-        }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Launch a Game")
-            .setAdapter(adapter) { _, which ->
-                val selectedApp = gameApps[which]
-                val pkgName = selectedApp.activityInfo.packageName
-                val appName = selectedApp.loadLabel(pm).toString()
+            Sheet(this)
+                .icon(R.drawable.ic_play)
+                .title(appName)
+                .message("Pre-compiling the game's code can reduce in-game stutter. It takes 10-30 seconds.")
+                .button("Optimize & launch", SheetStyle.PRIMARY) {
+                    val progress = ProgressSheet(this)
+                        .icon(R.drawable.ic_tune)
+                        .title("Optimizing $appName")
+                        .message("Pre-compiling game code. Please keep the app open.")
+                    progress.show(indeterminate = true)
+                    progress.setIndeterminate("Working…")
 
-                MaterialAlertDialogBuilder(this@MainActivity)
-                    .setTitle(appName)
-                    .setMessage("Would you like to pre-compile the game code to prevent in-game stutters, or launch immediately?")
-                    .setPositiveButton("Launch") { _, _ ->
-                        val launchIntent = pm.getLaunchIntentForPackage(pkgName)
-                        if (launchIntent != null) {
-                            startActivity(launchIntent)
-                            Toasty.success(this@MainActivity, "Launching $appName", Toast.LENGTH_SHORT, true).show()
-                        } else {
-                            Toasty.error(this@MainActivity, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
-                        }
-                    }
-                    .setNeutralButton("Optimize & Launch") { _, _ ->
-
-                        val layout = LinearLayout(this@MainActivity).apply {
-                            orientation = LinearLayout.VERTICAL
-                            setPadding(64, 64, 64, 64)
-                            gravity = android.view.Gravity.CENTER
-                        }
-
-                        val progressIndicator = CircularProgressIndicator(this@MainActivity).apply {
-                            isIndeterminate = true
-                        }
-
-                        val tvLoading = TextView(this@MainActivity).apply {
-                            text = "Pre-Compiling DEX Code...\nThis usually takes 10-30 seconds."
-                            gravity = android.view.Gravity.CENTER
-                            setPadding(0, 32, 0, 0)
-                        }
-
-                        layout.addView(progressIndicator)
-                        layout.addView(tvLoading)
-
-                        val progressDialog = MaterialAlertDialogBuilder(this@MainActivity)
-                            .setTitle("Optimizing $appName")
-                            .setView(layout)
-                            .setCancelable(false)
-                            .show()
-
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            try {
-                                val process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd package compile -m speed -f $pkgName"), null, null)
-                                process.waitFor()
-
-                                withContext(Dispatchers.Main) {
-                                    progressDialog.dismiss()
-                                    Toasty.success(this@MainActivity, "$appName optimized successfully!", Toast.LENGTH_SHORT, true).show()
-                                    showInterstitialAd()
-
-                                    val launchIntent = pm.getLaunchIntentForPackage(pkgName)
-                                    if (launchIntent != null) {
-                                        startActivity(launchIntent)
-                                    } else {
-                                        Toasty.error(this@MainActivity, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    progressDialog.dismiss()
-                                    Toasty.error(this@MainActivity, "Optimization failed: ${e.message}", Toast.LENGTH_LONG, true).show()
-                                }
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            val process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd package compile -m speed -f $pkgName"), null, null)
+                            process.waitFor()
+                            withContext(Dispatchers.Main) {
+                                progress.dismiss()
+                                Toasty.success(this@MainActivity, "$appName optimized", Toast.LENGTH_SHORT, true).show()
+                                showInterstitialAd()
+                                launchGame()
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                progress.dismiss()
+                                Toasty.error(this@MainActivity, "Optimization failed: ${e.message}", Toast.LENGTH_LONG, true).show()
                             }
                         }
                     }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+                }
+                .button("Launch now", SheetStyle.TONAL) {
+                    launchGame()
+                    Toasty.success(this, "Launching $appName", Toast.LENGTH_SHORT, true).show()
+                }
+                .button("Cancel", SheetStyle.TEXT)
+                .show()
+        }
     }
 
     private fun showShizukuRequiredDialog() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Shizuku Required")
-            .setMessage("Shizuku is required to use this app. Would you like to download it now?")
-            .setCancelable(false)
-            .setPositiveButton("Download") { _, _ -> downloadShizukuApk() }
-            .setNegativeButton("Dismiss") { _, _ -> finishAffinity() }
+        if (isFinishing || isDestroyed) return
+        Sheet(this)
+            .icon(R.drawable.ic_download)
+            .title("Shizuku required")
+            .message("Benimaru Tool uses Shizuku to apply system tweaks without root. Download it now to continue.")
+            .cancelable(false)
+            .button("Exit", SheetStyle.TONAL) { finishAffinity() }
+            .button("Download", SheetStyle.PRIMARY) { downloadShizukuApk() }
             .show()
     }
 
     private fun downloadShizukuApk() {
-        val downloadUrl = "https://github.com/RikkaApps/Shizuku/releases/download/v13.6.0/shizuku-v13.6.0.r1086.2650830c-release.apk"
-        val fileName = "shizuku-v13.6.0.apk"
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(64, 32, 64, 32)
-        }
-
-        val tvProgress = TextView(this).apply {
-            text = "0%"
-            textSize = 16f
-        }
-
-        val progressIndicator = LinearProgressIndicator(this).apply {
-            isIndeterminate = false
-            max = 100
-            progress = 0
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 16 }
-        }
-
-        layout.addView(tvProgress)
-        layout.addView(progressIndicator)
-
-        val progressDialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Downloading Shizuku")
-            .setView(layout)
-            .setCancelable(false)
-            .show()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val url = URL(downloadUrl)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.connect()
-
-                val fileLength = connection.contentLength
-                val input = connection.inputStream
-
-                val outputFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
-                val output = FileOutputStream(outputFile)
-
-                val data = ByteArray(4096)
-                var total: Long = 0
-                var count: Int
-
-                while (input.read(data).also { count = it } != -1) {
-                    total += count
-                    val progress = ((total * 100) / fileLength).toInt()
-                    withContext(Dispatchers.Main) {
-                        progressIndicator.progress = progress
-                        tvProgress.text = "$progress%"
-                    }
-                    output.write(data, 0, count)
-                }
-
-                output.flush()
-                output.close()
-                input.close()
-
-                withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    installApk(outputFile)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    Toasty.error(this@MainActivity, "Download failed: ${e.message}", Toast.LENGTH_SHORT, true).show()
-                    finishAffinity()
-                }
-            }
-        }
+        downloadAndInstall(
+            "Downloading Shizuku",
+            "https://github.com/RikkaApps/Shizuku/releases/download/v13.6.0/shizuku-v13.6.0.r1086.2650830c-release.apk",
+            "shizuku-v13.6.0.apk",
+            finishAfterInstall = true
+        )
     }
 
-    private fun installApk(file: File) {
-        try {
-            val uri = FileProvider.getUriForFile(
-                this,
-                "${applicationContext.packageName}.provider",
-                file
-            )
+    private fun installApk(file: File, finishAfter: Boolean = true) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+            pendingApk = file
+            Sheet(this)
+                .icon(R.drawable.ic_lock)
+                .title("Allow installs")
+                .message("To install this file, allow Benimaru Tool to install apps. Come back here afterwards and the installer will open.")
+                .button("Not now", SheetStyle.TONAL)
+                .button("Open settings", SheetStyle.PRIMARY) {
+                    startActivity(
+                        Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
+                    )
+                }
+                .show()
+            return
+        }
 
+        try {
+            val uri = FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", file)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
             startActivity(intent)
-            finishAffinity()
+            if (finishAfter) finishAffinity()
         } catch (e: Exception) {
-            Toasty.error(this, "Failed to parse APK: ${e.message}", Toast.LENGTH_LONG, true).show()
-            finishAffinity()
+            Toasty.error(this, "Failed to open installer: ${e.message}", Toast.LENGTH_LONG, true).show()
+        }
+    }
+
+    private fun setupFilterChips() {
+        val chipGroup = findViewById<ChipGroup>(R.id.chipGroupCategories)
+
+        val customTypeface = ResourcesCompat.getFont(this, R.font.lexendregular)
+        val chipIds = listOf(R.id.chipAll, R.id.chipPerformance, R.id.chipDisplay, R.id.chipNetwork, R.id.chipGaming)
+        chipIds.forEach { id ->
+            findViewById<Chip>(id)?.typeface = customTypeface
+        }
+
+        val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions)
+        val displayCards = listOf(R.id.cardAdjustRefreshRate, R.id.cardFastAnimations, R.id.cardDisableBlurs, R.id.cardChangeResolution)
+        val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
+        val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardGameMode)
+
+        val allCards = performanceCards + displayCards + networkCards + gamingCards
+
+        chipGroup.setOnCheckedChangeListener { _, checkedId ->
+            allCards.forEach { findViewById<View>(it)?.visibility = View.GONE }
+
+            val visibleIds = when (checkedId) {
+                R.id.chipPerformance -> performanceCards
+                R.id.chipDisplay -> displayCards
+                R.id.chipNetwork -> networkCards
+                R.id.chipGaming -> gamingCards
+                else -> allCards
+            }
+
+            visibleIds.forEach { id ->
+                findViewById<View>(id)?.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private enum class TweakState { ACTIVE, NEUTRAL, WARN }
+
+
+    private fun setupStatusStyling() {
+        val statusIds = listOf(
+            R.id.tvStatusFixedPerf, R.id.tvStatusOptimize, R.id.tvStatusRefresh, R.id.tvStatusNetwork,
+            R.id.tvStatusTouch, R.id.tvStatusAnimations, R.id.tvStatusBlurs, R.id.tvStatusDnd,
+            R.id.tvStatusDevOptions, R.id.tvStatusResolution, R.id.tvStatusDns, R.id.tvStatusCrosshair,
+            R.id.tvStatusMonitor, R.id.tvStatusGameMode, R.id.tvStatusThermal, R.id.tvStatusFstrim
+        )
+        val states = HashMap<Int, TweakState>()
+        val green = Color.parseColor("#2E9E5B")
+        val amber = Color.parseColor("#E09B00")
+
+        fun stateOf(id: Int, text: String): TweakState {
+            val t = text.removePrefix("Status:").trim()
+            return when {
+                t.isEmpty() || t.startsWith("Default") || t.startsWith("Ready") ||
+                    t.startsWith("Unknown") || t.startsWith("Checking") -> TweakState.NEUTRAL
+                id == R.id.tvStatusDevOptions -> if (t.startsWith("Enabled")) TweakState.WARN else TweakState.ACTIVE
+                id == R.id.tvStatusThermal -> TweakState.WARN
+                id == R.id.tvStatusBlurs -> if (t.startsWith("Disabled")) TweakState.ACTIVE else TweakState.NEUTRAL
+                t.startsWith("Disabled") -> TweakState.NEUTRAL
+                else -> TweakState.ACTIVE
+            }
+        }
+
+        fun refresh() {
+            val active = states.values.count { it != TweakState.NEUTRAL }
+            findViewById<TextView>(R.id.tvActiveSummary)?.text = "$active of ${statusIds.size} active"
+        }
+
+        fun apply(tv: TextView, id: Int) {
+            val st = stateOf(id, tv.text.toString())
+            states[id] = st
+            val color = when (st) {
+                TweakState.ACTIVE -> green
+                TweakState.WARN -> amber
+                TweakState.NEUTRAL -> Color.parseColor("#8A8F98")
+            }
+            tv.setTextColor(color)
+            AppCompatResources.getDrawable(this, R.drawable.ic_status_dot)?.let { d ->
+                val dot = DrawableCompat.wrap(d.mutate())
+                DrawableCompat.setTint(dot, color)
+                tv.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null)
+            }
+            refresh()
+        }
+
+        statusIds.forEach { id ->
+            val tv = findViewById<TextView>(id) ?: return@forEach
+            apply(tv, id)
+            tv.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) {}
+                override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
+                override fun afterTextChanged(s: Editable?) { apply(tv, id) }
+            })
+        }
+    }
+
+    private fun updateShizukuBannerUI(isConnected: Boolean) {
+        val cardShizuku = findViewById<MaterialCardView>(R.id.cardShizukuStatus)
+        val tvShizuku = findViewById<TextView>(R.id.tvShizukuStatus)
+
+        val color = Color.parseColor(if (isConnected) "#4ADE80" else "#FF6B6B")
+        tvShizuku.text = if (isConnected) "Shizuku" else "Offline"
+        tvShizuku.setTextColor(Color.WHITE)
+        cardShizuku.setCardBackgroundColor(Color.parseColor(if (isConnected) "#334ADE80" else "#33FF6B6B"))
+        cardShizuku.strokeColor = Color.parseColor(if (isConnected) "#664ADE80" else "#66FF6B6B")
+
+        AppCompatResources.getDrawable(this, R.drawable.ic_status_dot)?.let { d ->
+            val dot = DrawableCompat.wrap(d.mutate())
+            DrawableCompat.setTint(dot, color)
+            tvShizuku.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null)
+        }
+
+        cardShizuku.setOnClickListener {
+            if (isConnected) {
+                Toasty.success(this, "Shizuku is connected and ready", Toast.LENGTH_SHORT, true).show()
+            } else {
+                checkShizukuStatus()
+            }
+        }
+    }
+
+    private fun setupBottomBarScrollBehavior() {
+        val scrollView = findViewById<NestedScrollView>(R.id.mainScrollView)
+        val bottomBar = findViewById<View>(R.id.floatingBottomBar)
+        var isBottomBarVisible = true
+
+        scrollView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY && isBottomBarVisible) {
+                isBottomBarVisible = false
+                val margin = (bottomBar.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+                bottomBar.animate()
+                    .translationY(bottomBar.height.toFloat() + margin)
+                    .setDuration(250)
+                    .start()
+            } else if (scrollY < oldScrollY && !isBottomBarVisible) {
+                isBottomBarVisible = true
+                bottomBar.animate()
+                    .translationY(0f)
+                    .setDuration(250)
+                    .start()
+            }
         }
     }
 }

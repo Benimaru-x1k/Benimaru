@@ -4,8 +4,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
@@ -73,81 +71,16 @@ class CrosshairService : Service() {
 
 
     private inner class CrosshairView(context: Context) : View(context) {
-        private var paint = Paint().apply {
-            isAntiAlias = true
-            style = Paint.Style.STROKE
-            strokeCap = Paint.Cap.ROUND
-        }
-
-        private var style = "Cross"
-        private var sizePx = 30f
+        private val painter = CrosshairPainter()
 
         fun updateCrosshair(newStyle: String, newColor: String, newSize: String) {
-            this.style = newStyle
-
-
-            paint.color = when (newColor) {
-                "White" -> Color.WHITE
-                "Black" -> Color.BLACK
-                "Red" -> Color.RED
-                "Green" -> Color.GREEN
-                "Blue" -> Color.BLUE
-                "Yellow" -> Color.YELLOW
-                "Cyan" -> Color.CYAN
-                "Magenta" -> Color.MAGENTA
-                else -> Color.RED
-            }
-
-
-            sizePx = when (newSize) {
-                "Tiny" -> 15f
-                "Small" -> 25f
-                "Medium" -> 40f
-                "Large" -> 60f
-                "Extra Large" -> 90f
-                else -> 40f
-            }
-
-            paint.strokeWidth = sizePx / 8f
-
-
+            painter.update(newStyle, newColor, newSize)
             invalidate()
         }
 
         override fun onDraw(canvas: Canvas) {
             super.onDraw(canvas)
-            val cx = width / 2f
-            val cy = height / 2f
-            val halfSize = sizePx / 2f
-
-            when (style) {
-                "Cross" -> {
-                    canvas.drawLine(cx - halfSize, cy, cx + halfSize, cy, paint)
-                    canvas.drawLine(cx, cy - halfSize, cx, cy + halfSize, paint)
-                }
-                "Dot" -> {
-                    paint.style = Paint.Style.FILL
-                    canvas.drawCircle(cx, cy, paint.strokeWidth * 1.5f, paint)
-                    paint.style = Paint.Style.STROKE
-                }
-                "Circle" -> {
-                    canvas.drawCircle(cx, cy, halfSize, paint)
-                }
-                "Cross with Circle" -> {
-                    canvas.drawLine(cx - halfSize, cy, cx + halfSize, cy, paint)
-                    canvas.drawLine(cx, cy - halfSize, cx, cy + halfSize, paint)
-                    canvas.drawCircle(cx, cy, halfSize, paint)
-                }
-                "Square" -> {
-                    canvas.drawRect(cx - halfSize, cy - halfSize, cx + halfSize, cy + halfSize, paint)
-                }
-                "Target" -> {
-                    canvas.drawCircle(cx, cy, halfSize, paint)
-                    paint.style = Paint.Style.FILL
-                    canvas.drawCircle(cx, cy, paint.strokeWidth, paint)
-                    paint.style = Paint.Style.STROKE
-                }
-            }
+            painter.draw(canvas, width / 2f, height / 2f)
         }
     }
 }

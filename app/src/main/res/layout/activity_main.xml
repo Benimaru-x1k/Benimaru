@@ -17,8 +17,9 @@
         android:layout_marginEnd="16dp"
         android:text="Benimaru Tool"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="28sp"
+        android:textSize="26sp"
         android:textStyle="bold"
+        android:letterSpacing="-0.01"
         app:layout_constraintEnd_toStartOf="@+id/btnThemeToggle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -45,14 +46,87 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="16dp"
-        android:text="Powerful ADB Commands to Improve Android Performance without Root"
+        android:text="Performance tweaks powered by Shizuku, no root needed"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
-    <ScrollView
+    <HorizontalScrollView
+        android:id="@+id/chipScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupCategories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"
+            app:selectionRequired="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:checkedIconVisible="false"
+                app:chipCornerRadius="20dp"
+                app:chipStrokeWidth="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All"
+                android:checked="true" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipPerformance"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:checkedIconVisible="false"
+                app:chipCornerRadius="20dp"
+                app:chipStrokeWidth="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Performance" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipDisplay"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:checkedIconVisible="false"
+                app:chipCornerRadius="20dp"
+                app:chipStrokeWidth="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Display" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipNetwork"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:checkedIconVisible="false"
+                app:chipCornerRadius="20dp"
+                app:chipStrokeWidth="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Network" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipGaming"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:checkedIconVisible="false"
+                app:chipCornerRadius="20dp"
+                app:chipStrokeWidth="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gaming" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
@@ -60,10 +134,10 @@
         android:fadingEdgeLength="32dp"
         android:requiresFadingEdge="vertical"
         android:scrollbars="none"
-        app:layout_constraintBottom_toTopOf="@+id/floatingBottomBar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
+        app:layout_constraintTop_toBottomOf="@+id/chipScrollView">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -71,24 +145,26 @@
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="104dp"
+            android:animateLayoutChanges="true">
 
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardDeviceInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/primaryAccent"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/bg_device_card"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="16dp">
 
 
                     <LinearLayout
@@ -102,14 +178,18 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
+
                             <TextView
                                 android:id="@+id/tvDeviceModel"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
                                 android:text="DEVICE INFO"
                                 android:textColor="#FFFFFF"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:textStyle="bold" />
+
                             <TextView
                                 android:id="@+id/tvAndroidVersion"
                                 android:layout_width="wrap_content"
@@ -122,20 +202,31 @@
 
 
                         <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardShizukuStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:cardBackgroundColor="#33000000"
-                            app:cardCornerRadius="12dp"
-                            app:strokeWidth="0dp">
+                            android:layout_marginStart="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#26000000"
+                            app:cardCornerRadius="50dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#40FFFFFF"
+                            app:strokeWidth="1dp">
+
                             <TextView
+                                android:id="@+id/tvShizukuStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:drawablePadding="6dp"
+                                android:gravity="center_vertical"
+                                android:maxLines="1"
                                 android:paddingStart="10dp"
+                                android:paddingTop="4dp"
                                 android:paddingEnd="10dp"
-                                android:paddingTop="6dp"
-                                android:paddingBottom="6dp"
-                                android:text="🟢 ACTIVE"
-                                android:textColor="#4CAF50"
+                                android:paddingBottom="4dp"
+                                android:text="Shizuku"
+                                android:textColor="#FFFFFF"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                         </com.google.android.material.card.MaterialCardView>
@@ -185,6 +276,16 @@
                                     android:text="-- GB"
                                     android:textColor="#FFFFFF"
                                     android:textStyle="bold" />
+                                <com.google.android.material.progressindicator.LinearProgressIndicator
+                                    android:id="@+id/pbRam"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:max="100"
+                                    app:indicatorColor="#FFFFFF"
+                                    app:trackColor="#33FFFFFF"
+                                    app:trackCornerRadius="3dp"
+                                    app:trackThickness="5dp" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
@@ -224,6 +325,16 @@
                                     android:text="-- GB"
                                     android:textColor="#FFFFFF"
                                     android:textStyle="bold" />
+                                <com.google.android.material.progressindicator.LinearProgressIndicator
+                                    android:id="@+id/pbStorage"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:max="100"
+                                    app:indicatorColor="#FFFFFF"
+                                    app:trackColor="#33FFFFFF"
+                                    app:trackCornerRadius="3dp"
+                                    app:trackThickness="5dp" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
@@ -262,6 +373,16 @@
                                     android:text="-- %"
                                     android:textColor="#FFFFFF"
                                     android:textStyle="bold" />
+                                <com.google.android.material.progressindicator.LinearProgressIndicator
+                                    android:id="@+id/pbBattery"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:max="100"
+                                    app:indicatorColor="#FFFFFF"
+                                    app:trackColor="#33FFFFFF"
+                                    app:trackCornerRadius="3dp"
+                                    app:trackThickness="5dp" />
                             </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
@@ -394,6 +515,36 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <LinearLayout
+                android:id="@+id/summaryStrip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/tvSectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tweaks"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tvActiveSummary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_summary_pill"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="5dp"
+                    android:text="0 active"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardFixedPerformance"
@@ -404,9 +555,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -416,17 +567,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Enabled Fixed Performance"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -452,8 +607,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Unknown"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetFixedPerf"
@@ -463,8 +620,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -480,9 +638,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -492,17 +650,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Optimize System Performance"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -528,8 +690,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Ready"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetOptimize"
@@ -539,8 +703,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -556,9 +721,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -568,17 +733,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Adjust Refresh Rate"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -604,8 +773,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetRefresh"
@@ -615,8 +786,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -632,9 +804,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -644,17 +816,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Improve Network Performance"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -680,8 +856,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetNetwork"
@@ -691,8 +869,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -708,9 +887,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -720,17 +899,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Improve Touch Latency and Response"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -756,8 +939,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetTouch"
@@ -767,8 +952,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -784,9 +970,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -796,17 +982,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Speed Up UI Animations"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -832,8 +1022,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetAnimations"
@@ -843,8 +1035,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -860,9 +1053,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -872,17 +1065,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Disable Window Blurs"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -908,8 +1105,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetBlurs"
@@ -919,8 +1118,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -936,9 +1136,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -948,17 +1148,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Gaming Focus Mode"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -984,8 +1188,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetDnd"
@@ -995,8 +1201,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1012,9 +1219,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1024,17 +1231,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★ FREE"
-                        android:textColor="#4CAF50"
-                        android:textSize="12sp"
+                        android:background="@drawable/bg_badge_free"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="FREE"
+                        android:textColor="#2E7D32"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Hide Developer Options"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1060,8 +1271,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetDevOptions"
@@ -1071,8 +1284,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1088,9 +1302,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1100,17 +1314,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Change Screen Resolution"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1136,8 +1354,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetResolution"
@@ -1147,8 +1367,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1164,9 +1385,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1176,17 +1397,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Custom DNS"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1212,8 +1437,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Checking..."
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetDns"
@@ -1223,8 +1450,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1240,9 +1468,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1252,17 +1480,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Enable Crosshair Overlay"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1288,8 +1520,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Disabled"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetCrosshair"
@@ -1299,8 +1533,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1316,9 +1551,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1328,17 +1563,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Real-time Hardware Monitor"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1364,8 +1603,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Disabled"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetMonitor"
@@ -1375,8 +1616,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1393,9 +1635,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1405,17 +1647,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Native Game Mode API"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1441,8 +1687,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Default"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetGameMode"
@@ -1452,8 +1700,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1470,9 +1719,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1482,17 +1731,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Disable Thermal Throttling"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1518,8 +1771,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Default"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetThermal"
@@ -1529,8 +1784,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1546,9 +1802,9 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#30808080"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1558,17 +1814,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
                         android:text="★ PREMIUM"
-                        android:textColor="#FFB300"
-                        android:textSize="12sp"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
                         android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Storage Optimizer (Fstrim)"
                         android:textColor="?android:attr/textColorPrimary"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="match_parent"
@@ -1594,8 +1854,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Status: Ready"
-                            android:textColor="@color/statusText"
-                            android:textSize="14sp"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/btnResetFstrim"
@@ -1605,8 +1867,9 @@
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:padding="4dp"
-                            android:background="?attr/selectableItemBackground"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
                             android:clickable="true"
                             android:focusable="true"/>
                     </LinearLayout>
@@ -1622,7 +1885,7 @@
                 android:orientation="vertical" />
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 
     <com.google.android.material.card.MaterialCardView
@@ -1631,10 +1894,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
+        android:layout_marginBottom="12dp"
         app:cardBackgroundColor="?attr/colorSurface"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="12dp"
+        app:strokeColor="#33808080"
+        app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -1642,48 +1907,72 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <Button
-                    android:id="@+id/btnLaunchGame"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:backgroundTint="#4CAF50"
-                    android:text="Launch Game"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnRemoveAds"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:backgroundTint="?attr/colorSurfaceVariant"
-                    android:text="Remove Ads"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btnResetAll"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:backgroundTint="#E53935"
-                android:text="Reset All Functions"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLaunchGame"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1.35"
+                android:backgroundTint="#2E9E5B"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:maxLines="1"
+                android:text="Launch Game"
                 android:textColor="#FFFFFF"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="22dp"
+                app:icon="@drawable/ic_play"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconTint="#FFFFFF" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRemoveAds"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:backgroundTint="#26FFC107"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:maxLines="1"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="Remove Ads"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:cornerRadius="22dp"
+                app:icon="@drawable/ic_crown"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconSize="18dp"
+                app:iconTint="#E0A800" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnResetAll"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="6dp"
+                android:backgroundTint="#26E53935"
+                android:contentDescription="Reset all functions"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                app:cornerRadius="22dp"
+                app:icon="@drawable/ic_reset"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="24dp"
+                app:iconTint="#E53935" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

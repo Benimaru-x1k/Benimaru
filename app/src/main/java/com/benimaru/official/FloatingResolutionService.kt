@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.materialswitch.MaterialSwitch
 import kotlinx.coroutines.CoroutineScope
@@ -91,8 +92,10 @@ class FloatingResolutionService : Service() {
         val currentWidth = metrics.widthPixels.toFloat()
         val currentHeight = metrics.heightPixels.toFloat()
 
-        // Exact physical aspect ratio at this very moment
         val aspectRatio = currentHeight / currentWidth
+
+        floatingView.findViewById<TextView>(R.id.tvFloatCurrent)?.text =
+            "Current: ${currentWidth.toInt()}×${currentHeight.toInt()} · $currentDpi dpi"
 
         var isAutoCalculating = false
 
@@ -225,21 +228,24 @@ class FloatingResolutionService : Service() {
         }
 
         btnApply.setOnClickListener {
-            val wStr = etWidth.text.toString()
-            val hStr = etHeight.text.toString()
-            if (wStr.isNotEmpty() && hStr.isNotEmpty()) {
-                // NO LONGER FORCING PORTRAIT MODE! Accepts exact input.
-                val newWidth = wStr.toInt()
-                val newHeight = hStr.toInt()
-
-                val widthRatio = newWidth.toFloat() / currentWidth
-                val heightRatio = newHeight.toFloat() / currentHeight
-                val scalingRatio = minOf(widthRatio, heightRatio)
-
-                val newDpi = (scalingRatio * currentDpi).toInt()
-                val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
-                executeCommand(cmd, "Resolution Applied")
+            val newWidth = etWidth.text.toString().trim().toIntOrNull()
+            val newHeight = etHeight.text.toString().trim().toIntOrNull()
+            if (newWidth == null || newHeight == null) {
+                Toast.makeText(this, "Enter width and height", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+            if (newWidth < 300 || newHeight < 300) {
+                Toast.makeText(this, "Resolution is too small", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val widthRatio = newWidth.toFloat() / currentWidth
+            val heightRatio = newHeight.toFloat() / currentHeight
+            val scalingRatio = minOf(widthRatio, heightRatio)
+
+            val newDpi = (scalingRatio * currentDpi).toInt()
+            val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+            executeCommand(cmd, "Resolution Applied")
         }
 
         btnReset.setOnClickListener {

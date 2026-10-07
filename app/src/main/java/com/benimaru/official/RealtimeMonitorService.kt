@@ -16,6 +16,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.widget.ProgressBar
 import android.widget.TextView
 import kotlinx.coroutines.*
 import java.io.RandomAccessFile
@@ -36,6 +37,7 @@ class RealtimeMonitorService : Service() {
     private lateinit var tvBatTemp: TextView
     private lateinit var tvBatLevel: TextView
     private lateinit var tvDispFps: TextView
+    private lateinit var pbRam: ProgressBar
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -53,6 +55,7 @@ class RealtimeMonitorService : Service() {
         tvBatTemp = overlayView.findViewById(R.id.tvBatTemp)
         tvBatLevel = overlayView.findViewById(R.id.tvBatLevel)
         tvDispFps = overlayView.findViewById(R.id.tvDispFps)
+        pbRam = overlayView.findViewById(R.id.pbOverlayRam)
 
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -121,19 +124,46 @@ class RealtimeMonitorService : Service() {
         @Suppress("DEPRECATION")
         val refreshRate = displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.refreshRate?.toInt() ?: 60
 
+        val ramPercent = if (totalRamMb > 0) ((usedRamMb * 100) / totalRamMb).toInt() else 0
+        val cpuTempC = cpuTemp.toIntOrNull()
+        val tempColor = { t: Int? ->
+            when {
+                t == null -> "#E5E7EB"
+                t >= 45 -> "#F87171"
+                t >= 38 -> "#FBBF24"
+                else -> "#4ADE80"
+            }
+        }
+        val ramColor = when {
+            ramPercent >= 85 -> "#F87171"
+            ramPercent >= 70 -> "#FBBF24"
+            else -> "#E5E7EB"
+        }
+        val batColor = when {
+            level in 0..15 -> "#F87171"
+            level in 16..30 -> "#FBBF24"
+            else -> "#4ADE80"
+        }
+        val white = "#E5E7EB"
+
         withContext(Dispatchers.Main) {
-            tvCpuTemp.text = formatHtml("<font color='#FFAA00'>$cpuTemp</font> <small><font color='#FFAA00'>°C</font></small>")
-            tvCpuFreq.text = formatHtml("<font color='#FFAA00'>$cpuFreq</font> <small><font color='#FFAA00'>MHz</font></small>")
+            tvCpuTemp.text = formatHtml(span(cpuTemp, "°C", tempColor(cpuTempC)))
+            tvCpuFreq.text = formatHtml(span(cpuFreq, "MHz", white))
 
-            tvRamUsed.text = formatHtml("<font color='#FFAA00'>$usedRamMb</font> <small><font color='#FFAA00'>MB</font></small>")
-            tvRamTotal.text = formatHtml("<font color='#FFAA00'>$totalRamMb</font> <small><font color='#FFAA00'>MB</font></small>")
+            tvRamUsed.text = formatHtml(span(usedRamMb.toString(), "MB", ramColor))
+            tvRamTotal.text = formatHtml(span(totalRamMb.toString(), "MB", white))
+            pbRam.progress = ramPercent
 
-            tvBatTemp.text = formatHtml("<font color='#FFAA00'>$batTemp</font> <small><font color='#FFAA00'>°C</font></small>")
-            tvBatLevel.text = formatHtml("<font color='#FFAA00'>$level</font> <small><font color='#FFAA00'>%</font></small>")
+            tvBatTemp.text = formatHtml(span(batTemp.toString(), "°C", tempColor(batTemp)))
+            tvBatLevel.text = formatHtml(span(level.toString(), "%", batColor))
 
-            tvDispFps.text = formatHtml("<font color='#FFFFFF'>$refreshRate</font> <small><font color='#FFFFFF'>FPS</font></small>")
+
+            tvDispFps.text = formatHtml(span(refreshRate.toString(), "Hz", "#F9A8D4"))
         }
     }
+
+    private fun span(value: String, unit: String, color: String): String =
+        "<font color='$color'>$value</font> <small><font color='#9CA3AF'>$unit</font></small>"
 
     private fun getSysFileValue(path: String, divisor: Long = 1, fallback: String = "--"): String {
         return try {

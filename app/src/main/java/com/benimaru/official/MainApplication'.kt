@@ -8,7 +8,6 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // We check and apply the saved theme before ANY UI is created
         val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
         val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
 

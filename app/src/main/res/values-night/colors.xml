@@ -11,4 +11,14 @@
     <color name="statusText">#1976D2</color>
 
     <color name="translucentSurface">#E6121212</color>
+
+    <color name="gradientStart">#7F1D1D</color>
+    <color name="gradientEnd">#D32F2F</color>
+
+    <color name="overlayAccent">#E53935</color>
+    <color name="overlayAccentPressed">#C62828</color>
+    <color name="overlayAccentContainer">#26E53935</color>
+    <color name="overlayStroke">#33FFFFFF</color>
+    <color name="overlaySurfaceVariant">#1FFFFFFF</color>
+    <color name="overlayPressedSurface">#33FFFFFF</color>
 </resources>

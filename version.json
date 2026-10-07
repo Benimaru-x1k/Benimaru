@@ -1,6 +1,7 @@
 {
-  "versionCode": 16,
-  "versionName": "2.6",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.6/BenimaruTool-v2.6.apk",
-  "releaseNotes": "- Added \"Buy Premium via Telegram\" purchasing option\n- Hardware Monitor perfectly centered in both portrait and landscape modes\n- Hardware Monitor is now click-through and position-locked for zero gaming interference"
+  "versionCode": 17,
+  "versionName": "2.7",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.7/BenimaruTool-v2.7.apk",
+  "mandatory": true,
+  "releaseNotes": "🚀 Massive 2.7 Update!\n\n- Dashboard redesign with live device stats, status dots, and a slim floating bottom bar\n- Sleek new Lexend-font bottom-sheet dialogs for all settings\n- 3 new Crosshair shapes (Gap Cross, Diamond, Triangle) with live preview\n- Gorgeous new glass-style real-time Hardware Monitor overlay\n- Bulletproof downloads with cancel support and smarter Shizuku setup\n- Upgraded Premium login with secure on-device password hashing\n- Accident-proof 'Reset All' warnings and tons of UI polish"
 }

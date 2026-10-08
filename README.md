@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Benimaru Tool
+# 🚀️ Benimaru Tool ⚡️
 
 **The Ultimate Rootless Android Optimization & Gaming Utility**
 

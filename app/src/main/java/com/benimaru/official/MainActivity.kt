@@ -155,6 +155,7 @@ class MainActivity : AppCompatActivity() {
         setupFilterChips()
         setupBottomBarScrollBehavior()
         setupStatusStyling()
+        refreshFreezeStatus()
     }
 
 
@@ -165,7 +166,7 @@ class MainActivity : AppCompatActivity() {
     private fun updatePremiumButtonUI() {
         if (isPremium()) {
             val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
-            btnPremium.text = "✔ Premium"
+            btnPremium.text = " Premium"
             btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700"))
             btnPremium.setTextColor(Color.parseColor("#000000"))
             (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)
@@ -279,7 +280,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateDeviceInfo()
         updatePremiumButtonUI()
-
+        refreshFreezeStatus()
 
         val apk = pendingApk
         if (apk != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && packageManager.canRequestPackageInstalls()) {
@@ -826,6 +827,10 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+        findViewById<CardView>(R.id.cardFreezeApps).setOnClickListener {
+            handlePremiumFeature { showFreezeAppsSheet() }
+        }
+        findViewById<TextView>(R.id.btnResetFreeze).setOnClickListener { restoreAllFrozen() }
         findViewById<CardView>(R.id.cardRamBooster).setOnClickListener {
             handlePremiumFeature { showRamBoosterSheet() }
         }
@@ -1182,7 +1187,7 @@ class MainActivity : AppCompatActivity() {
         val cmd = valid.joinToString("; ") { "am force-stop $it" }
         runAdbCommand(cmd, "Stopped ${valid.size} apps", showAd = true) {
             lifecycleScope.launch {
-                delay(1500) // let the system reclaim the memory
+                delay(1500)
                 val freed = (availRamMb() - before).coerceAtLeast(0)
                 findViewById<TextView>(R.id.tvStatusRamBooster).text =
                     if (freed > 0) "Status: Freed about $freed MB" else "Status: Stopped ${valid.size} apps"
@@ -1241,6 +1246,356 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+
+
+    private class AppEntry(val pkg: String, val label: String, val isSystem: Boolean, val frozen: Boolean)
+
+    private fun savedFrozen(): MutableSet<String> =
+        (getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+            .getStringSet("FrozenApps", emptySet()) ?: emptySet()).toMutableSet()
+
+    private fun saveFrozen(set: Set<String>) {
+        getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+            .edit().putStringSet("FrozenApps", HashSet(set)).apply()
+    }
+
+    private fun refreshFreezeStatus() {
+        val tv = findViewById<TextView?>(R.id.tvStatusFreeze) ?: return
+        val saved = savedFrozen()
+        val stillFrozen = saved.filter { p ->
+            try { !packageManager.getApplicationInfo(p, 0).enabled } catch (e: Exception) { true }
+        }
+        if (stillFrozen.size != saved.size) saveFrozen(stillFrozen.toSet())
+        tv.text = if (stillFrozen.isEmpty()) "Status: Ready"
+        else "Status: ${stillFrozen.size} app${if (stillFrozen.size == 1) "" else "s"} frozen"
+    }
+
+    private fun freezeBlocklist(): Set<String> {
+        val pm = packageManager
+        val set = mutableSetOf(
+            packageName, "moe.shizuku.privileged.api", "android", "com.android.systemui",
+            "com.android.settings", "com.android.phone", "com.android.server.telecom",
+            "com.android.shell", "com.android.packageinstaller", "com.google.android.packageinstaller",
+            "com.android.permissioncontroller", "com.google.android.permissioncontroller",
+            "com.google.android.gms", "com.google.android.gsf", "com.google.android.webview",
+            "com.android.webview", "com.google.android.trichromelibrary", "com.android.bluetooth",
+            "com.android.nfc", "com.android.emergency", "com.android.networkstack",
+            "com.android.cellbroadcastreceiver", "com.android.inputmethod.latin"
+        )
+        try {
+            pm.queryIntentActivities(
+                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_ALL
+            ).forEach { set.add(it.activityInfo.packageName) }
+        } catch (_: Exception) {}
+        try {
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager)
+                .enabledInputMethodList.forEach { set.add(it.packageName) }
+        } catch (_: Exception) {}
+        try { android.provider.Telephony.Sms.getDefaultSmsPackage(this)?.let { set.add(it) } } catch (_: Exception) {}
+        try {
+            (getSystemService(Context.TELECOM_SERVICE) as android.telecom.TelecomManager)
+                .defaultDialerPackage?.let { set.add(it) }
+        } catch (_: Exception) {}
+        return set
+    }
+
+    private fun isBlockedPackage(pkg: String, block: Set<String>): Boolean =
+        pkg in block || pkg.startsWith("com.android.providers.") || pkg.startsWith("com.android.networkstack")
+
+    private fun scanInstalledApps(): List<AppEntry> {
+        val pm = packageManager
+        val block = freezeBlocklist()
+        val saved = savedFrozen()
+        val result = mutableListOf<AppEntry>()
+        val seen = mutableSetOf<String>()
+        @Suppress("DEPRECATION")
+        val installed = pm.getInstalledApplications(0)
+        for (ai in installed) {
+            val pkg = ai.packageName
+            if (isBlockedPackage(pkg, block)) continue
+            val frozen = pkg in saved && !ai.enabled
+            if (!frozen && pm.getLaunchIntentForPackage(pkg) == null) continue
+            val label = try { pm.getApplicationLabel(ai).toString() } catch (e: Exception) { pkg }
+            result += AppEntry(pkg, label, (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0, frozen)
+            seen += pkg
+        }
+        for (p in saved) if (p !in seen && !isBlockedPackage(p, block)) {
+            result += AppEntry(p, p, false, true)
+        }
+        return result.sortedBy { it.label.lowercase() }
+    }
+
+    private fun showFreezeAppsSheet() {
+        if (!hasShizukuPermission()) return
+        val scanning = ProgressSheet(this)
+            .icon(R.drawable.ic_freeze)
+            .title("Loading apps")
+            .message("Reading your installed apps…")
+        scanning.show(indeterminate = true)
+        scanning.setIndeterminate("Just a moment")
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val apps = try { scanInstalledApps() } catch (e: Exception) { emptyList() }
+            withContext(Dispatchers.Main) {
+                scanning.dismiss()
+                if (apps.isEmpty()) {
+                    Toasty.info(this@MainActivity, "No apps found", Toast.LENGTH_LONG, true).show()
+                } else {
+                    presentFreezeList(apps)
+                }
+            }
+        }
+    }
+
+    private fun presentFreezeList(apps: List<AppEntry>) {
+        val pm = packageManager
+        val userApps = apps.filter { !it.isSystem && !it.frozen }
+        val systemApps = apps.filter { it.isSystem && !it.frozen }
+        val frozenApps = apps.filter { it.frozen }
+
+        var tab = 0
+        var query = ""
+        val selected = mutableSetOf<String>()
+        val iconCache = HashMap<String, android.graphics.drawable.Drawable?>()
+
+        val tabs = com.google.android.material.button.MaterialButtonToggleGroup(this).apply {
+            isSingleSelection = true
+            isSelectionRequired = true
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(4) }
+        }
+        val tabLabels = listOf(
+            "Apps (${userApps.size})", "System (${systemApps.size})", "Frozen (${frozenApps.size})"
+        )
+        val tabIds = tabLabels.map { t ->
+            val b = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                id = View.generateViewId()
+                text = t
+                isAllCaps = false
+                textSize = 12.5f
+                insetTop = 0; insetBottom = 0
+                setPadding(dp(6), 0, dp(6), 0)
+                layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
+            }
+            tabs.addView(b)
+            b.id
+        }
+
+        val (searchLayout, searchEdit) = styledField(this, "Search apps", android.text.InputType.TYPE_CLASS_TEXT, topMarginDp = 10)
+        val warning = infoCard(
+            this,
+            "System apps are part of Android. Freezing the wrong one can break calls, notifications, or the home screen. Only freeze system apps you recognise. You can always restore them from the Frozen tab.",
+            tint = 0xFFFFA000.toInt()
+        ).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(10) }
+            visibility = View.GONE
+        }
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val sheet = Sheet(this)
+
+        fun current(): List<AppEntry> {
+            val base = when (tab) { 0 -> userApps; 1 -> systemApps; else -> frozenApps }
+            return if (query.isBlank()) base
+            else base.filter { it.label.contains(query, true) || it.pkg.contains(query, true) }
+        }
+
+        fun updateButtons() {
+            val primary = sheet.buttonViews.getOrNull(1) ?: return
+            primary.isEnabled = selected.isNotEmpty()
+            primary.text = when {
+                selected.isEmpty() -> if (tab == 2) "Restore" else "Freeze"
+                tab == 2 -> "Restore (${selected.size})"
+                else -> "Freeze (${selected.size})"
+            }
+            sheet.buttonViews.getOrNull(2)?.visibility =
+                if (frozenApps.isNotEmpty()) View.VISIBLE else View.GONE
+        }
+
+        fun render() {
+            list.removeAllViews()
+            val rows = current()
+            val shown = rows.take(60)
+            if (shown.isEmpty()) {
+                list.addView(infoCard(this, when {
+                    query.isNotBlank() -> "No apps match your search."
+                    tab == 2 -> "Nothing is frozen right now."
+                    else -> "No apps in this list."
+                }).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply { topMargin = dp(10) }
+                })
+            }
+            shown.forEach { a ->
+                val icon = iconCache.getOrPut(a.pkg) {
+                    try { pm.getApplicationIcon(a.pkg) } catch (e: Exception) { null }
+                }
+                list.addView(optionRow(
+                    this, a.label,
+                    if (a.isSystem) "System app · ${a.pkg}" else a.pkg,
+                    icon = icon?.constantState?.newDrawable()?.mutate() ?: icon,
+                    tintIcon = false, selected = a.pkg in selected
+                ) {
+                    if (!selected.remove(a.pkg)) selected.add(a.pkg)
+                    render()
+                    updateButtons()
+                })
+            }
+            if (rows.size > shown.size) {
+                list.addView(TextView(this).apply {
+                    text = "Showing ${shown.size} of ${rows.size}. Use search to find more."
+                    textSize = 12f
+                    setTextColor(Ui.onSurfaceVariant(this@MainActivity))
+                    setPadding(dp(4), dp(10), dp(4), 0)
+                })
+            }
+            fontify(list)
+        }
+
+        tabs.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            tab = tabIds.indexOf(checkedId).coerceAtLeast(0)
+            selected.clear()
+            warning.visibility = if (tab == 1) View.VISIBLE else View.GONE
+            render()
+            updateButtons()
+        }
+        searchEdit.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) {}
+            override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                query = s?.toString()?.trim() ?: ""
+                render()
+            }
+        })
+        tabs.check(tabIds[0])
+
+        fun doChange() {
+            val picked = selected.toList()
+            if (picked.isEmpty()) return
+            if (tab == 2) {
+                sheet.dismiss()
+                applyFreezeChange(picked, freeze = false)
+                return
+            }
+            val sys = apps.filter { it.pkg in selected && it.isSystem }
+            if (sys.isEmpty()) {
+                sheet.dismiss()
+                applyFreezeChange(picked, freeze = true)
+            } else {
+                Sheet(this)
+                    .icon(R.drawable.ic_reset)
+                    .title("Freeze system apps?")
+                    .message(
+                        "You selected ${sys.size} system app${if (sys.size == 1) "" else "s"}:\n\n" +
+                            sys.take(8).joinToString("\n") { "• ${it.label}" } +
+                            (if (sys.size > 8) "\n• and ${sys.size - 8} more" else "") +
+                            "\n\nFreezing the wrong system app can break features. You can undo this from the Frozen tab or with Restore all."
+                    )
+                    .button("Cancel", SheetStyle.TONAL)
+                    .button("Freeze anyway", SheetStyle.DANGER) {
+                        sheet.dismiss()
+                        applyFreezeChange(picked, freeze = true)
+                    }
+                    .show()
+            }
+        }
+
+        sheet.icon(R.drawable.ic_freeze)
+            .title("Freeze apps")
+            .message("Frozen apps are switched off completely: no RAM, no background work, no notifications. Restore them any time.")
+            .content(tabs)
+            .content(searchLayout)
+            .content(warning)
+            .content(list)
+            .button("Close", SheetStyle.TONAL)
+            .button("Freeze", SheetStyle.PRIMARY, dismiss = false) { doChange() }
+            .button("Restore all frozen apps", SheetStyle.TEXT, dismiss = false) {
+                sheet.dismiss()
+                restoreAllFrozen()
+            }
+            .show()
+        updateButtons()
+    }
+
+    private data class ShellResult(val code: Int, val out: String)
+
+    private fun runShell(cmd: String): ShellResult = try {
+        val p = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+        val out = p.inputStream.bufferedReader().readText()
+        val err = p.errorStream.bufferedReader().readText()
+        ShellResult(p.waitFor(), (out + "\n" + err).trim())
+    } catch (e: Exception) {
+        ShellResult(-1, e.message ?: "error")
+    }
+
+    private fun applyFreezeChange(pkgs: List<String>, freeze: Boolean) {
+        val safeName = Regex("^[A-Za-z0-9._]+$")
+        val valid = pkgs.filter { safeName.matches(it) }
+        if (valid.isEmpty()) return
+
+        val progress = ProgressSheet(this)
+            .icon(R.drawable.ic_freeze)
+            .title(if (freeze) "Freezing apps" else "Restoring apps")
+            .message("Please wait…")
+        progress.show()
+        val userId = android.os.Process.myUid() / 100000
+        val before = availRamMb()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val saved = savedFrozen()
+            var ok = 0
+            val failed = mutableListOf<String>()
+            valid.forEachIndexed { i, p ->
+                withContext(Dispatchers.Main) {
+                    progress.update((i * 100) / valid.size, "${i + 1} of ${valid.size}")
+                }
+                val cmd = if (freeze) "pm disable-user --user $userId $p" else "pm enable --user $userId $p"
+                val r = runShell(cmd)
+                val low = r.out.lowercase()
+                if (r.code == 0 && !low.contains("exception") && !low.contains("error") && !low.contains("failed")) {
+                    ok++
+                    if (freeze) saved.add(p) else saved.remove(p)
+                } else failed += p
+            }
+            saveFrozen(saved)
+            if (freeze) delay(800)
+            withContext(Dispatchers.Main) {
+                progress.dismiss()
+                refreshFreezeStatus()
+                updateDeviceInfo()
+                if (ok > 0) {
+                    val freed = (availRamMb() - before).coerceAtLeast(0)
+                    val msg = if (freeze) {
+                        "Froze $ok app${if (ok == 1) "" else "s"}" + if (freed > 0) " · about $freed MB freed" else ""
+                    } else "Restored $ok app${if (ok == 1) "" else "s"}"
+                    Toasty.success(this@MainActivity, msg, Toast.LENGTH_LONG, true).show()
+                }
+                if (failed.isNotEmpty()) {
+                    Toasty.warning(
+                        this@MainActivity,
+                        "${failed.size} app${if (failed.size == 1) "" else "s"} could not be changed. Android blocks some protected apps.",
+                        Toast.LENGTH_LONG, true
+                    ).show()
+                }
+                if (freeze && ok > 0) showInterstitialAd()
+            }
+        }
+    }
+
+    private fun restoreAllFrozen() {
+        val saved = savedFrozen().toList()
+        if (saved.isEmpty()) {
+            Toasty.info(this, "No frozen apps to restore", Toast.LENGTH_SHORT, true).show()
+            return
+        }
+        if (!hasShizukuPermission()) return
+        applyFreezeChange(saved, freeze = false)
     }
 
     private fun toggleRealtimeMonitor() {
@@ -2206,7 +2561,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<Chip>(id)?.typeface = customTypeface
         }
 
-        val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions, R.id.cardRamBooster, R.id.cardClearCache)
+        val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions, R.id.cardRamBooster, R.id.cardClearCache, R.id.cardFreezeApps)
         val displayCards = listOf(R.id.cardAdjustRefreshRate, R.id.cardFastAnimations, R.id.cardDisableBlurs, R.id.cardChangeResolution)
         val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
         val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardGameMode)
@@ -2239,7 +2594,7 @@ class MainActivity : AppCompatActivity() {
             R.id.tvStatusTouch, R.id.tvStatusAnimations, R.id.tvStatusBlurs, R.id.tvStatusDnd,
             R.id.tvStatusDevOptions, R.id.tvStatusResolution, R.id.tvStatusDns, R.id.tvStatusCrosshair,
             R.id.tvStatusMonitor, R.id.tvStatusGameMode, R.id.tvStatusThermal, R.id.tvStatusFstrim,
-            R.id.tvStatusRamBooster, R.id.tvStatusCache
+            R.id.tvStatusRamBooster, R.id.tvStatusCache, R.id.tvStatusFreeze
         )
         val states = HashMap<Int, TweakState>()
         val green = Color.parseColor("#2E9E5B")

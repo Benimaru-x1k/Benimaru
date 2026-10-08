@@ -1,7 +1,7 @@
 {
-  "versionCode": 18,
-  "versionName": "2.8",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.8/BenimaruTool-v2.8.apk",
+  "versionCode": 19,
+  "versionName": "2.9",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.9/BenimaruTool-v2.9.apk",
   "mandatory": false,
-  "releaseNotes": "⚡ 2.8 Update!\n\n- New Premium tool: RAM Booster. See which apps are using the most memory and stop the heavy ones in one tap\n- New Premium tool: Clear App Caches. Free up storage by clearing every app's cache safely\n- Both live under the Performance category and show how much they freed"
+  "releaseNotes": "❄️ 2.9 Update!\n\n- New Premium tool: Freeze Bloatware. Search your apps and freeze the ones you don't use so they stop using RAM and background CPU\n- Includes a warning before freezing system apps, and a Restore all button to bring everything back in one tap\n- Find it under the Performance category"
 }

@@ -71,7 +71,7 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
   <tr>
     <th align="center">Home Screen</th>
     <th align="center">Tweaks Menu</th>
-    <th align="center">Hardware Monitor</th>
+    <th align="center">Launch Optimize</th>
   </tr>
   <tr>
     <td align="center"><img src="images/Screenshot_20261007_135942_Benimaru.png" width="250" alt="Benimaru Tool Home Screen" /></td>

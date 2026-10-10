@@ -1,7 +1,7 @@
 {
-  "versionCode": 19,
-  "versionName": "2.9",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v2.9/BenimaruTool-v2.9.apk",
+  "versionCode": 20,
+  "versionName": "3.0",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.0/BenimaruTool-v3.0.apk",
   "mandatory": false,
-  "releaseNotes": "❄️ 2.9 Update!\n\n- New Premium tool: Freeze Bloatware. Search your apps and freeze the ones you don't use so they stop using RAM and background CPU\n- Includes a warning before freezing system apps, and a Restore all button to bring everything back in one tap\n- Find it under the Performance category"
+  "releaseNotes": "🚀 3.0 Update!\n\n- Fixed: Optimize & launch now optimizes your game first, then launches it. Ads no longer cover or replace the game launch\n- Fewer ads: free users now see at most one full-screen ad every 3 minutes, and none during their first couple of actions\n- Ads never block what you tapped. The game launches right after any ad closes, even if the ad fails to load"
 }

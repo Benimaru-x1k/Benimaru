@@ -2,6 +2,6 @@
   "versionCode": 20,
   "versionName": "3.0",
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.0/BenimaruTool-v3.0.apk",
-  "mandatory": false,
+  "mandatory": true,
   "releaseNotes": "🚀 3.0 Update!\n\n- Fixed: Optimize & launch now optimizes your game first, then launches it. Ads no longer cover or replace the game launch\n- Fewer ads: free users now see at most one full-screen ad every 3 minutes, and none during their first couple of actions\n- Ads never block what you tapped. The game launches right after any ad closes, even if the ad fails to load"
 }

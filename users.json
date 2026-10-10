@@ -43,6 +43,13 @@
       "devices": [
         "1c2577f0c4c7ce4a"
       ]
+    },
+    {
+      "username": "Lucas",
+      "passwordHash": "8268f25d794eed0125205b5075142fe5619e8df69da2eb62f6b0d6f566afd53f",
+      "devices": [
+        "827cdac7c2ef52bc"
+      ]
     }
   ]
 }

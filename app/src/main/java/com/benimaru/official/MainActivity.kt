@@ -222,16 +222,46 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun showInterstitialAd() {
-        if (isPremium()) return
+    private var lastInterstitialAt = 0L
+    private var interstitialEligibleActions = 0
+    private val interstitialCooldownMs = 3 * 60 * 1000L
+    private val interstitialActionsBeforeFirst = 3
+
+    private fun shouldShowInterstitial(): Boolean {
+        if (isPremium()) return false
+        interstitialEligibleActions++
+        if (interstitialEligibleActions < interstitialActionsBeforeFirst) return false
+        val now = android.os.SystemClock.elapsedRealtime()
+        return lastInterstitialAt == 0L || now - lastInterstitialAt >= interstitialCooldownMs
+    }
+
+    /**
+     * Shows an interstitial if the frequency cap allows it. [onFinished] ALWAYS runs exactly once,
+     * after the ad closes, fails, is skipped by the cap, or user is premium, so callers can safely
+     * chain follow-up work (e.g. launching a game) without it racing the ad.
+     */
+    private fun showInterstitialAd(onFinished: () -> Unit = {}) {
+        if (isFinishing || isDestroyed || !shouldShowInterstitial()) {
+            onFinished()
+            return
+        }
+        var done = false
+        fun finish() {
+            if (done) return
+            done = true
+            loadInterstitialAd()
+            onFinished()
+        }
+        lastInterstitialAt = android.os.SystemClock.elapsedRealtime()
         UnityAds.show(this, adUnitInterstitial, object : IUnityAdsShowListener {
             override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
-                loadInterstitialAd()
+                lastInterstitialAt = 0L
+                finish()
             }
             override fun onUnityAdsShowStart(placementId: String) {}
             override fun onUnityAdsShowClick(placementId: String) {}
             override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
-                loadInterstitialAd()
+                finish()
             }
         })
     }
@@ -2481,8 +2511,7 @@ class MainActivity : AppCompatActivity() {
                             withContext(Dispatchers.Main) {
                                 progress.dismiss()
                                 Toasty.success(this@MainActivity, "$appName optimized", Toast.LENGTH_SHORT, true).show()
-                                showInterstitialAd()
-                                launchGame()
+                                showInterstitialAd { launchGame() }
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {

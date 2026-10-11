@@ -28,10 +28,11 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 |:--------|:------------|
 | 🚀 **Fixed Performance Mode** | Locks device performance to a fixed state to maintain consistent frame rates during heavy workloads. |
 | 🔥 **Disable Thermal Throttling** | Bypasses software temperature limits to prevent sudden frame drops and CPU throttling during long gaming sessions. |
-| 🕹️ **Native Game Mode API** *(Android 12+)* | Unlocks deep performance by dropping system power limits and aggressively prioritizing CPU/GPU resources for your active game. |
+| 🕹️ **Native Game Mode API** (Android 12+) | Unlocks deep performance by dropping system power limits and aggressively prioritizing CPU/GPU resources for your active game. |
 | ⚡ **Touch Latency Reduction** | Increases the touch sampling rate and minimizes long-press timeouts for lightning-fast, precise screen interactions. |
 | 🎮 **Game Launcher & Optimizer** | Automatically detects installed games to launch instantly or **pre-compile their DEX code (Speed Profile)** to eliminate in-game stutters. |
 | 🎯 **FPS Crosshair Overlay** | Enable a customizable, center-screen crosshair to improve accuracy in mobile shooters. |
+| 👆 **Auto Click & Auto Swipe** | A draggable floating ▶/■ button that repeats taps or swipes at your chosen interval. Choose Auto click, Auto swipe, or Tap + swipe, and set the interval, tap position and swipe length. No Accessibility permission needed. |
 
 ### 📺 Display & Visuals
 
@@ -91,7 +92,7 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 |:----:|:------------|:--------|
 | 1 | **Install Shizuku** | If you do not have it, Benimaru Tool will prompt you to safely download it from the official GitHub repository. |
 | 2 | **Activate Shizuku** | Start the Shizuku service via **Wireless Debugging (Android 11+)** or via ADB from a computer. [Read the official Shizuku setup guide here](https://shizuku.rikka.app/guide/setup/). |
-| 3 | **Grant Overlay Permissions** | To use the Floating Hardware Monitor, Crosshair Overlay, and Floating Menu, grant the *"Display over other apps"* permission when prompted. |
+| 3 | **Grant Overlay Permissions** | To use the Floating Hardware Monitor, Crosshair Overlay, Auto Click & Swipe button, and Floating Menu, grant the *"Display over other apps"* permission when prompted. |
 
 ---
 
@@ -126,6 +127,8 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 > [!WARNING]
 > **Use at your own risk.**
 > While Benimaru Tool is built with safety fail-safes (such as the 6-second resolution revert timer), forcing unsupported refresh rates, extreme resolutions, or disabling thermal limits on certain hardware configurations can cause system instability, overheating, or UI glitches. The developer is not responsible for bricked devices, bootloops, or hardware damage.
+>
+> **Auto Click & Auto Swipe** automates screen input. Some games detect automated input and may penalize or ban accounts, so use it only where the game's rules allow it.
 
 ---
 

@@ -1890,29 +1890,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        sheet.button("Pay \$3 with PayPal", SheetStyle.PRIMARY, dismiss = false) { btn ->
-            val (user, pass) = readFields(true) ?: return@button
-            btn.isEnabled = false
-            lifecycleScope.launch {
-                val hash = withContext(Dispatchers.Default) { hashPassword(user, pass) }
-                btn.isEnabled = true
-                val paypalEmail = "vestalkimqq02@gmail.com"
-                val price = "3.00"
-                val paymentUrl = "https://www.paypal.com/cgi-bin/webscr" +
-                        "?cmd=_xclick" +
-                        "&business=$paypalEmail" +
-                        "&item_name=Benimaru+Premium+Unlock" +
-                        "&amount=$price" +
-                        "&currency_code=USD" +
-                        "&on0=Username&os0=${Uri.encode(user)}" +
-                        "&on1=Device+ID&os1=${Uri.encode(deviceId)}" +
-                        "&on2=Password+hash&os2=${Uri.encode(hash)}" +
-                        "&custom=${Uri.encode("$user|$hash|$deviceId")}"
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl)))
-            }
-        }
-
-        sheet.button("Buy directly via Telegram", SheetStyle.TONAL, dismiss = false) { btn ->
+        sheet.button("Buy directly via Telegram", SheetStyle.PRIMARY, dismiss = false) { btn ->
             val (user, pass) = readFields(true) ?: return@button
             btn.isEnabled = false
             lifecycleScope.launch {
@@ -1934,13 +1912,12 @@ class MainActivity : AppCompatActivity() {
 
         fun applyMode() {
             sheet.messageView?.text = if (buyMode)
-                "Choose a username and password. After you pay, your account is activated and you can log in."
+                "Choose a username and password, then tap the button below. Your account details are copied and Telegram opens so you can paste them in the chat."
             else
                 "Log in with the account you created when you purchased."
             benefits.visibility = if (buyMode) View.VISIBLE else View.GONE
             sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
             sheet.buttonViews[1].visibility = if (buyMode) View.VISIBLE else View.GONE
-            sheet.buttonViews[2].visibility = if (buyMode) View.VISIBLE else View.GONE
             showError(null)
         }
         toggle.addOnButtonCheckedListener { _, checkedId, isChecked ->

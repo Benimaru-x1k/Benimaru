@@ -236,7 +236,6 @@ class MainActivity : AppCompatActivity() {
         return lastInterstitialAt == 0L || now - lastInterstitialAt >= interstitialCooldownMs
     }
 
-
     private fun showInterstitialAd(onFinished: () -> Unit = {}) {
         if (isFinishing || isDestroyed || !shouldShowInterstitial()) {
             onFinished()
@@ -1686,7 +1685,7 @@ class MainActivity : AppCompatActivity() {
             .content(content)
             .button("Cancel", SheetStyle.TEXT)
             .button("Show button", SheetStyle.PRIMARY) {
-                val interval = (intervalEdit.text?.toString()?.toFloatOrNull() ?: 5f).coerceIn(0.2f, 3600f)
+                val interval = (intervalEdit.text?.toString()?.toFloatOrNull() ?: 5f).coerceIn(0.05f, 3600f)
                 prefs.edit()
                     .putInt(AutoClickService.KEY_MODE, mode)
                     .putFloat(AutoClickService.KEY_INTERVAL, interval)

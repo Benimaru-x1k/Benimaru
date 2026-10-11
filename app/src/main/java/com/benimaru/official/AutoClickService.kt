@@ -164,7 +164,7 @@ class AutoClickService : Service() {
             while (isActive) {
                 val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
                 val mode = prefs.getInt(KEY_MODE, MODE_TAP)
-                val intervalMs = (prefs.getFloat(KEY_INTERVAL, 5f).coerceIn(0.2f, 3600f) * 1000).toLong()
+                val intervalMs = (prefs.getFloat(KEY_INTERVAL, 5f).coerceIn(0.05f, 3600f) * 1000).toLong()
                 val dm = resources.displayMetrics
                 val w = dm.widthPixels
                 val h = dm.heightPixels
@@ -187,8 +187,10 @@ class AutoClickService : Service() {
                 } else {
                     "input tap $x $y"
                 }
+                val t0 = System.currentTimeMillis()
                 runShell(cmd)
-                delay(intervalMs)
+
+                delay((intervalMs - (System.currentTimeMillis() - t0)).coerceAtLeast(0))
             }
         }
     }

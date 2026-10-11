@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity() {
     private var pendingApk: File? = null
     private var isCrosshairEnabled = false
     private var isMonitorEnabled = false
+    private var isAutoClickEnabled = false
 
     private val unityGameId = "5781189"
     private val adUnitInterstitial = "Interstitial_Android"
@@ -235,11 +236,7 @@ class MainActivity : AppCompatActivity() {
         return lastInterstitialAt == 0L || now - lastInterstitialAt >= interstitialCooldownMs
     }
 
-    /**
-     * Shows an interstitial if the frequency cap allows it. [onFinished] ALWAYS runs exactly once,
-     * after the ad closes, fails, is skipped by the cap, or user is premium, so callers can safely
-     * chain follow-up work (e.g. launching a game) without it racing the ad.
-     */
+
     private fun showInterstitialAd(onFinished: () -> Unit = {}) {
         if (isFinishing || isDestroyed || !shouldShowInterstitial()) {
             onFinished()
@@ -728,6 +725,12 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Disabled"
                 }
+
+                val isAutoOn = prefs.getBoolean(AutoClickService.KEY_ENABLED, false)
+                isAutoClickEnabled = isAutoOn
+                findViewById<TextView>(R.id.tvStatusAutoClick)?.text = if (isAutoOn)
+                    "Status: ${AutoClickService.modeLabel(prefs.getInt(AutoClickService.KEY_MODE, 0))} (${prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f)}s)"
+                else "Status: Disabled"
             }
         }
     }
@@ -895,6 +898,14 @@ class MainActivity : AppCompatActivity() {
             handlePremiumFeature { toggleRealtimeMonitor() }
         }
 
+        findViewById<CardView>(R.id.cardAutoClick).setOnClickListener {
+            handlePremiumFeature { showAutoClickDialog() }
+        }
+
+        findViewById<TextView>(R.id.btnResetAutoClick).setOnClickListener {
+            if (isAutoClickEnabled) stopAutoClickService()
+        }
+
         findViewById<CardView>(R.id.cardThermalThrottling).setOnClickListener {
             handlePremiumFeature {
                 Sheet(this)
@@ -1054,6 +1065,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (isCrosshairEnabled) stopCrosshairService()
+                if (isAutoClickEnabled) stopAutoClickService()
 
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
                 findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
@@ -1626,6 +1638,77 @@ class MainActivity : AppCompatActivity() {
         }
         if (!hasShizukuPermission()) return
         applyFreezeChange(saved, freeze = false)
+    }
+
+    private fun showAutoClickDialog() {
+        if (!Settings.canDrawOverlays(this)) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+            Toasty.info(this, "Please allow 'Display over other apps'", Toast.LENGTH_LONG, true).show()
+            return
+        }
+        if (!hasShizukuPermission()) {
+            Toasty.error(this, "Start Shizuku and grant permission first", Toast.LENGTH_LONG, true).show()
+            return
+        }
+
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        var mode = prefs.getInt(AutoClickService.KEY_MODE, AutoClickService.MODE_TAP)
+        val modes = listOf("Auto click" to "Tap one spot", "Auto swipe" to "Swipe left/right", "Tap + swipe" to "Alternate between both")
+
+        val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val rows = mutableListOf<LinearLayout>()
+        fun renderModes() {
+            rows.forEach { content.removeView(it) }
+            rows.clear()
+            modes.forEachIndexed { i, (t, sub) ->
+                val row = optionRow(this, t, sub, selected = i == mode) { mode = i; renderModes() }
+                content.addView(row, i)
+                rows += row
+            }
+        }
+        renderModes()
+
+        val (intervalLayout, intervalEdit) = styledField(this, "Interval (seconds)", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        intervalEdit.setText(prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f).toString())
+        val (xLayout, xEdit) = styledField(this, "X position (blank = screen center)", InputType.TYPE_CLASS_NUMBER)
+        val (yLayout, yEdit) = styledField(this, "Y position (blank = screen center)", InputType.TYPE_CLASS_NUMBER)
+        val (lenLayout, lenEdit) = styledField(this, "Swipe length (px)", InputType.TYPE_CLASS_NUMBER)
+        prefs.getInt(AutoClickService.KEY_X, -1).takeIf { it >= 0 }?.let { xEdit.setText(it.toString()) }
+        prefs.getInt(AutoClickService.KEY_Y, -1).takeIf { it >= 0 }?.let { yEdit.setText(it.toString()) }
+        lenEdit.setText(prefs.getInt(AutoClickService.KEY_SWIPE_LEN, 300).toString())
+        listOf(intervalLayout, xLayout, yLayout, lenLayout).forEach { content.addView(it) }
+        content.addView(infoCard(this, "A floating ▶ button appears. Open your game, then tap ▶ to start and ■ to pause; drag it to move. Some games treat automated input as cheating and may ban the account \u2014 use at your own risk."))
+
+        Sheet(this)
+            .icon(R.drawable.ic_gamepad)
+            .title("Auto Click & Swipe")
+            .message("Choose what to repeat and how often.")
+            .content(content)
+            .button("Cancel", SheetStyle.TEXT)
+            .button("Show button", SheetStyle.PRIMARY) {
+                val interval = (intervalEdit.text?.toString()?.toFloatOrNull() ?: 5f).coerceIn(0.2f, 3600f)
+                prefs.edit()
+                    .putInt(AutoClickService.KEY_MODE, mode)
+                    .putFloat(AutoClickService.KEY_INTERVAL, interval)
+                    .putInt(AutoClickService.KEY_X, xEdit.text?.toString()?.toIntOrNull() ?: -1)
+                    .putInt(AutoClickService.KEY_Y, yEdit.text?.toString()?.toIntOrNull() ?: -1)
+                    .putInt(AutoClickService.KEY_SWIPE_LEN, lenEdit.text?.toString()?.toIntOrNull() ?: 300)
+                    .putBoolean(AutoClickService.KEY_ENABLED, true)
+                    .apply()
+                startService(Intent(this, AutoClickService::class.java))
+                isAutoClickEnabled = true
+                findViewById<TextView>(R.id.tvStatusAutoClick).text = "Status: ${AutoClickService.modeLabel(mode)} (${interval}s)"
+                Toasty.success(this, "Floating button ready", Toast.LENGTH_SHORT, true).show()
+            }
+            .show()
+    }
+
+    private fun stopAutoClickService() {
+        stopService(Intent(this, AutoClickService::class.java))
+        isAutoClickEnabled = false
+        getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
+            .putBoolean(AutoClickService.KEY_ENABLED, false).apply()
+        findViewById<TextView>(R.id.tvStatusAutoClick).text = "Status: Disabled"
     }
 
     private fun toggleRealtimeMonitor() {
@@ -2593,7 +2676,7 @@ class MainActivity : AppCompatActivity() {
         val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions, R.id.cardRamBooster, R.id.cardClearCache, R.id.cardFreezeApps)
         val displayCards = listOf(R.id.cardAdjustRefreshRate, R.id.cardFastAnimations, R.id.cardDisableBlurs, R.id.cardChangeResolution)
         val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
-        val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardGameMode)
+        val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardAutoClick, R.id.cardGameMode)
 
         val allCards = performanceCards + displayCards + networkCards + gamingCards
 
@@ -2623,7 +2706,7 @@ class MainActivity : AppCompatActivity() {
             R.id.tvStatusTouch, R.id.tvStatusAnimations, R.id.tvStatusBlurs, R.id.tvStatusDnd,
             R.id.tvStatusDevOptions, R.id.tvStatusResolution, R.id.tvStatusDns, R.id.tvStatusCrosshair,
             R.id.tvStatusMonitor, R.id.tvStatusGameMode, R.id.tvStatusThermal, R.id.tvStatusFstrim,
-            R.id.tvStatusRamBooster, R.id.tvStatusCache, R.id.tvStatusFreeze
+            R.id.tvStatusRamBooster, R.id.tvStatusCache, R.id.tvStatusFreeze, R.id.tvStatusAutoClick
         )
         val states = HashMap<Int, TweakState>()
         val green = Color.parseColor("#2E9E5B")

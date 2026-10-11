@@ -1627,6 +1627,89 @@
 
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAutoClick"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#26808080"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_premium"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:text="★ PREMIUM"
+                        android:textColor="#8A6D00"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Auto Click &amp; Auto Swipe"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#20808080" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="A floating button that automatically taps or swipes the screen at set intervals. Ideal for games that restrict AFK play."
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="14sp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:id="@+id/tvStatusAutoClick"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Status: Disabled"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/btnResetAutoClick"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RESET"
+                            android:textColor="@color/statusText"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
+                            android:clickable="true"
+                            android:focusable="true"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardGameMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

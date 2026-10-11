@@ -1,7 +1,7 @@
 {
-  "versionCode": 20,
-  "versionName": "3.0",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.0/BenimaruTool-v3.0.apk",
-  "mandatory": true,
-  "releaseNotes": "🚀 3.0 Update!\n\n- Fixed: Optimize & launch now optimizes your game first, then launches it. Ads no longer cover or replace the game launch\n- Fewer ads: free users now see at most one full-screen ad every 3 minutes, and none during their first couple of actions\n- Ads never block what you tapped. The game launches right after any ad closes, even if the ad fails to load"
+  "versionCode": 21,
+  "versionName": "3.1",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.1/BenimaruTool-v3.1.apk",
+  "mandatory": false,
+  "releaseNotes": "🚀 3.1 Update!\n\n- New feature: Auto Click & Auto Swipe. A floating ▶ button taps or swipes your screen at the interval you choose\n- Pick Auto click, Auto swipe, or Tap + swipe, then set the interval, tap position and swipe length\n- Drag the button anywhere, tap ▶ to start and ■ to pause. No extra permissions\n- Find it under Gaming"
 }

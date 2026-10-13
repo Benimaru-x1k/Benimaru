@@ -57,6 +57,13 @@
       "devices": [
         "8f85381cb78b6a7f"
       ]
+    },
+    {
+      "username": "Anderson",
+      "passwordHash": "56f42cead799b0c325df70632b2dc1aa70f5465a16ca12affc8eec856750c1c1",
+      "devices": [
+        "6c6d8b33e81ed5e7"
+      ]
     }
   ]
 }

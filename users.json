@@ -1,6 +1,14 @@
 {
   "users": [
     {
+      "username": "admin",
+      "passwordHash": "75187a1704b694641b2c0e162f557a3f502d6626de77707524dcb9142a239dcf",
+      "devices": [
+        "15a37a9ca7598d0e",
+        "1d928aaf321ac908"
+      ]
+    },
+    {
       "username": "lmods",
       "passwordHash": "61a66523a37be07ac0311ba6dc987e66ddbd54019d2ce3020fd598dde9274d84",
       "devices": [

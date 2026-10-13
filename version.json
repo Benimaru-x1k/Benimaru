@@ -1,7 +1,7 @@
 {
-  "versionCode": 22,
-  "versionName": "3.2",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.2/BenimaruTool-v3.2.apk",
+  "versionCode": 23,
+  "versionName": "3.3",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.3/BenimaruTool-v3.3.apk",
   "mandatory": true,
-  "releaseNotes": "🚀 3.2 Update!\n\n- Auto Click & Auto Swipe is now faster: the minimum interval is 0.05s (was 0.2s)\n- PayPal payment removed. Premium is now bought through Telegram\n- Get Premium: enter your username and password, then tap Buy directly via Telegram to copy your details and open the chat\n- Existing Premium users are not affected"
+  "releaseNotes": "🚀 3.3 Update!\n\n- New \"Auto calculate DPI\" switch under \"Auto-match aspect ratio\" in Change Screen Resolution\n- Available in both Direct Change and Floating Menu\n- Turn it off to change the resolution only and keep your current DPI"
 }

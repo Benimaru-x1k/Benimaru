@@ -32,6 +32,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -145,6 +146,7 @@ class MainActivity : AppCompatActivity() {
 
         updatePremiumButtonUI()
         initializeUnityAds()
+        recheckPremiumIfNeeded(force = true)
 
         verifyAppSignature()
         checkForUpdates()
@@ -175,7 +177,116 @@ class MainActivity : AppCompatActivity() {
             btnPremium.setOnClickListener {
                 Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
             }
+        } else {
+            val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
+            btnPremium.text = "Remove Ads"
+            btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#26FFC107"))
+            val typedValue = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+            btnPremium.setTextColor(ContextCompat.getColor(this, typedValue.resourceId))
+            (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.parseColor("#E0A800"))
+
+            btnPremium.setOnClickListener {
+                showRemoveAdsDialog()
+            }
         }
+    }
+
+    private enum class PremiumStatus { VALID, INVALID, UNREACHABLE }
+
+    private var lastPremiumRecheckAt = 0L
+    private var isRecheckingPremium = false
+    private val premiumRecheckIntervalMs = 60 * 1000L
+    private val premiumOfflineGraceMs = 7L * 24L * 60L * 60L * 1000L
+
+    private fun recheckPremiumIfNeeded(force: Boolean = false) {
+        if (!isPremium() || isRecheckingPremium) return
+
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (!force && lastPremiumRecheckAt != 0L && now - lastPremiumRecheckAt < premiumRecheckIntervalMs) return
+        lastPremiumRecheckAt = now
+        isRecheckingPremium = true
+
+        val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
+        val username = prefs.getString("PremiumUser", "") ?: ""
+        val storedHash = prefs.getString("PremiumHash", "") ?: ""
+        val deviceId = Secure.getString(contentResolver, Secure.ANDROID_ID) ?: ""
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val status = checkPremiumStatus(username, storedHash, deviceId)
+            withContext(Dispatchers.Main) {
+                isRecheckingPremium = false
+                val wallNow = System.currentTimeMillis()
+                when (status) {
+                    PremiumStatus.VALID -> {
+                        prefs.edit().putLong("PremiumLastVerified", wallNow).apply()
+                    }
+                    PremiumStatus.INVALID -> revokePremium()
+                    PremiumStatus.UNREACHABLE -> {
+                        val lastVerified = prefs.getLong("PremiumLastVerified", 0L)
+                        if (lastVerified == 0L) {
+                            prefs.edit().putLong("PremiumLastVerified", wallNow).apply()
+                        } else if (wallNow - lastVerified > premiumOfflineGraceMs) {
+                            revokePremium()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun checkPremiumStatus(username: String, storedHash: String, deviceId: String): PremiumStatus {
+        if (username.isBlank()) return PremiumStatus.INVALID
+
+        var conn: HttpURLConnection? = null
+        try {
+            conn = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/users.json?t=${System.currentTimeMillis()}")
+                .openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 5000
+            conn.useCaches = false
+
+            if (conn.responseCode != 200) return PremiumStatus.UNREACHABLE
+
+            val jsonObject = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+            val usersArray = jsonObject.getJSONArray("users")
+
+            for (i in 0 until usersArray.length()) {
+                val userObj = usersArray.getJSONObject(i)
+                if (!userObj.optString("username").equals(username.trim(), ignoreCase = true)) continue
+
+                if (userObj.has("passwordHash") && storedHash.isNotEmpty()) {
+                    val remoteHash = userObj.getString("passwordHash").trim().lowercase()
+                    if (!MessageDigest.isEqual(storedHash.toByteArray(), remoteHash.toByteArray())) {
+                        return PremiumStatus.INVALID
+                    }
+                }
+
+                val devices = userObj.optJSONArray("devices") ?: return PremiumStatus.INVALID
+                if (devices.length() > 2) return PremiumStatus.INVALID
+                for (j in 0 until devices.length()) {
+                    if (devices.getString(j) == deviceId) return PremiumStatus.VALID
+                }
+                return PremiumStatus.INVALID
+            }
+            return PremiumStatus.INVALID
+        } catch (e: Exception) {
+            return PremiumStatus.UNREACHABLE
+        } finally {
+            conn?.disconnect()
+        }
+    }
+
+    private fun revokePremium() {
+        getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
+            .remove("AdsRemoved")
+            .remove("PremiumUser")
+            .remove("PremiumHash")
+            .remove("PremiumLastVerified")
+            .apply()
+        updatePremiumButtonUI()
+        initializeUnityAds()
+        Toasty.warning(this, "Your Premium access is no longer active.", Toast.LENGTH_LONG, true).show()
     }
 
     private fun handlePremiumFeature(action: () -> Unit) {
@@ -306,6 +417,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateDeviceInfo()
         updatePremiumButtonUI()
+        recheckPremiumIfNeeded()
         refreshFreezeStatus()
 
         val apk = pendingApk
@@ -1966,6 +2078,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             var ok = false
+            var verifiedHash = ""
             var reason = "Invalid username or password."
             try {
                 val hash = hashPassword(username, pass)
@@ -2003,7 +2116,10 @@ class MainActivity : AppCompatActivity() {
                                     if (devices.getString(j) == deviceId) { deviceFound = true; break }
                                 }
                             }
-                            if (deviceFound) ok = true
+                            if (deviceFound) {
+                                ok = true
+                                verifiedHash = hash
+                            }
                             else reason = "This device isn't authorized yet. Send this ID to the admin: $deviceId"
                         }
                         break
@@ -2021,6 +2137,8 @@ class MainActivity : AppCompatActivity() {
                     getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
                         .putBoolean("AdsRemoved", true)
                         .putString("PremiumUser", username.trim())
+                        .putString("PremiumHash", verifiedHash)
+                        .putLong("PremiumLastVerified", System.currentTimeMillis())
                         .apply()
                     findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
                     updatePremiumButtonUI()
@@ -2143,6 +2261,10 @@ class MainActivity : AppCompatActivity() {
             text = "Auto-match aspect ratio"
             isChecked = false
         }
+        val autoDpiSwitch = MaterialSwitch(this).apply {
+            text = "Auto calculate DPI"
+            isChecked = true
+        }
         val (widthLayout, widthInput) = styledField(this, "Width (now ${currentWidth.toInt()})", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
         val (heightLayout, heightInput) = styledField(this, "Height (now ${currentHeight.toInt()})", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
 
@@ -2186,9 +2308,12 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             addView(autoMatchSwitch, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dp(4) })
+            addView(autoDpiSwitch, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = dp(12) })
             addView(fields)
-            addView(infoCard(this@MainActivity, "DPI is calculated automatically. You'll get 6 seconds to confirm, otherwise it reverts."),
+            addView(infoCard(this@MainActivity, "When Auto calculate DPI is on, DPI is scaled to match the new resolution. When it is off, your current DPI is kept. You'll get 6 seconds to confirm, otherwise it reverts."),
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                     .apply { topMargin = dp(14) })
         }
@@ -2212,9 +2337,13 @@ class MainActivity : AppCompatActivity() {
                 if (!hasShizukuPermission()) return@button
                 sheet.dismiss()
 
-                val scalingRatio = minOf(newWidth / currentWidth, newHeight / currentHeight)
-                val newDpi = (scalingRatio * currentDpi).toInt()
-                val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+                val cmd = if (autoDpiSwitch.isChecked) {
+                    val scalingRatio = minOf(newWidth / currentWidth, newHeight / currentHeight)
+                    val newDpi = (scalingRatio * currentDpi).toInt()
+                    "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+                } else {
+                    "wm size ${newWidth}x${newHeight}"
+                }
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     val process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)

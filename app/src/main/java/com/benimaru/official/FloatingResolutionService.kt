@@ -81,6 +81,7 @@ class FloatingResolutionService : Service() {
         val etHeight = floatingView.findViewById<EditText>(R.id.etFloatHeight)
 
         val switchAutoMatch = floatingView.findViewById<MaterialSwitch>(R.id.switchFloatAutoMatch)
+        val switchAutoDpi = floatingView.findViewById<MaterialSwitch>(R.id.switchFloatAutoDpi)
 
         val btnApply = floatingView.findViewById<Button>(R.id.btnFloatApply)
         val btnReset = floatingView.findViewById<Button>(R.id.btnFloatReset)
@@ -239,12 +240,15 @@ class FloatingResolutionService : Service() {
                 return@setOnClickListener
             }
 
-            val widthRatio = newWidth.toFloat() / currentWidth
-            val heightRatio = newHeight.toFloat() / currentHeight
-            val scalingRatio = minOf(widthRatio, heightRatio)
-
-            val newDpi = (scalingRatio * currentDpi).toInt()
-            val cmd = "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+            val cmd = if (switchAutoDpi?.isChecked != false) {
+                val widthRatio = newWidth.toFloat() / currentWidth
+                val heightRatio = newHeight.toFloat() / currentHeight
+                val scalingRatio = minOf(widthRatio, heightRatio)
+                val newDpi = (scalingRatio * currentDpi).toInt()
+                "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+            } else {
+                "wm size ${newWidth}x${newHeight}"
+            }
             executeCommand(cmd, "Resolution Applied")
         }
 

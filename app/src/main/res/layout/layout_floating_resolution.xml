@@ -21,7 +21,7 @@
             android:orientation="vertical"
             android:padding="14dp">
 
-            <!-- Header: drag area + title + minimize / close -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -98,6 +98,16 @@
                 android:checked="false"
                 android:fontFamily="@font/lexendregular"
                 android:text="Auto-match aspect ratio"
+                android:textSize="13sp" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchFloatAutoDpi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:checked="true"
+                android:fontFamily="@font/lexendregular"
+                android:text="Auto calculate DPI"
                 android:textSize="13sp" />
 
             <LinearLayout

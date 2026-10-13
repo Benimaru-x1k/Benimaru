@@ -3,5 +3,5 @@
   "versionName": "3.3",
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.3/BenimaruTool-v3.3.apk",
   "mandatory": true,
-  "releaseNotes": "🚀 3.3 Update!\n\n- New \"Auto calculate DPI\" switch under \"Auto-match aspect ratio\" in Change Screen Resolution\n- Available in both Direct Change and Floating Menu\n- Turn it off to change the resolution only and keep your current DPI"
+  "releaseNotes": "🚀 3.4 Update!\n\n- Custom DPI input: turn off \"Auto calculate DPI\" to type your own DPI in Change Screen Resolution (Direct Change and Floating Menu)\n- Real-time Hardware Monitor now has 2 new rows: STO (storage used/total) and NET (live download/upload speed)"
 }

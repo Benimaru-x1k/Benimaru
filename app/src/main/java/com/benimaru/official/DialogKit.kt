@@ -394,7 +394,7 @@ class ProgressSheet(private val activity: Activity) {
         textSize = 13f
         setTextColor(Ui.onSurfaceVariant(ctx))
         setPadding(0, ctx.dp(10), 0, 0)
-        text = "Starting…"
+        text = ctx.getString(R.string.txt_starting)
     }
     private val sheet = Sheet(activity)
 

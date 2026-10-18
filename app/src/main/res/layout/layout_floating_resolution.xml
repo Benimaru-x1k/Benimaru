@@ -39,7 +39,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/lexendregular"
-                        android:text="Resolution"
+                        android:text="@string/res_title"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -49,7 +49,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/lexendregular"
-                        android:text="Current: --"
+                        android:text="@string/res_current"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -58,7 +58,7 @@
                     android:id="@+id/btnFloatMinimize"
                     android:layout_width="38dp"
                     android:layout_height="38dp"
-                    android:contentDescription="Minimize"
+                    android:contentDescription="@string/cd_minimize"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
@@ -76,7 +76,7 @@
                     android:layout_width="38dp"
                     android:layout_height="38dp"
                     android:layout_marginStart="6dp"
-                    android:contentDescription="Close overlay"
+                    android:contentDescription="@string/cd_close_overlay"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
@@ -97,7 +97,7 @@
                 android:layout_marginTop="10dp"
                 android:checked="false"
                 android:fontFamily="@font/lexendregular"
-                android:text="Auto-match aspect ratio"
+                android:text="@string/sw_aspect"
                 android:textSize="13sp" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
@@ -107,7 +107,7 @@
                 android:layout_marginTop="4dp"
                 android:checked="true"
                 android:fontFamily="@font/lexendregular"
-                android:text="Auto calculate DPI"
+                android:text="@string/sw_dpi"
                 android:textSize="13sp" />
 
             <LinearLayout
@@ -133,7 +133,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/lexendregular"
-                        android:hint="Width"
+                        android:hint="@string/hint_width"
                         android:inputType="number"
                         android:maxLength="5"
                         android:textColor="?android:attr/textColorPrimary"
@@ -164,7 +164,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/lexendregular"
-                        android:hint="Height"
+                        android:hint="@string/hint_height"
                         android:inputType="number"
                         android:maxLength="5"
                         android:textColor="?android:attr/textColorPrimary"
@@ -188,7 +188,7 @@
                     android:fontFamily="@font/lexendregular"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:text="Reset"
+                    android:text="@string/btn_reset_mixed"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textSize="13sp"
                     app:backgroundTint="#1F808080"
@@ -203,7 +203,7 @@
                     android:fontFamily="@font/lexendregular"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:text="Apply"
+                    android:text="@string/btn_apply"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
                     app:backgroundTint="@color/primaryAccent"

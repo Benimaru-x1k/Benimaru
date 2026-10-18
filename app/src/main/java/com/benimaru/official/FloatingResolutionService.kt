@@ -96,7 +96,7 @@ class FloatingResolutionService : Service() {
         val aspectRatio = currentHeight / currentWidth
 
         floatingView.findViewById<TextView>(R.id.tvFloatCurrent)?.text =
-            "Current: ${currentWidth.toInt()}×${currentHeight.toInt()} · $currentDpi dpi"
+            getString(R.string.svc_current, currentWidth.toInt(), currentHeight.toInt(), currentDpi)
 
         var isAutoCalculating = false
 
@@ -232,11 +232,11 @@ class FloatingResolutionService : Service() {
             val newWidth = etWidth.text.toString().trim().toIntOrNull()
             val newHeight = etHeight.text.toString().trim().toIntOrNull()
             if (newWidth == null || newHeight == null) {
-                Toast.makeText(this, "Enter width and height", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.svc_enter_wh), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (newWidth < 300 || newHeight < 300) {
-                Toast.makeText(this, "Resolution is too small", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.svc_res_small), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -249,11 +249,11 @@ class FloatingResolutionService : Service() {
             } else {
                 "wm size ${newWidth}x${newHeight}"
             }
-            executeCommand(cmd, "Resolution Applied")
+            executeCommand(cmd, getString(R.string.svc_res_applied))
         }
 
         btnReset.setOnClickListener {
-            executeCommand("wm size reset && wm density reset", "Resolution Reset")
+            executeCommand("wm size reset && wm density reset", getString(R.string.msg_res_reset))
         }
     }
 
@@ -268,7 +268,7 @@ class FloatingResolutionService : Service() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@FloatingResolutionService, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@FloatingResolutionService, getString(R.string.svc_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
             }
         }

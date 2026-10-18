@@ -13,6 +13,7 @@
     </queries>
 
     <application
+        android:localeConfig="@xml/locales_config"
         android:name=".MainApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

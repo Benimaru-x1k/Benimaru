@@ -97,12 +97,12 @@ class MainActivity : AppCompatActivity() {
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == SHIZUKU_REQUEST_CODE) {
             if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                Toasty.success(this, "Shizuku permission granted! You can now apply settings.", Toast.LENGTH_SHORT, true).show()
+                Toasty.success(this, getString(R.string.toast_shizuku_granted), Toast.LENGTH_SHORT, true).show()
                 updateShizukuBannerUI(true)
                 fetchSystemStatuses()
             } else {
                 updateShizukuBannerUI(false)
-                Toasty.error(this, "Shizuku permission denied. The app cannot function without it.", Toast.LENGTH_LONG, true).show()
+                Toasty.error(this, getString(R.string.toast_shizuku_denied), Toast.LENGTH_LONG, true).show()
             }
         }
     }
@@ -175,11 +175,11 @@ class MainActivity : AppCompatActivity() {
             (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)
 
             btnPremium.setOnClickListener {
-                Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
+                Toasty.success(this, getString(R.string.toast_you_premium), Toast.LENGTH_SHORT, true).show()
             }
         } else {
             val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
-            btnPremium.text = "Remove Ads"
+            btnPremium.text = getString(R.string.btn_remove_ads)
             btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#26FFC107"))
             val typedValue = android.util.TypedValue()
             theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
@@ -286,7 +286,7 @@ class MainActivity : AppCompatActivity() {
             .apply()
         updatePremiumButtonUI()
         initializeUnityAds()
-        Toasty.warning(this, "Your Premium access is no longer active.", Toast.LENGTH_LONG, true).show()
+        Toasty.warning(this, getString(R.string.toast_premium_inactive), Toast.LENGTH_LONG, true).show()
     }
 
     private fun handlePremiumFeature(action: () -> Unit) {
@@ -297,11 +297,11 @@ class MainActivity : AppCompatActivity() {
 
         Sheet(this)
             .icon(R.drawable.ic_crown, Color.parseColor("#E0A800"))
-            .title("Premium feature")
-            .message("Unlock it once by watching a short video, or get Premium to unlock everything permanently and remove ads.")
-            .button("Watch ad to unlock", SheetStyle.PRIMARY) { showRewardedAd { action() } }
-            .button("Get Premium", SheetStyle.TONAL) { showRemoveAdsDialog() }
-            .button("Not now", SheetStyle.TEXT)
+            .title(getString(R.string.dlg_premium_feature))
+            .message(getString(R.string.dlg_premium_feature_msg))
+            .button(getString(R.string.btn_watch_ad), SheetStyle.PRIMARY) { showRewardedAd { action() } }
+            .button(getString(R.string.btn_get_premium), SheetStyle.TONAL) { showRemoveAdsDialog() }
+            .button(getString(R.string.btn_not_now), SheetStyle.TEXT)
             .show()
     }
 
@@ -379,21 +379,21 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        Toasty.info(this, "Loading Ad...", Toast.LENGTH_SHORT, true).show()
+        Toasty.info(this, getString(R.string.toast_loading_ad), Toast.LENGTH_SHORT, true).show()
 
         UnityAds.show(this, adUnitRewarded, object : IUnityAdsShowListener {
             override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
-                Toasty.error(this@MainActivity, "Ad failed to load. Please try again later.", Toast.LENGTH_SHORT, true).show()
+                Toasty.error(this@MainActivity, getString(R.string.toast_ad_failed), Toast.LENGTH_SHORT, true).show()
                 loadRewardedAd()
             }
             override fun onUnityAdsShowStart(placementId: String) {}
             override fun onUnityAdsShowClick(placementId: String) {}
             override fun onUnityAdsShowComplete(placementId: String, state: UnityAds.UnityAdsShowCompletionState) {
                 if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-                    Toasty.success(this@MainActivity, "Unlocked successfully!", Toast.LENGTH_SHORT, true).show()
+                    Toasty.success(this@MainActivity, getString(R.string.toast_unlocked), Toast.LENGTH_SHORT, true).show()
                     onSuccess()
                 } else {
-                    Toasty.warning(this@MainActivity, "Ad skipped. Feature remains locked.", Toast.LENGTH_LONG, true).show()
+                    Toasty.warning(this@MainActivity, getString(R.string.toast_ad_skipped), Toast.LENGTH_LONG, true).show()
                 }
                 loadRewardedAd()
             }
@@ -498,7 +498,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (!currentSignature.equals(expectedSignature, ignoreCase = true)) {
                     withContext(Dispatchers.Main) {
-                        Toasty.error(this@MainActivity, "Unofficial APK detected! Closing app.", Toast.LENGTH_LONG, true).show()
+                        Toasty.error(this@MainActivity, getString(R.string.toast_unofficial), Toast.LENGTH_LONG, true).show()
                         delay(2000)
                         finishAffinity()
                     }
@@ -569,21 +569,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun showUpdateDialog(versionName: String, releaseNotes: String, apkUrl: String, mandatory: Boolean = false) {
         if (isFinishing || isDestroyed) return
-        val notes = releaseNotes.trim().ifEmpty { "Bug fixes and improvements." }
+        val notes = releaseNotes.trim().ifEmpty { getString(R.string.notes_default) }
 
         val sheet = Sheet(this)
             .icon(R.drawable.ic_download)
-            .title("Update available")
-            .message("Version $versionName is ready to install.")
-            .content(infoCard(this, "What's new\n$notes"))
+            .title(getString(R.string.dlg_update_available))
+            .message(getString(R.string.update_ready, versionName))
+            .content(infoCard(this, getString(R.string.update_whats_new, notes)))
             .cancelable(!mandatory)
-        if (!mandatory) sheet.button("Later", SheetStyle.TONAL)
-        sheet.button("Update now", SheetStyle.PRIMARY) { downloadAppUpdate(apkUrl) }
+        if (!mandatory) sheet.button(getString(R.string.btn_later), SheetStyle.TONAL)
+        sheet.button(getString(R.string.btn_update_now), SheetStyle.PRIMARY) { downloadAppUpdate(apkUrl) }
         sheet.show()
     }
 
     private fun downloadAppUpdate(downloadUrl: String) {
-        downloadAndInstall("Downloading update", downloadUrl, "BenimaruTool-update.apk", finishAfterInstall = false)
+        downloadAndInstall(getString(R.string.dl_updating), downloadUrl, "BenimaruTool-update.apk", finishAfterInstall = false)
     }
 
     private fun formatMb(bytes: Long): String = String.format("%.1f MB", bytes / (1024.0 * 1024.0))
@@ -592,7 +592,7 @@ class MainActivity : AppCompatActivity() {
     private fun downloadAndInstall(title: String, url: String, fileName: String, finishAfterInstall: Boolean) {
         val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         if (dir == null) {
-            Toasty.error(this, "Storage is not available", Toast.LENGTH_SHORT, true).show()
+            Toasty.error(this, getString(R.string.toast_storage_na), Toast.LENGTH_SHORT, true).show()
             if (finishAfterInstall) showShizukuRequiredDialog()
             return
         }
@@ -601,8 +601,8 @@ class MainActivity : AppCompatActivity() {
         val progress = ProgressSheet(this)
             .icon(R.drawable.ic_download)
             .title(title)
-            .message("Keep the app open until the download finishes.")
-            .cancelButton("Cancel") { job?.cancel() }
+            .message(getString(R.string.dl_keep_open))
+            .cancelButton(getString(R.string.btn_cancel)) { job?.cancel() }
         progress.show(indeterminate = true)
 
         job = lifecycleScope.launch(Dispatchers.IO) {
@@ -618,7 +618,7 @@ class MainActivity : AppCompatActivity() {
                 conn = c
                 c.connect()
                 if (c.responseCode !in 200..299) {
-                    throw java.io.IOException("Server returned HTTP ${c.responseCode}")
+                    throw java.io.IOException(getString(R.string.err_http, c.responseCode))
                 }
 
 
@@ -642,7 +642,7 @@ class MainActivity : AppCompatActivity() {
                                 if (pct != lastPercent) {
                                     lastPercent = pct
                                     withContext(Dispatchers.Main) {
-                                        progress.update(pct, "$pct%  ·  ${formatMb(downloaded)} of ${formatMb(total)}")
+                                        progress.update(pct, getString(R.string.dl_progress, pct, formatMb(downloaded), formatMb(total)))
                                     }
                                 }
                             } else {
@@ -650,7 +650,7 @@ class MainActivity : AppCompatActivity() {
                                 if (mbNow != lastMb) {
                                     lastMb = mbNow
                                     withContext(Dispatchers.Main) {
-                                        progress.setIndeterminate("${formatMb(downloaded)} downloaded")
+                                        progress.setIndeterminate(getString(R.string.dl_downloaded, formatMb(downloaded)))
                                     }
                                 }
                             }
@@ -659,9 +659,9 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                if (total > 0 && downloaded != total) throw java.io.IOException("Download was incomplete")
+                if (total > 0 && downloaded != total) throw java.io.IOException(getString(R.string.err_incomplete))
                 if (target.exists()) target.delete()
-                if (!part.renameTo(target)) throw java.io.IOException("Could not save the file")
+                if (!part.renameTo(target)) throw java.io.IOException(getString(R.string.err_save_file))
 
                 withContext(Dispatchers.Main) {
                     progress.dismiss()
@@ -678,7 +678,7 @@ class MainActivity : AppCompatActivity() {
                 part.delete()
                 withContext(Dispatchers.Main) {
                     progress.dismiss()
-                    Toasty.error(this@MainActivity, "Download failed: ${e.message}", Toast.LENGTH_LONG, true).show()
+                    Toasty.error(this@MainActivity, getString(R.string.toast_dl_failed, e.message ?: ""), Toast.LENGTH_LONG, true).show()
                     if (finishAfterInstall) showShizukuRequiredDialog()
                 }
             } finally {
@@ -698,7 +698,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 updateShizukuBannerUI(false)
-                Toasty.warning(this, "Shizuku is installed but not running. Launching app...", Toast.LENGTH_LONG, true).show()
+                Toasty.warning(this, getString(R.string.toast_shizuku_not_running_launch), Toast.LENGTH_LONG, true).show()
                 launchShizukuApp()
             }
         } else {
@@ -709,14 +709,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun hasShizukuPermission(): Boolean {
         if (!Shizuku.pingBinder()) {
-            Toasty.error(this, "Shizuku is not running!", Toast.LENGTH_SHORT, true).show()
+            Toasty.error(this, getString(R.string.toast_shizuku_not_running), Toast.LENGTH_SHORT, true).show()
             return false
         }
         return if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
             true
         } else {
             if (Shizuku.shouldShowRequestPermissionRationale()) {
-                Toasty.info(this, "Please open Shizuku and grant permission to this app.", Toast.LENGTH_LONG, true).show()
+                Toasty.info(this, getString(R.string.toast_open_shizuku), Toast.LENGTH_LONG, true).show()
             } else {
                 Shizuku.requestPermission(SHIZUKU_REQUEST_CODE)
             }
@@ -739,7 +739,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             finishAffinity()
         } else {
-            Toasty.error(this, "Unable to launch Shizuku manager", Toast.LENGTH_SHORT, true).show()
+            Toasty.error(this, getString(R.string.toast_shizuku_launch_fail), Toast.LENGTH_SHORT, true).show()
             finishAffinity()
         }
     }
@@ -750,58 +750,60 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
             val isFixedPerf = prefs.getBoolean("FixedPerf", false)
-            val fixedPerfStatus = if (isFixedPerf) "Status: Enabled" else "Status: Default"
+            val fixedPerfStatus = if (isFixedPerf)
+                getString(if (prefs.getBoolean("FixedPerfAggressive", false)) R.string.status_enabled_aggr else R.string.status_enabled)
+            else getString(R.string.status_default)
 
             val isThermalDisabled = prefs.getBoolean("ThermalDisabled", false)
-            val thermalStatus = if (isThermalDisabled) "Status: Throttling Disabled" else "Status: Default"
+            val thermalStatus = if (isThermalDisabled) getString(R.string.status_throttling_disabled) else getString(R.string.status_default)
 
             val lastGameMode = prefs.getString("LastGameMode", "")
-            val gameModeStatus = if (lastGameMode.isNullOrEmpty()) "Status: Default" else "Status: Active ($lastGameMode)"
+            val gameModeStatus = if (lastGameMode.isNullOrEmpty()) getString(R.string.status_default) else getString(R.string.status_active, lastGameMode.orEmpty())
 
             val minRefresh = runAdbCommandWithResult("settings get system min_refresh_rate")
             val maxRefresh = runAdbCommandWithResult("settings get system peak_refresh_rate")
 
             val refreshStatus = if (minRefresh.isNotEmpty() && minRefresh != "null" && maxRefresh.isNotEmpty() && maxRefresh != "null") {
-                "Status: $minRefresh - $maxRefresh Hz"
+                getString(R.string.status_value, "$minRefresh - $maxRefresh Hz")
             } else {
-                "Status: Default"
+                getString(R.string.status_default)
             }
 
             val wmSize = runAdbCommandWithResult("wm size")
             val resStatus = if (wmSize.contains("Override size:")) {
-                "Status: " + wmSize.substringAfter("Override size:").trim()
+                getString(R.string.status_value, wmSize.substringAfter("Override size:").trim())
             } else if (wmSize.contains("Physical size:")) {
-                "Status: " + wmSize.substringAfter("Physical size:").trim()
+                getString(R.string.status_value, wmSize.substringAfter("Physical size:").trim())
             } else {
-                "Status: Default"
+                getString(R.string.status_default)
             }
 
             val networkOpt = runAdbCommandWithResult("settings get global tether_dun_required")
-            val netStatus = if (networkOpt == "0") "Status: Optimized" else "Status: Default"
+            val netStatus = if (networkOpt == "0") getString(R.string.status_optimized) else getString(R.string.status_default)
 
             val touchOpt = runAdbCommandWithResult("settings get system pointer_speed")
-            val touchStatus = if (touchOpt == "7") "Status: Improved" else "Status: Default"
+            val touchStatus = if (touchOpt == "7") getString(R.string.status_improved) else getString(R.string.status_default)
 
             val dnsMode = runAdbCommandWithResult("settings get global private_dns_mode")
             val dnsSpecifier = runAdbCommandWithResult("settings get global private_dns_specifier")
 
             val dnsStatus = if (dnsMode.trim() == "hostname" && dnsSpecifier.isNotEmpty() && dnsSpecifier != "null") {
-                "Status: ${dnsSpecifier.trim()}"
+                getString(R.string.status_value, dnsSpecifier.trim())
             } else {
-                "Status: Default"
+                getString(R.string.status_default)
             }
 
             val animScale = runAdbCommandWithResult("settings get global window_animation_scale")
-            val animStatus = if (animScale == "0.5") "Status: 0.5x (Fast)" else "Status: Default"
+            val animStatus = if (animScale == "0.5") getString(R.string.status_anim_fast) else getString(R.string.status_default)
 
             val blursOpt = runAdbCommandWithResult("settings get global disable_window_blurs")
-            val blursStatus = if (blursOpt == "1") "Status: Disabled (Optimized)" else "Status: Default"
+            val blursStatus = if (blursOpt == "1") getString(R.string.status_blurs_off) else getString(R.string.status_default)
 
             val headsUpOpt = runAdbCommandWithResult("settings get global heads_up_notifications_enabled")
-            val headsUpStatus = if (headsUpOpt == "0") "Status: Blocked (Focus Mode)" else "Status: Default"
+            val headsUpStatus = if (headsUpOpt == "0") getString(R.string.status_dnd_blocked) else getString(R.string.status_default)
 
             val devOpt = runAdbCommandWithResult("settings get global development_settings_enabled")
-            val devOptStatus = if (devOpt == "1") "Status: Enabled (Unsafe for Banks)" else "Status: Disabled (Safe)"
+            val devOptStatus = if (devOpt == "1") getString(R.string.status_devopt_on) else getString(R.string.status_devopt_off)
 
             withContext(Dispatchers.Main) {
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text = fixedPerfStatus
@@ -823,25 +825,25 @@ class MainActivity : AppCompatActivity() {
                     val style = prefs.getString("CrosshairStyle", "Cross")
                     val color = prefs.getString("CrosshairColor", "Red")
                     val size = prefs.getString("CrosshairSize", "Medium")
-                    findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
+                    findViewById<TextView>(R.id.tvStatusCrosshair).text = getString(R.string.status_crosshair, xl(style.orEmpty()), xl(color.orEmpty()), xl(size.orEmpty()))
                 } else {
-                    findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
+                    findViewById<TextView>(R.id.tvStatusCrosshair).text = getString(R.string.status_disabled)
                 }
 
 
                 val isMonitorOn = prefs.getBoolean("MonitorEnabled", false)
                 isMonitorEnabled = isMonitorOn
                 if (isMonitorOn) {
-                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Enabled"
+                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = getString(R.string.status_enabled)
                 } else {
-                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Disabled"
+                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = getString(R.string.status_disabled)
                 }
 
                 val isAutoOn = prefs.getBoolean(AutoClickService.KEY_ENABLED, false)
                 isAutoClickEnabled = isAutoOn
                 findViewById<TextView>(R.id.tvStatusAutoClick)?.text = if (isAutoOn)
-                    "Status: ${AutoClickService.modeLabel(prefs.getInt(AutoClickService.KEY_MODE, 0))} (${prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f)}s)"
-                else "Status: Disabled"
+                    getString(R.string.status_autoclick, AutoClickService.modeLabel(this@MainActivity, prefs.getInt(AutoClickService.KEY_MODE, 0)), prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f).toString())
+                else getString(R.string.status_disabled)
             }
         }
     }
@@ -867,46 +869,42 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
 
         findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
-            val status = findViewById<TextView>(R.id.tvStatusFixedPerf).text.toString()
-            if (status.contains("Enabled")) {
-                Toasty.info(this, "Already enabled!", Toast.LENGTH_SHORT, true).show()
+            if (prefs.getBoolean("FixedPerfAggressive", false)) {
+                Toasty.info(this, getString(R.string.toast_already_aggr), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("cmd power set-fixed-performance-mode-enabled true", "Fixed Performance Enabled", showAd = true) {
-                prefs.edit().putBoolean("FixedPerf", true).apply()
-                findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Enabled"
-            }
+            showFixedPerformanceSheet(prefs)
         }
 
         findViewById<CardView>(R.id.cardOptimizeSystem).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusOptimize).text.toString()
-            if (status.contains("Recently")) {
-                Toasty.info(this, "Already optimized!", Toast.LENGTH_SHORT, true).show()
+            if (status.contains(getString(R.string.w_recently))) {
+                Toasty.info(this, getString(R.string.toast_already_optimized), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("cmd activity kill-all", "System Optimized (Background processes cleared)", showAd = true) {
-                findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Recently Optimized"
+            runAdbCommand("cmd activity kill-all", getString(R.string.msg_sys_optimized), showAd = true) {
+                findViewById<TextView>(R.id.tvStatusOptimize).text = getString(R.string.status_recently)
             }
         }
 
         findViewById<CardView>(R.id.cardImproveNetwork).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusNetwork).text.toString()
-            if (status.contains("Optimized")) {
-                Toasty.info(this, "Already optimized!", Toast.LENGTH_SHORT, true).show()
+            if (status.contains(getString(R.string.w_optimized))) {
+                Toasty.info(this, getString(R.string.toast_already_optimized), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("settings put global tether_dun_required 0", "Network Optimized", showAd = true) {
+            runAdbCommand("settings put global tether_dun_required 0", getString(R.string.msg_net_optimized), showAd = true) {
                 fetchSystemStatuses()
             }
         }
 
         findViewById<CardView>(R.id.cardImproveTouch).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusTouch).text.toString()
-            if (status.contains("Improved")) {
-                Toasty.info(this, "Already improved!", Toast.LENGTH_SHORT, true).show()
+            if (status.contains(getString(R.string.w_improved))) {
+                Toasty.info(this, getString(R.string.toast_already_improved), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("settings put system pointer_speed 7 && settings put secure long_press_timeout 250", "Touch Latency Improved", showAd = true) {
+            runAdbCommand("settings put system pointer_speed 7 && settings put secure long_press_timeout 250", getString(R.string.msg_touch_improved), showAd = true) {
                 fetchSystemStatuses()
             }
         }
@@ -914,43 +912,43 @@ class MainActivity : AppCompatActivity() {
         findViewById<CardView>(R.id.cardFastAnimations).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusAnimations).text.toString()
             if (status.contains("0.5x")) {
-                Toasty.info(this, "Already sped up!", Toast.LENGTH_SHORT, true).show()
+                Toasty.info(this, getString(R.string.toast_already_sped), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5", "Animations sped up to 0.5x", showAd = true) {
+            runAdbCommand("settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5", getString(R.string.msg_anim_fast), showAd = true) {
                 fetchSystemStatuses()
             }
         }
 
         findViewById<CardView>(R.id.cardDisableBlurs).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusBlurs).text.toString()
-            if (status.contains("Disabled")) {
-                Toasty.info(this, "Already disabled!", Toast.LENGTH_SHORT, true).show()
+            if (status.contains(getString(R.string.w_disabled))) {
+                Toasty.info(this, getString(R.string.toast_already_disabled), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("settings put global disable_window_blurs 1", "Window blurs disabled", showAd = true) {
+            runAdbCommand("settings put global disable_window_blurs 1", getString(R.string.msg_blurs_off), showAd = true) {
                 fetchSystemStatuses()
             }
         }
 
         findViewById<CardView>(R.id.cardGamingDnd).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusDnd).text.toString()
-            if (status.contains("Blocked")) {
-                Toasty.info(this, "Already blocked!", Toast.LENGTH_SHORT, true).show()
+            if (status.contains(getString(R.string.w_blocked))) {
+                Toasty.info(this, getString(R.string.toast_already_blocked), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("settings put global heads_up_notifications_enabled 0", "Heads-up notifications blocked (Focus Mode)", showAd = true) {
+            runAdbCommand("settings put global heads_up_notifications_enabled 0", getString(R.string.msg_dnd_on), showAd = true) {
                 fetchSystemStatuses()
             }
         }
 
         findViewById<CardView>(R.id.cardDisableDevOptions).setOnClickListener {
             val status = findViewById<TextView>(R.id.tvStatusDevOptions).text.toString()
-            if (status.contains("Disabled")) {
-                Toasty.info(this, "Already disabled!", Toast.LENGTH_SHORT, true).show()
+            if (status.contains(getString(R.string.w_disabled))) {
+                Toasty.info(this, getString(R.string.toast_already_disabled), Toast.LENGTH_SHORT, true).show()
                 return@setOnClickListener
             }
-            runAdbCommand("settings put global development_settings_enabled 0", "Developer Options Disabled", showAd = true) {
+            runAdbCommand("settings put global development_settings_enabled 0", getString(R.string.msg_devopt_off), showAd = true) {
                 fetchSystemStatuses()
             }
         }
@@ -958,14 +956,14 @@ class MainActivity : AppCompatActivity() {
         findViewById<CardView>(R.id.cardFstrim).setOnClickListener {
             handlePremiumFeature {
                 val status = findViewById<TextView>(R.id.tvStatusFstrim).text.toString()
-                if (status.contains("Recently")) {
-                    Toasty.info(this, "Storage already optimized recently!", Toast.LENGTH_SHORT, true).show()
+                if (status.contains(getString(R.string.w_recently))) {
+                    Toasty.info(this, getString(R.string.toast_storage_already), Toast.LENGTH_SHORT, true).show()
                     return@handlePremiumFeature
                 }
 
 
-                runAdbCommand("sm fstrim", "Storage Optimized (Fstrim complete)", showAd = true) {
-                    findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Recently Optimized"
+                runAdbCommand("sm fstrim", getString(R.string.msg_fstrim_done), showAd = true) {
+                    findViewById<TextView>(R.id.tvStatusFstrim).text = getString(R.string.status_recently)
                 }
             }
         }
@@ -982,12 +980,12 @@ class MainActivity : AppCompatActivity() {
             handlePremiumFeature { confirmClearCaches() }
         }
         findViewById<TextView>(R.id.btnResetRamBooster).setOnClickListener {
-            findViewById<TextView>(R.id.tvStatusRamBooster).text = "Status: Ready"
-            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+            findViewById<TextView>(R.id.tvStatusRamBooster).text = getString(R.string.status_ready)
+            Toasty.success(this, getString(R.string.toast_status_reset), Toast.LENGTH_SHORT, true).show()
         }
         findViewById<TextView>(R.id.btnResetCache).setOnClickListener {
-            findViewById<TextView>(R.id.tvStatusCache).text = "Status: Ready"
-            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+            findViewById<TextView>(R.id.tvStatusCache).text = getString(R.string.status_ready)
+            Toasty.success(this, getString(R.string.toast_status_reset), Toast.LENGTH_SHORT, true).show()
         }
 
         findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
@@ -1021,11 +1019,11 @@ class MainActivity : AppCompatActivity() {
             handlePremiumFeature {
                 Sheet(this)
                     .icon(R.drawable.ic_warning, Color.parseColor("#E53935"))
-                    .title("Disable thermal throttling?")
-                    .message("This tricks the device into thinking it is cool, forcing maximum performance. Your device WILL get hot. Use with caution.")
-                    .button("Cancel", SheetStyle.TONAL)
-                    .button("Enable", SheetStyle.DANGER) {
-                        runAdbCommand("cmd thermalservice override-status 0", "Thermal Throttling Disabled") {
+                    .title(getString(R.string.dlg_thermal_title))
+                    .message(getString(R.string.dlg_thermal_msg))
+                    .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+                    .button(getString(R.string.btn_enable), SheetStyle.DANGER) {
+                        runAdbCommand("cmd thermalservice override-status 0", getString(R.string.msg_thermal_off)) {
                             prefs.edit().putBoolean("ThermalDisabled", true).apply()
                             fetchSystemStatuses()
                         }
@@ -1036,20 +1034,20 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<CardView>(R.id.cardGameMode).setOnClickListener {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                Toasty.error(this, "This feature requires Android 12 or newer.", Toast.LENGTH_LONG, true).show()
+                Toasty.error(this, getString(R.string.toast_needs_a12), Toast.LENGTH_LONG, true).show()
                 return@setOnClickListener
             }
             handlePremiumFeature { showGameModeSelectorDialog() }
         }
 
         findViewById<TextView>(R.id.btnResetFixedPerf).setOnClickListener {
-            runAdbCommand("cmd power set-fixed-performance-mode-enabled false", "Fixed Performance Reset") {
-                prefs.edit().putBoolean("FixedPerf", false).apply()
-                findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
+            runAdbCommand(fixedPerfResetCmd(prefs), getString(R.string.fp_reset_done)) {
+                prefs.edit().putBoolean("FixedPerf", false).putBoolean("FixedPerfAggressive", false).apply()
+                findViewById<TextView>(R.id.tvStatusFixedPerf).text = getString(R.string.status_default)
             }
         }
         findViewById<TextView>(R.id.btnResetThermal).setOnClickListener {
-            runAdbCommand("cmd thermalservice reset", "Thermal limits restored") {
+            runAdbCommand("cmd thermalservice reset", getString(R.string.msg_thermal_restored)) {
                 prefs.edit().putBoolean("ThermalDisabled", false).apply()
                 fetchSystemStatuses()
             }
@@ -1057,32 +1055,32 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnResetGameMode).setOnClickListener {
             val lastGame = prefs.getString("LastGameMode", "")
             if (!lastGame.isNullOrEmpty()) {
-                runAdbCommand("cmd game mode standard $lastGame", "Game Mode Reset") {
+                runAdbCommand("cmd game mode standard $lastGame", getString(R.string.msg_gm_reset)) {
                     prefs.edit().putString("LastGameMode", "").apply()
                     fetchSystemStatuses()
                 }
             } else {
-                Toasty.info(this, "No active Game Mode found", Toast.LENGTH_SHORT, true).show()
+                Toasty.info(this, getString(R.string.toast_no_gm), Toast.LENGTH_SHORT, true).show()
             }
         }
         findViewById<TextView>(R.id.btnResetOptimize).setOnClickListener {
-            findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
-            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+            findViewById<TextView>(R.id.tvStatusOptimize).text = getString(R.string.status_ready)
+            Toasty.success(this, getString(R.string.toast_status_reset), Toast.LENGTH_SHORT, true).show()
         }
         findViewById<TextView>(R.id.btnResetRefresh).setOnClickListener {
-            runAdbCommand("settings delete system min_refresh_rate && settings delete system peak_refresh_rate", "Refresh Rate Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings delete system min_refresh_rate && settings delete system peak_refresh_rate", getString(R.string.msg_refresh_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetNetwork).setOnClickListener {
-            runAdbCommand("settings delete global tether_dun_required", "Network Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings delete global tether_dun_required", getString(R.string.msg_net_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetTouch).setOnClickListener {
-            runAdbCommand("settings delete system pointer_speed && settings put secure long_press_timeout 400", "Touch Settings Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings delete system pointer_speed && settings put secure long_press_timeout 400", getString(R.string.msg_touch_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetResolution).setOnClickListener {
-            runAdbCommand("wm size reset && wm density reset", "Resolution Reset") { fetchSystemStatuses() }
+            runAdbCommand("wm size reset && wm density reset", getString(R.string.msg_res_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetDns).setOnClickListener {
-            runAdbCommand("settings put global private_dns_mode default && settings delete global private_dns_specifier", "DNS Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings put global private_dns_mode default && settings delete global private_dns_specifier", getString(R.string.msg_dns_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetCrosshair).setOnClickListener {
             if (isCrosshairEnabled) stopCrosshairService()
@@ -1094,22 +1092,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<TextView>(R.id.btnResetAnimations).setOnClickListener {
-            runAdbCommand("settings put global window_animation_scale 1 && settings put global transition_animation_scale 1 && settings put global animator_duration_scale 1", "Animations Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings put global window_animation_scale 1 && settings put global transition_animation_scale 1 && settings put global animator_duration_scale 1", getString(R.string.msg_anim_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetBlurs).setOnClickListener {
-            runAdbCommand("settings put global disable_window_blurs 0", "Window Blurs Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings put global disable_window_blurs 0", getString(R.string.msg_blurs_reset)) { fetchSystemStatuses() }
         }
         findViewById<TextView>(R.id.btnResetDnd).setOnClickListener {
-            runAdbCommand("settings put global heads_up_notifications_enabled 1", "Gaming Focus Mode Reset") { fetchSystemStatuses() }
+            runAdbCommand("settings put global heads_up_notifications_enabled 1", getString(R.string.msg_dnd_reset)) { fetchSystemStatuses() }
         }
 
         findViewById<TextView>(R.id.btnResetDevOptions).setOnClickListener {
-            runAdbCommand("settings put global development_settings_enabled 1", "Developer Options Enabled") { fetchSystemStatuses() }
+            runAdbCommand("settings put global development_settings_enabled 1", getString(R.string.msg_devopt_on)) { fetchSystemStatuses() }
         }
 
         findViewById<TextView>(R.id.btnResetFstrim).setOnClickListener {
-            findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Ready"
-            Toasty.success(this, "Status reset", Toast.LENGTH_SHORT, true).show()
+            findViewById<TextView>(R.id.tvStatusFstrim).text = getString(R.string.status_ready)
+            Toasty.success(this, getString(R.string.toast_status_reset), Toast.LENGTH_SHORT, true).show()
         }
 
         findViewById<Button>(R.id.btnLaunchGame).setOnClickListener {
@@ -1118,7 +1116,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnRemoveAds).setOnClickListener {
             if (isPremium()) {
-                Toasty.success(this, "You are a Premium user!", Toast.LENGTH_SHORT, true).show()
+                Toasty.success(this, getString(R.string.toast_you_premium), Toast.LENGTH_SHORT, true).show()
             } else {
                 showRemoveAdsDialog()
             }
@@ -1127,10 +1125,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnResetAll).setOnClickListener {
             Sheet(this)
                 .icon(R.drawable.ic_reset, Color.parseColor("#E53935"))
-                .title("Reset all functions?")
-                .message("This restores every tweak to its default (refresh rate, resolution, DNS, animations, thermal limits, game mode and more) and stops the crosshair and monitor overlays.")
-                .button("Cancel", SheetStyle.TONAL)
-                .button("Reset all", SheetStyle.DANGER) { resetAllFunctions(prefs) }
+                .title(getString(R.string.dlg_reset_all_title))
+                .message(getString(R.string.dlg_reset_all_msg))
+                .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+                .button(getString(R.string.btn_reset_all), SheetStyle.DANGER) { resetAllFunctions(prefs) }
                 .show()
         }
     }
@@ -1139,11 +1137,13 @@ class MainActivity : AppCompatActivity() {
         run {
             val lastGame = prefs.getString("LastGameMode", "")
             val gameModeReset = if (lastGame.isNullOrEmpty()) "" else "cmd game mode standard $lastGame && "
+            val aggressiveReset = if (prefs.getBoolean("FixedPerfAggressive", false))
+                "{ ${fixedPerfAggressiveRestore(prefs)}; true; } && " else ""
 
             val resetCmd = """
                 cmd power set-fixed-performance-mode-enabled false
                 cmd thermalservice reset
-                $gameModeReset
+                $gameModeReset$aggressiveReset
                 settings delete system min_refresh_rate
                 settings delete system peak_refresh_rate
                 wm size reset
@@ -1160,9 +1160,10 @@ class MainActivity : AppCompatActivity() {
                 settings put global development_settings_enabled 0
             """.trimIndent().replace("\n", " && ").replace("&&  &&", "&&")
 
-            runAdbCommand(resetCmd, "All functions reset to default") {
+            runAdbCommand(resetCmd, getString(R.string.msg_all_reset)) {
                 prefs.edit()
                     .putBoolean("FixedPerf", false)
+                    .putBoolean("FixedPerfAggressive", false)
                     .putBoolean("ThermalDisabled", false)
                     .putString("LastGameMode", "")
                     .apply()
@@ -1172,18 +1173,18 @@ class MainActivity : AppCompatActivity() {
                     stopService(Intent(this@MainActivity, RealtimeMonitorService::class.java))
                     isMonitorEnabled = false
                     prefs.edit().putBoolean("MonitorEnabled", false).apply()
-                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = "Status: Disabled"
+                    findViewById<TextView>(R.id.tvStatusMonitor)?.text = getString(R.string.status_disabled)
                 }
 
                 if (isCrosshairEnabled) stopCrosshairService()
                 if (isAutoClickEnabled) stopAutoClickService()
 
-                findViewById<TextView>(R.id.tvStatusFixedPerf).text = "Status: Default"
-                findViewById<TextView>(R.id.tvStatusOptimize).text = "Status: Ready"
+                findViewById<TextView>(R.id.tvStatusFixedPerf).text = getString(R.string.status_default)
+                findViewById<TextView>(R.id.tvStatusOptimize).text = getString(R.string.status_ready)
 
-                findViewById<TextView>(R.id.tvStatusFstrim).text = "Status: Ready"
-                findViewById<TextView>(R.id.tvStatusRamBooster).text = "Status: Ready"
-                findViewById<TextView>(R.id.tvStatusCache).text = "Status: Ready"
+                findViewById<TextView>(R.id.tvStatusFstrim).text = getString(R.string.status_ready)
+                findViewById<TextView>(R.id.tvStatusRamBooster).text = getString(R.string.status_ready)
+                findViewById<TextView>(R.id.tvStatusCache).text = getString(R.string.status_ready)
 
                 fetchSystemStatuses()
             }
@@ -1268,17 +1269,17 @@ class MainActivity : AppCompatActivity() {
 
         val scanning = ProgressSheet(this)
             .icon(R.drawable.ic_tune)
-            .title("Scanning memory")
-            .message("Checking which apps use the most RAM…")
+            .title(getString(R.string.dlg_scan_mem))
+            .message(getString(R.string.dlg_scan_mem_msg))
         scanning.show(indeterminate = true)
-        scanning.setIndeterminate("This takes a few seconds")
+        scanning.setIndeterminate(getString(R.string.dlg_scan_mem_sub))
 
         lifecycleScope.launch(Dispatchers.IO) {
             val apps = try { scanMemoryHogs() } catch (e: Exception) { emptyList() }
             withContext(Dispatchers.Main) {
                 scanning.dismiss()
                 if (apps.isEmpty()) {
-                    Toasty.info(this@MainActivity, "No heavy background apps found", Toast.LENGTH_LONG, true).show()
+                    Toasty.info(this@MainActivity, getString(R.string.toast_no_heavy), Toast.LENGTH_LONG, true).show()
                 } else {
                     presentRamList(apps)
                 }
@@ -1294,11 +1295,11 @@ class MainActivity : AppCompatActivity() {
 
         fun updateSummary() {
             val mb = apps.filter { it.pkg in selected }.sumOf { it.mb }
-            summary.text = if (selected.isEmpty()) "Nothing selected."
-            else "${selected.size} selected  ·  up to about $mb MB in use. Free RAM now: ${availRamMb()} MB."
+            summary.text = if (selected.isEmpty()) getString(R.string.txt_nothing_selected)
+            else getString(R.string.ram_summary, selected.size, mb, availRamMb())
             sheet.buttonViews.getOrNull(1)?.let {
                 it.isEnabled = selected.isNotEmpty()
-                it.text = if (selected.isEmpty()) "Boost" else "Boost (${selected.size})"
+                it.text = if (selected.isEmpty()) getString(R.string.btn_boost) else getString(R.string.btn_boost_n, selected.size)
             }
         }
 
@@ -1306,7 +1307,7 @@ class MainActivity : AppCompatActivity() {
             list.removeAllViews()
             apps.forEach { a ->
                 list.addView(optionRow(
-                    this, a.label, "${a.mb} MB in use",
+                    this, a.label, getString(R.string.ram_in_use, a.mb),
                     icon = a.icon?.constantState?.newDrawable()?.mutate() ?: a.icon,
                     tintIcon = false, selected = a.pkg in selected
                 ) {
@@ -1320,12 +1321,12 @@ class MainActivity : AppCompatActivity() {
         render()
 
         sheet.icon(R.drawable.ic_tune)
-            .title("RAM booster")
-            .message("Apps using the most memory right now. Tap to select or deselect. Stopped apps can start again on their own, so this is a temporary boost.")
+            .title(getString(R.string.dlg_ram_title))
+            .message(getString(R.string.dlg_ram_msg))
             .content(summary)
             .content(list)
-            .button("Cancel", SheetStyle.TONAL)
-            .button("Boost", SheetStyle.PRIMARY) { boostApps(selected.toList()) }
+            .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+            .button(getString(R.string.btn_boost), SheetStyle.PRIMARY) { boostApps(selected.toList()) }
             .show()
         updateSummary()
     }
@@ -1338,12 +1339,12 @@ class MainActivity : AppCompatActivity() {
 
         val before = availRamMb()
         val cmd = valid.joinToString("; ") { "am force-stop $it" }
-        runAdbCommand(cmd, "Stopped ${valid.size} apps", showAd = true) {
+        runAdbCommand(cmd, resources.getQuantityString(R.plurals.stopped_apps, valid.size, valid.size), showAd = true) {
             lifecycleScope.launch {
                 delay(1500)
                 val freed = (availRamMb() - before).coerceAtLeast(0)
                 findViewById<TextView>(R.id.tvStatusRamBooster).text =
-                    if (freed > 0) "Status: Freed about $freed MB" else "Status: Stopped ${valid.size} apps"
+                    if (freed > 0) getString(R.string.status_freed_mb, freed) else resources.getQuantityString(R.plurals.status_stopped_apps, valid.size, valid.size)
                 updateDeviceInfo()
             }
         }
@@ -1352,10 +1353,10 @@ class MainActivity : AppCompatActivity() {
     private fun confirmClearCaches() {
         Sheet(this)
             .icon(R.drawable.ic_reset)
-            .title("Clear all app caches?")
-            .message("This removes temporary files from every app to free up storage. Your accounts, settings and saved data are not touched. Apps may open a little slower the first time afterward.")
-            .button("Cancel", SheetStyle.TONAL)
-            .button("Clear caches", SheetStyle.PRIMARY) { clearAllCaches() }
+            .title(getString(R.string.dlg_clear_title))
+            .message(getString(R.string.dlg_clear_msg))
+            .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+            .button(getString(R.string.btn_clear_caches), SheetStyle.PRIMARY) { clearAllCaches() }
             .show()
     }
 
@@ -1364,10 +1365,10 @@ class MainActivity : AppCompatActivity() {
 
         val progress = ProgressSheet(this)
             .icon(R.drawable.ic_reset)
-            .title("Clearing caches")
-            .message("This can take up to a minute. Please keep the app open.")
+            .title(getString(R.string.dlg_clearing))
+            .message(getString(R.string.dlg_clearing_msg))
         progress.show(indeterminate = true)
-        progress.setIndeterminate("Working…")
+        progress.setIndeterminate(getString(R.string.txt_working))
 
         lifecycleScope.launch(Dispatchers.IO) {
             val before = freeStorageBytes()
@@ -1386,16 +1387,16 @@ class MainActivity : AppCompatActivity() {
                 progress.dismiss()
                 if (ok) {
                     findViewById<TextView>(R.id.tvStatusCache).text =
-                        if (freed > 0) "Status: Freed ${formatSize(freed)}" else "Status: Already clean"
+                        if (freed > 0) getString(R.string.status_freed, formatSize(freed)) else getString(R.string.status_already_clean)
                     Toasty.success(
                         this@MainActivity,
-                        if (freed > 0) "Freed ${formatSize(freed)} of cache" else "Caches were already clean",
+                        if (freed > 0) getString(R.string.toast_freed_cache, formatSize(freed)) else getString(R.string.toast_cache_clean),
                         Toast.LENGTH_LONG, true
                     ).show()
                     updateDeviceInfo()
                     showInterstitialAd()
                 } else {
-                    Toasty.error(this@MainActivity, "Your device blocked the cache cleaner", Toast.LENGTH_LONG, true).show()
+                    Toasty.error(this@MainActivity, getString(R.string.toast_cache_blocked), Toast.LENGTH_LONG, true).show()
                 }
             }
         }
@@ -1421,8 +1422,8 @@ class MainActivity : AppCompatActivity() {
             try { !packageManager.getApplicationInfo(p, 0).enabled } catch (e: Exception) { true }
         }
         if (stillFrozen.size != saved.size) saveFrozen(stillFrozen.toSet())
-        tv.text = if (stillFrozen.isEmpty()) "Status: Ready"
-        else "Status: ${stillFrozen.size} app${if (stillFrozen.size == 1) "" else "s"} frozen"
+        tv.text = if (stillFrozen.isEmpty()) getString(R.string.status_ready)
+        else resources.getQuantityString(R.plurals.status_frozen_apps, stillFrozen.size, stillFrozen.size)
     }
 
     private fun freezeBlocklist(): Set<String> {
@@ -1484,17 +1485,17 @@ class MainActivity : AppCompatActivity() {
         if (!hasShizukuPermission()) return
         val scanning = ProgressSheet(this)
             .icon(R.drawable.ic_freeze)
-            .title("Loading apps")
-            .message("Reading your installed apps…")
+            .title(getString(R.string.dlg_loading_apps))
+            .message(getString(R.string.dlg_loading_apps_msg))
         scanning.show(indeterminate = true)
-        scanning.setIndeterminate("Just a moment")
+        scanning.setIndeterminate(getString(R.string.txt_moment))
 
         lifecycleScope.launch(Dispatchers.IO) {
             val apps = try { scanInstalledApps() } catch (e: Exception) { emptyList() }
             withContext(Dispatchers.Main) {
                 scanning.dismiss()
                 if (apps.isEmpty()) {
-                    Toasty.info(this@MainActivity, "No apps found", Toast.LENGTH_LONG, true).show()
+                    Toasty.info(this@MainActivity, getString(R.string.toast_no_apps), Toast.LENGTH_LONG, true).show()
                 } else {
                     presentFreezeList(apps)
                 }
@@ -1521,7 +1522,7 @@ class MainActivity : AppCompatActivity() {
             ).apply { topMargin = dp(4) }
         }
         val tabLabels = listOf(
-            "Apps (${userApps.size})", "System (${systemApps.size})", "Frozen (${frozenApps.size})"
+            getString(R.string.tab_apps, userApps.size), getString(R.string.tab_system, systemApps.size), getString(R.string.tab_frozen, frozenApps.size)
         )
         val tabIds = tabLabels.map { t ->
             val b = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
@@ -1537,10 +1538,10 @@ class MainActivity : AppCompatActivity() {
             b.id
         }
 
-        val (searchLayout, searchEdit) = styledField(this, "Search apps", android.text.InputType.TYPE_CLASS_TEXT, topMarginDp = 10)
+        val (searchLayout, searchEdit) = styledField(this, getString(R.string.hint_search_apps), android.text.InputType.TYPE_CLASS_TEXT, topMarginDp = 10)
         val warning = infoCard(
             this,
-            "System apps are part of Android. Freezing the wrong one can break calls, notifications, or the home screen. Only freeze system apps you recognise. You can always restore them from the Frozen tab.",
+            getString(R.string.txt_sys_warning),
             tint = 0xFFFFA000.toInt()
         ).apply {
             layoutParams = LinearLayout.LayoutParams(
@@ -1561,9 +1562,9 @@ class MainActivity : AppCompatActivity() {
             val primary = sheet.buttonViews.getOrNull(1) ?: return
             primary.isEnabled = selected.isNotEmpty()
             primary.text = when {
-                selected.isEmpty() -> if (tab == 2) "Restore" else "Freeze"
-                tab == 2 -> "Restore (${selected.size})"
-                else -> "Freeze (${selected.size})"
+                selected.isEmpty() -> if (tab == 2) getString(R.string.btn_restore) else getString(R.string.btn_freeze)
+                tab == 2 -> getString(R.string.btn_restore_n, selected.size)
+                else -> getString(R.string.btn_freeze_n, selected.size)
             }
             sheet.buttonViews.getOrNull(2)?.visibility =
                 if (frozenApps.isNotEmpty()) View.VISIBLE else View.GONE
@@ -1575,9 +1576,9 @@ class MainActivity : AppCompatActivity() {
             val shown = rows.take(60)
             if (shown.isEmpty()) {
                 list.addView(infoCard(this, when {
-                    query.isNotBlank() -> "No apps match your search."
-                    tab == 2 -> "Nothing is frozen right now."
-                    else -> "No apps in this list."
+                    query.isNotBlank() -> getString(R.string.txt_no_match)
+                    tab == 2 -> getString(R.string.txt_nothing_frozen)
+                    else -> getString(R.string.txt_no_apps_list)
                 }).apply {
                     layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
@@ -1590,7 +1591,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 list.addView(optionRow(
                     this, a.label,
-                    if (a.isSystem) "System app · ${a.pkg}" else a.pkg,
+                    if (a.isSystem) getString(R.string.sys_app_pkg, a.pkg) else a.pkg,
                     icon = icon?.constantState?.newDrawable()?.mutate() ?: icon,
                     tintIcon = false, selected = a.pkg in selected
                 ) {
@@ -1601,7 +1602,7 @@ class MainActivity : AppCompatActivity() {
             }
             if (rows.size > shown.size) {
                 list.addView(TextView(this).apply {
-                    text = "Showing ${shown.size} of ${rows.size}. Use search to find more."
+                    text = getString(R.string.showing_n, shown.size, rows.size)
                     textSize = 12f
                     setTextColor(Ui.onSurfaceVariant(this@MainActivity))
                     setPadding(dp(4), dp(10), dp(4), 0)
@@ -1643,15 +1644,15 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Sheet(this)
                     .icon(R.drawable.ic_reset)
-                    .title("Freeze system apps?")
+                    .title(getString(R.string.dlg_freeze_sys_title))
                     .message(
-                        "You selected ${sys.size} system app${if (sys.size == 1) "" else "s"}:\n\n" +
+                        resources.getQuantityString(R.plurals.sys_selected, sys.size, sys.size) +
                             sys.take(8).joinToString("\n") { "• ${it.label}" } +
-                            (if (sys.size > 8) "\n• and ${sys.size - 8} more" else "") +
-                            "\n\nFreezing the wrong system app can break features. You can undo this from the Frozen tab or with Restore all."
+                            (if (sys.size > 8) getString(R.string.more_n, sys.size - 8) else "") +
+                            getString(R.string.txt_freeze_sys_tail)
                     )
-                    .button("Cancel", SheetStyle.TONAL)
-                    .button("Freeze anyway", SheetStyle.DANGER) {
+                    .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+                    .button(getString(R.string.btn_freeze_anyway), SheetStyle.DANGER) {
                         sheet.dismiss()
                         applyFreezeChange(picked, freeze = true)
                     }
@@ -1660,15 +1661,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         sheet.icon(R.drawable.ic_freeze)
-            .title("Freeze apps")
-            .message("Frozen apps are switched off completely: no RAM, no background work, no notifications. Restore them any time.")
+            .title(getString(R.string.dlg_freeze_apps))
+            .message(getString(R.string.dlg_freeze_apps_msg))
             .content(tabs)
             .content(searchLayout)
             .content(warning)
             .content(list)
-            .button("Close", SheetStyle.TONAL)
-            .button("Freeze", SheetStyle.PRIMARY, dismiss = false) { doChange() }
-            .button("Restore all frozen apps", SheetStyle.TEXT, dismiss = false) {
+            .button(getString(R.string.btn_close), SheetStyle.TONAL)
+            .button(getString(R.string.btn_freeze), SheetStyle.PRIMARY, dismiss = false) { doChange() }
+            .button(getString(R.string.btn_restore_all_frozen), SheetStyle.TEXT, dismiss = false) {
                 sheet.dismiss()
                 restoreAllFrozen()
             }
@@ -1694,8 +1695,8 @@ class MainActivity : AppCompatActivity() {
 
         val progress = ProgressSheet(this)
             .icon(R.drawable.ic_freeze)
-            .title(if (freeze) "Freezing apps" else "Restoring apps")
-            .message("Please wait…")
+            .title(if (freeze) getString(R.string.dlg_freezing) else getString(R.string.dlg_restoring))
+            .message(getString(R.string.txt_please_wait))
         progress.show()
         val userId = android.os.Process.myUid() / 100000
         val before = availRamMb()
@@ -1706,7 +1707,7 @@ class MainActivity : AppCompatActivity() {
             val failed = mutableListOf<String>()
             valid.forEachIndexed { i, p ->
                 withContext(Dispatchers.Main) {
-                    progress.update((i * 100) / valid.size, "${i + 1} of ${valid.size}")
+                    progress.update((i * 100) / valid.size, getString(R.string.progress_n_of, i + 1, valid.size))
                 }
                 val cmd = if (freeze) "pm disable-user --user $userId $p" else "pm enable --user $userId $p"
                 val r = runShell(cmd)
@@ -1725,14 +1726,14 @@ class MainActivity : AppCompatActivity() {
                 if (ok > 0) {
                     val freed = (availRamMb() - before).coerceAtLeast(0)
                     val msg = if (freeze) {
-                        "Froze $ok app${if (ok == 1) "" else "s"}" + if (freed > 0) " · about $freed MB freed" else ""
-                    } else "Restored $ok app${if (ok == 1) "" else "s"}"
+                        resources.getQuantityString(R.plurals.froze_apps, ok, ok) + if (freed > 0) " · " + getString(R.string.freed_suffix, freed) else ""
+                    } else resources.getQuantityString(R.plurals.restored_apps, ok, ok)
                     Toasty.success(this@MainActivity, msg, Toast.LENGTH_LONG, true).show()
                 }
                 if (failed.isNotEmpty()) {
                     Toasty.warning(
                         this@MainActivity,
-                        "${failed.size} app${if (failed.size == 1) "" else "s"} could not be changed. Android blocks some protected apps.",
+                        resources.getQuantityString(R.plurals.failed_apps, failed.size, failed.size),
                         Toast.LENGTH_LONG, true
                     ).show()
                 }
@@ -1744,7 +1745,7 @@ class MainActivity : AppCompatActivity() {
     private fun restoreAllFrozen() {
         val saved = savedFrozen().toList()
         if (saved.isEmpty()) {
-            Toasty.info(this, "No frozen apps to restore", Toast.LENGTH_SHORT, true).show()
+            Toasty.info(this, getString(R.string.toast_no_frozen), Toast.LENGTH_SHORT, true).show()
             return
         }
         if (!hasShizukuPermission()) return
@@ -1754,17 +1755,17 @@ class MainActivity : AppCompatActivity() {
     private fun showAutoClickDialog() {
         if (!Settings.canDrawOverlays(this)) {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
-            Toasty.info(this, "Please allow 'Display over other apps'", Toast.LENGTH_LONG, true).show()
+            Toasty.info(this, getString(R.string.toast_allow_overlay), Toast.LENGTH_LONG, true).show()
             return
         }
         if (!hasShizukuPermission()) {
-            Toasty.error(this, "Start Shizuku and grant permission first", Toast.LENGTH_LONG, true).show()
+            Toasty.error(this, getString(R.string.toast_start_shizuku), Toast.LENGTH_LONG, true).show()
             return
         }
 
         val prefs = getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE)
         var mode = prefs.getInt(AutoClickService.KEY_MODE, AutoClickService.MODE_TAP)
-        val modes = listOf("Auto click" to "Tap one spot", "Auto swipe" to "Swipe left/right", "Tap + swipe" to "Alternate between both")
+        val modes = listOf(getString(R.string.mode_click) to getString(R.string.mode_click_desc), getString(R.string.mode_swipe) to getString(R.string.mode_swipe_desc), getString(R.string.mode_both) to getString(R.string.mode_both_desc))
 
         val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val rows = mutableListOf<LinearLayout>()
@@ -1779,24 +1780,24 @@ class MainActivity : AppCompatActivity() {
         }
         renderModes()
 
-        val (intervalLayout, intervalEdit) = styledField(this, "Interval (seconds)", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        val (intervalLayout, intervalEdit) = styledField(this, getString(R.string.hint_interval), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
         intervalEdit.setText(prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f).toString())
-        val (xLayout, xEdit) = styledField(this, "X position (blank = screen center)", InputType.TYPE_CLASS_NUMBER)
-        val (yLayout, yEdit) = styledField(this, "Y position (blank = screen center)", InputType.TYPE_CLASS_NUMBER)
-        val (lenLayout, lenEdit) = styledField(this, "Swipe length (px)", InputType.TYPE_CLASS_NUMBER)
+        val (xLayout, xEdit) = styledField(this, getString(R.string.hint_x), InputType.TYPE_CLASS_NUMBER)
+        val (yLayout, yEdit) = styledField(this, getString(R.string.hint_y), InputType.TYPE_CLASS_NUMBER)
+        val (lenLayout, lenEdit) = styledField(this, getString(R.string.hint_swipe_len), InputType.TYPE_CLASS_NUMBER)
         prefs.getInt(AutoClickService.KEY_X, -1).takeIf { it >= 0 }?.let { xEdit.setText(it.toString()) }
         prefs.getInt(AutoClickService.KEY_Y, -1).takeIf { it >= 0 }?.let { yEdit.setText(it.toString()) }
         lenEdit.setText(prefs.getInt(AutoClickService.KEY_SWIPE_LEN, 300).toString())
         listOf(intervalLayout, xLayout, yLayout, lenLayout).forEach { content.addView(it) }
-        content.addView(infoCard(this, "A floating ▶ button appears. Open your game, then tap ▶ to start and ■ to pause; drag it to move. Some games treat automated input as cheating and may ban the account \u2014 use at your own risk."))
+        content.addView(infoCard(this, getString(R.string.info_autoclick)))
 
         Sheet(this)
             .icon(R.drawable.ic_gamepad)
-            .title("Auto Click & Swipe")
-            .message("Choose what to repeat and how often.")
+            .title(getString(R.string.dlg_autoclick_title))
+            .message(getString(R.string.dlg_autoclick_msg))
             .content(content)
-            .button("Cancel", SheetStyle.TEXT)
-            .button("Show button", SheetStyle.PRIMARY) {
+            .button(getString(R.string.btn_cancel), SheetStyle.TEXT)
+            .button(getString(R.string.btn_show_button), SheetStyle.PRIMARY) {
                 val interval = (intervalEdit.text?.toString()?.toFloatOrNull() ?: 5f).coerceIn(0.05f, 3600f)
                 prefs.edit()
                     .putInt(AutoClickService.KEY_MODE, mode)
@@ -1808,8 +1809,8 @@ class MainActivity : AppCompatActivity() {
                     .apply()
                 startService(Intent(this, AutoClickService::class.java))
                 isAutoClickEnabled = true
-                findViewById<TextView>(R.id.tvStatusAutoClick).text = "Status: ${AutoClickService.modeLabel(mode)} (${interval}s)"
-                Toasty.success(this, "Floating button ready", Toast.LENGTH_SHORT, true).show()
+                findViewById<TextView>(R.id.tvStatusAutoClick).text = getString(R.string.status_autoclick, AutoClickService.modeLabel(this, mode), interval.toString())
+                Toasty.success(this, getString(R.string.toast_float_ready), Toast.LENGTH_SHORT, true).show()
             }
             .show()
     }
@@ -1819,14 +1820,14 @@ class MainActivity : AppCompatActivity() {
         isAutoClickEnabled = false
         getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit()
             .putBoolean(AutoClickService.KEY_ENABLED, false).apply()
-        findViewById<TextView>(R.id.tvStatusAutoClick).text = "Status: Disabled"
+        findViewById<TextView>(R.id.tvStatusAutoClick).text = getString(R.string.status_disabled)
     }
 
     private fun toggleRealtimeMonitor() {
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
             startActivity(intent)
-            Toasty.info(this, "Please allow 'Display over other apps'", Toast.LENGTH_LONG, true).show()
+            Toasty.info(this, getString(R.string.toast_allow_overlay), Toast.LENGTH_LONG, true).show()
             return
         }
 
@@ -1837,14 +1838,14 @@ class MainActivity : AppCompatActivity() {
             stopService(intent)
             isMonitorEnabled = false
             prefs.edit().putBoolean("MonitorEnabled", false).apply()
-            findViewById<TextView>(R.id.tvStatusMonitor).text = "Status: Disabled"
-            Toasty.success(this, "Monitor Disabled", Toast.LENGTH_SHORT, true).show()
+            findViewById<TextView>(R.id.tvStatusMonitor).text = getString(R.string.status_disabled)
+            Toasty.success(this, getString(R.string.toast_monitor_off), Toast.LENGTH_SHORT, true).show()
         } else {
             startService(intent)
             isMonitorEnabled = true
             prefs.edit().putBoolean("MonitorEnabled", true).apply()
-            findViewById<TextView>(R.id.tvStatusMonitor).text = "Status: Enabled"
-            Toasty.success(this, "Monitor Enabled", Toast.LENGTH_SHORT, true).show()
+            findViewById<TextView>(R.id.tvStatusMonitor).text = getString(R.string.status_enabled)
+            Toasty.success(this, getString(R.string.toast_monitor_on), Toast.LENGTH_SHORT, true).show()
             showInterstitialAd()
         }
     }
@@ -1853,24 +1854,24 @@ class MainActivity : AppCompatActivity() {
         val sheet = Sheet(this)
         val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         list.addView(optionRow(
-            this, "Direct change", "Set the resolution right here in the app",
+            this, getString(R.string.res_direct), getString(R.string.res_direct_desc),
             icon = Ui.drawable(this, R.drawable.ic_tune)
         ) {
             sheet.dismiss()
             showResolutionDialog()
         })
         list.addView(optionRow(
-            this, "Floating menu", "A draggable panel you can use on top of any game",
+            this, getString(R.string.res_floating), getString(R.string.res_floating_desc),
             icon = Ui.drawable(this, R.drawable.ic_play)
         ) {
             sheet.dismiss()
             launchFloatingResolution()
         })
         sheet.icon(R.drawable.ic_tune)
-            .title("Change resolution")
-            .message("Lower resolutions can boost frame rates and battery life.")
+            .title(getString(R.string.dlg_change_res))
+            .message(getString(R.string.dlg_change_res_msg))
             .content(list)
-            .button("Cancel", SheetStyle.TEXT)
+            .button(getString(R.string.btn_cancel), SheetStyle.TEXT)
             .show()
     }
 
@@ -1878,10 +1879,10 @@ class MainActivity : AppCompatActivity() {
         if (!android.provider.Settings.canDrawOverlays(this)) {
             val intent = Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
             startActivity(intent)
-            Toasty.info(this, "Please allow 'Display over other apps'", Toast.LENGTH_LONG, true).show()
+            Toasty.info(this, getString(R.string.toast_allow_overlay), Toast.LENGTH_LONG, true).show()
         } else {
             startService(Intent(this, FloatingResolutionService::class.java))
-            Toasty.success(this, "Floating menu enabled", Toast.LENGTH_SHORT, true).show()
+            Toasty.success(this, getString(R.string.toast_float_enabled), Toast.LENGTH_SHORT, true).show()
         }
     }
 
@@ -1896,13 +1897,13 @@ class MainActivity : AppCompatActivity() {
             isSelectionRequired = true
         }
         val loginTab = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "Log in"
+            text = getString(R.string.btn_login)
             isAllCaps = false
             id = View.generateViewId()
             layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
         }
         val buyTab = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "Get Premium"
+            text = getString(R.string.btn_get_premium)
             isAllCaps = false
             id = View.generateViewId()
             layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
@@ -1912,13 +1913,13 @@ class MainActivity : AppCompatActivity() {
 
         val benefits = infoCard(
             this,
-            "✓  No ads, ever\n✓  Every premium tweak unlocked\n✓  Works on up to 2 devices\n✓  One-time $3 payment, lifetime access",
+            getString(R.string.premium_benefits),
             gold
         )
 
-        val (userLayout, userEdit) = styledField(this, "Username", InputType.TYPE_CLASS_TEXT)
+        val (userLayout, userEdit) = styledField(this, getString(R.string.hint_username), InputType.TYPE_CLASS_TEXT)
         val (passLayout, passEdit) = styledField(
-            this, "Password",
+            this, getString(R.string.hint_password),
             InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD,
             password = true
         )
@@ -1935,17 +1936,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         val deviceRow = optionRow(
-            this, "Device ID", deviceId,
+            this, getString(R.string.hint_device_id), deviceId,
             icon = Ui.drawable(this, R.drawable.ic_lock)
         ) {
             val cb = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            cb.setPrimaryClip(android.content.ClipData.newPlainText("Device ID", deviceId))
-            Toasty.success(this, "Device ID copied", Toast.LENGTH_SHORT, true).show()
+            cb.setPrimaryClip(android.content.ClipData.newPlainText(getString(R.string.hint_device_id), deviceId))
+            Toasty.success(this, getString(R.string.toast_device_id_copied), Toast.LENGTH_SHORT, true).show()
         }
 
         val note = infoCard(
             this,
-            "Your password is never sent or stored as text. It is turned into a one-way hash on this device before it is used."
+            getString(R.string.txt_password_note)
         )
 
         val form = LinearLayout(this).apply {
@@ -1964,7 +1965,7 @@ class MainActivity : AppCompatActivity() {
         val sheet = Sheet(this)
         sheet.icon(R.drawable.ic_crown, gold)
             .title("Premium")
-            .message("Log in with the account you created when you purchased.")
+            .message(getString(R.string.txt_login_hint))
             .content(toggle)
             .content(form)
 
@@ -1973,16 +1974,16 @@ class MainActivity : AppCompatActivity() {
             val user = userEdit.text.toString().trim()
             val pass = passEdit.text.toString()
             if (user.isEmpty() || pass.isEmpty()) {
-                showError("Please enter a username and password.")
+                showError(getString(R.string.err_enter_user_pass))
                 return null
             }
             if (forPurchase) {
                 if (!Regex("^[A-Za-z0-9_.-]{3,32}\$").matches(user)) {
-                    showError("Username must be 3-32 letters, numbers, dots, dashes or underscores.")
+                    showError(getString(R.string.err_username_format))
                     return null
                 }
                 if (pass.length < 6) {
-                    showError("Use a password with at least 6 characters.")
+                    showError(getString(R.string.err_password_short))
                     return null
                 }
             }
@@ -1991,18 +1992,18 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        sheet.button("Log in", SheetStyle.PRIMARY, dismiss = false) { btn ->
+        sheet.button(getString(R.string.btn_login), SheetStyle.PRIMARY, dismiss = false) { btn ->
             val (user, pass) = readFields(false) ?: return@button
             btn.isEnabled = false
-            btn.text = "Verifying…"
+            btn.text = getString(R.string.txt_verifying)
             verifyPremiumAccount(user, pass) { ok, message ->
                 btn.isEnabled = true
-                btn.text = "Log in"
+                btn.text = getString(R.string.btn_login)
                 if (ok) sheet.dismiss() else showError(message)
             }
         }
 
-        sheet.button("Buy directly via Telegram", SheetStyle.PRIMARY, dismiss = false) { btn ->
+        sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.PRIMARY, dismiss = false) { btn ->
             val (user, pass) = readFields(true) ?: return@button
             btn.isEnabled = false
             lifecycleScope.launch {
@@ -2015,18 +2016,18 @@ class MainActivity : AppCompatActivity() {
                         "Username: $user\nDevice ID: $deviceId\nPassword hash: $hash"
                     )
                 )
-                Toasty.info(this@MainActivity, "Account details copied. Paste them in the chat.", Toast.LENGTH_LONG, true).show()
+                Toasty.info(this@MainActivity, getString(R.string.toast_account_copied), Toast.LENGTH_LONG, true).show()
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/benimarux1k")))
             }
         }
-        sheet.button("Close", SheetStyle.TEXT)
+        sheet.button(getString(R.string.btn_close), SheetStyle.TEXT)
         sheet.show()
 
         fun applyMode() {
             sheet.messageView?.text = if (buyMode)
-                "Choose a username and password, then tap the button below. Your account details are copied and Telegram opens so you can paste them in the chat."
+                getString(R.string.txt_buy_hint)
             else
-                "Log in with the account you created when you purchased."
+                getString(R.string.txt_login_hint)
             benefits.visibility = if (buyMode) View.VISIBLE else View.GONE
             sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
             sheet.buttonViews[1].visibility = if (buyMode) View.VISIBLE else View.GONE
@@ -2079,7 +2080,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             var ok = false
             var verifiedHash = ""
-            var reason = "Invalid username or password."
+            var reason = getString(R.string.err_invalid_login)
             try {
                 val hash = hashPassword(username, pass)
                 val conn = URL("https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main/users.json")
@@ -2108,7 +2109,7 @@ class MainActivity : AppCompatActivity() {
 
                         val devices = userObj.optJSONArray("devices")
                         if (devices != null && devices.length() > 2) {
-                            reason = "Account limit exceeded (max 2 devices allowed)."
+                            reason = getString(R.string.err_device_limit)
                         } else {
                             var deviceFound = false
                             if (devices != null) {
@@ -2120,16 +2121,16 @@ class MainActivity : AppCompatActivity() {
                                 ok = true
                                 verifiedHash = hash
                             }
-                            else reason = "This device isn't authorized yet. Send this ID to the admin: $deviceId"
+                            else reason = getString(R.string.err_not_authorized, deviceId)
                         }
                         break
                     }
                 } else {
-                    reason = "Server error (${conn.responseCode}). Please try again."
+                    reason = getString(R.string.err_server, conn.responseCode)
                 }
                 conn.disconnect()
             } catch (e: Exception) {
-                reason = "Network error. Please check your connection."
+                reason = getString(R.string.err_network)
             }
 
             withContext(Dispatchers.Main) {
@@ -2142,11 +2143,104 @@ class MainActivity : AppCompatActivity() {
                         .apply()
                     findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
                     updatePremiumButtonUI()
-                    Toasty.success(this@MainActivity, "Premium activated. Ads removed and features unlocked.", Toast.LENGTH_LONG, true).show()
+                    Toasty.success(this@MainActivity, getString(R.string.toast_premium_activated), Toast.LENGTH_LONG, true).show()
                 }
                 onDone(ok, reason)
             }
         }
+    }
+
+    private val fpAggressiveOn =
+        "settings put global low_power 0; " +
+        "cmd power set-adaptive-power-saver-enabled false; " +
+        "settings put global adaptive_battery_management_enabled 0; " +
+        "dumpsys deviceidle disable all"
+
+    private fun fixedPerfAggressiveRestore(prefs: android.content.SharedPreferences): String {
+        val prev = prefs.getString("FPPrevAdaptiveBattery", null)
+        val battery = if (prev == "0" || prev == "1")
+            "settings put global adaptive_battery_management_enabled $prev"
+        else "settings delete global adaptive_battery_management_enabled"
+        return "cmd power set-adaptive-power-saver-enabled true; $battery; dumpsys deviceidle enable all"
+    }
+
+    private fun fixedPerfResetCmd(prefs: android.content.SharedPreferences): String {
+        val base = "cmd power set-fixed-performance-mode-enabled false"
+        if (!prefs.getBoolean("FixedPerfAggressive", false)) return base
+        return fixedPerfAggressiveRestore(prefs) + "; " + base
+    }
+
+    private fun showFixedPerformanceSheet(prefs: android.content.SharedPreferences) {
+        val standardOn = prefs.getBoolean("FixedPerf", false)
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val sheet = Sheet(this)
+            .icon(R.drawable.ic_game)
+            .title(getString(R.string.fp_title))
+            .message(getString(R.string.fp_message))
+        if (!standardOn) {
+            list.addView(optionRow(this, getString(R.string.fp_standard), getString(R.string.fp_standard_desc)) {
+                sheet.dismiss()
+                applyFixedPerformance(prefs, aggressive = false)
+            })
+        }
+        list.addView(optionRow(this, getString(R.string.fp_aggressive), getString(R.string.fp_aggressive_desc)) {
+            sheet.dismiss()
+            applyFixedPerformance(prefs, aggressive = true)
+        })
+        sheet.content(list).button(getString(R.string.btn_cancel), SheetStyle.TEXT).show()
+    }
+
+    private fun applyFixedPerformance(prefs: android.content.SharedPreferences, aggressive: Boolean) {
+        if (!hasShizukuPermission()) return
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (aggressive && !prefs.getBoolean("FixedPerfAggressive", false)) {
+                val prev = runAdbCommandWithResult("settings get global adaptive_battery_management_enabled").trim()
+                prefs.edit().putString("FPPrevAdaptiveBattery", prev).apply()
+            }
+            val main = "cmd power set-fixed-performance-mode-enabled true"
+            val cmd = if (aggressive) "$fpAggressiveOn; $main" else main
+            withContext(Dispatchers.Main) {
+                runAdbCommand(
+                    cmd,
+                    getString(if (aggressive) R.string.fp_done_aggressive else R.string.fp_done_standard),
+                    showAd = true
+                ) {
+                    prefs.edit().putBoolean("FixedPerf", true).putBoolean("FixedPerfAggressive", aggressive).apply()
+                    findViewById<TextView>(R.id.tvStatusFixedPerf).text =
+                        getString(if (aggressive) R.string.status_enabled_aggr else R.string.status_enabled)
+                }
+            }
+        }
+    }
+
+
+    private fun xl(v: String): String {
+        val id = when (v) {
+            "Cross" -> R.string.xl_cross
+            "Dot" -> R.string.xl_dot
+            "Circle" -> R.string.xl_circle
+            "Cross with Circle" -> R.string.xl_cross_circle
+            "Square" -> R.string.xl_square
+            "Target" -> R.string.xl_target
+            "Gap Cross" -> R.string.xl_gap_cross
+            "Diamond" -> R.string.xl_diamond
+            "Triangle" -> R.string.xl_triangle
+            "White" -> R.string.xl_white
+            "Black" -> R.string.xl_black
+            "Red" -> R.string.xl_red
+            "Green" -> R.string.xl_green
+            "Blue" -> R.string.xl_blue
+            "Yellow" -> R.string.xl_yellow
+            "Cyan" -> R.string.xl_cyan
+            "Magenta" -> R.string.xl_magenta
+            "Tiny" -> R.string.xl_tiny
+            "Small" -> R.string.xl_small
+            "Medium" -> R.string.xl_medium
+            "Large" -> R.string.xl_large
+            "Extra Large" -> R.string.xl_xlarge
+            else -> return v
+        }
+        return getString(id)
     }
 
     private fun runAdbCommand(command: String, successMessage: String, showAd: Boolean = false, onSuccess: () -> Unit = {}) {
@@ -2162,12 +2256,12 @@ class MainActivity : AppCompatActivity() {
                         onSuccess()
                         if (showAd) showInterstitialAd()
                     } else {
-                        Toasty.error(this@MainActivity, "Command failed (Exit code: $exitCode)", Toast.LENGTH_SHORT, true).show()
+                        Toasty.error(this@MainActivity, getString(R.string.toast_cmd_failed, exitCode), Toast.LENGTH_SHORT, true).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toasty.error(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT, true).show()
+                    Toasty.error(this@MainActivity, getString(R.string.toast_error, e.message ?: ""), Toast.LENGTH_SHORT, true).show()
                 }
             }
         }
@@ -2176,39 +2270,39 @@ class MainActivity : AppCompatActivity() {
     private fun showDnsDialog() {
         data class Dns(val name: String, val desc: String, val host: String)
         val providers = listOf(
-            Dns("Control D", "Blocks ads and trackers", "p2.freedns.controld.com"),
-            Dns("Cloudflare", "Fastest, no logs", "one.one.one.one"),
-            Dns("Quad9", "Blocks malicious links", "dns.quad9.net"),
-            Dns("NextDNS", "Personalized blocking", "dns.nextdns.io"),
-            Dns("Google", "Stable and reliable", "dns.google")
+            Dns("Control D", getString(R.string.dns_blocks_ads), "p2.freedns.controld.com"),
+            Dns("Cloudflare", getString(R.string.dns_fastest), "one.one.one.one"),
+            Dns("Quad9", getString(R.string.dns_malicious), "dns.quad9.net"),
+            Dns("NextDNS", getString(R.string.dns_personalized), "dns.nextdns.io"),
+            Dns("Google", getString(R.string.dns_stable), "dns.google")
         )
         val current = findViewById<TextView>(R.id.tvStatusDns).text.toString()
 
         val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val sheet = Sheet(this)
             .icon(R.drawable.ic_lock)
-            .title("Private DNS")
-            .message("Choose a provider for ad blocking, tracker protection and lower latency.")
+            .title(getString(R.string.dlg_private_dns))
+            .message(getString(R.string.dlg_private_dns_msg))
 
         providers.forEach { p ->
             list.addView(optionRow(this, p.name, "${p.desc}  ·  ${p.host}", selected = current.contains(p.host)) {
                 sheet.dismiss()
                 val cmd = "settings put global private_dns_mode hostname && settings put global private_dns_specifier ${p.host}"
-                runAdbCommand(cmd, "DNS set to ${p.name}", showAd = true) { fetchSystemStatuses() }
+                runAdbCommand(cmd, getString(R.string.toast_dns_set, p.name), showAd = true) { fetchSystemStatuses() }
             })
         }
-        list.addView(optionRow(this, "Default", "Turn private DNS off (automatic)", selected = current.contains("Default")) {
+        list.addView(optionRow(this, getString(R.string.w_default), getString(R.string.dns_off_desc), selected = current.contains(getString(R.string.w_default))) {
             sheet.dismiss()
             val cmd = "settings put global private_dns_mode default && settings delete global private_dns_specifier"
-            runAdbCommand(cmd, "DNS reset to default", showAd = false) { fetchSystemStatuses() }
+            runAdbCommand(cmd, getString(R.string.msg_dns_default), showAd = false) { fetchSystemStatuses() }
         })
 
-        sheet.content(list).button("Cancel", SheetStyle.TEXT).show()
+        sheet.content(list).button(getString(R.string.btn_cancel), SheetStyle.TEXT).show()
     }
 
     private fun showRefreshRateDialog() {
-        val (minLayout, minInput) = styledField(this, "Minimum (Hz)", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
-        val (maxLayout, maxInput) = styledField(this, "Maximum (Hz)", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+        val (minLayout, minInput) = styledField(this, getString(R.string.hint_min_hz), InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+        val (maxLayout, maxInput) = styledField(this, getString(R.string.hint_max_hz), InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
 
         val fields = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -2228,22 +2322,22 @@ class MainActivity : AppCompatActivity() {
 
         val sheet = Sheet(this)
         sheet.icon(R.drawable.ic_tune)
-            .title("Refresh rate")
-            .message("Pick a preset or set your own range. Not every phone supports every rate.")
+            .title(getString(R.string.dlg_refresh))
+            .message(getString(R.string.dlg_refresh_msg))
             .content(presets)
             .content(fields)
-            .button("Cancel", SheetStyle.TONAL)
-            .button("Apply", SheetStyle.PRIMARY, dismiss = false) {
+            .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+            .button(getString(R.string.btn_apply), SheetStyle.PRIMARY, dismiss = false) {
                 val min = minInput.text.toString().trim().toIntOrNull()
                 val max = maxInput.text.toString().trim().toIntOrNull()
                 when {
-                    min == null || max == null -> Toasty.warning(this, "Please enter valid numbers", Toast.LENGTH_SHORT, true).show()
-                    min !in 30..240 || max !in 30..240 -> Toasty.warning(this, "Use a value between 30 and 240 Hz", Toast.LENGTH_SHORT, true).show()
-                    min > max -> Toasty.warning(this, "Minimum can't be higher than maximum", Toast.LENGTH_SHORT, true).show()
+                    min == null || max == null -> Toasty.warning(this, getString(R.string.toast_valid_numbers), Toast.LENGTH_SHORT, true).show()
+                    min !in 30..240 || max !in 30..240 -> Toasty.warning(this, getString(R.string.toast_hz_range), Toast.LENGTH_SHORT, true).show()
+                    min > max -> Toasty.warning(this, getString(R.string.toast_min_gt_max), Toast.LENGTH_SHORT, true).show()
                     else -> {
                         sheet.dismiss()
                         val cmd = "settings put system min_refresh_rate $min && settings put system peak_refresh_rate $max"
-                        runAdbCommand(cmd, "Refresh rate set to $min - $max Hz", showAd = true) { fetchSystemStatuses() }
+                        runAdbCommand(cmd, getString(R.string.toast_hz_set, min, max), showAd = true) { fetchSystemStatuses() }
                     }
                 }
             }
@@ -2258,15 +2352,15 @@ class MainActivity : AppCompatActivity() {
         val aspectRatio = currentHeight / currentWidth
 
         val autoMatchSwitch = MaterialSwitch(this).apply {
-            text = "Auto-match aspect ratio"
+            text = getString(R.string.sw_aspect)
             isChecked = false
         }
         val autoDpiSwitch = MaterialSwitch(this).apply {
-            text = "Auto calculate DPI"
+            text = getString(R.string.sw_dpi)
             isChecked = true
         }
-        val (widthLayout, widthInput) = styledField(this, "Width (now ${currentWidth.toInt()})", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
-        val (heightLayout, heightInput) = styledField(this, "Height (now ${currentHeight.toInt()})", InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+        val (widthLayout, widthInput) = styledField(this, getString(R.string.hint_width_now, currentWidth.toInt()), InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
+        val (heightLayout, heightInput) = styledField(this, getString(R.string.hint_height_now, currentHeight.toInt()), InputType.TYPE_CLASS_NUMBER, topMarginDp = 0)
 
         val fields = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -2313,25 +2407,25 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = dp(12) })
             addView(fields)
-            addView(infoCard(this@MainActivity, "When Auto calculate DPI is on, DPI is scaled to match the new resolution. When it is off, your current DPI is kept. You'll get 6 seconds to confirm, otherwise it reverts."),
+            addView(infoCard(this@MainActivity, getString(R.string.info_dpi)),
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                     .apply { topMargin = dp(14) })
         }
 
         val sheet = Sheet(this)
         sheet.icon(R.drawable.ic_tune)
-            .title("Change resolution")
+            .title(getString(R.string.dlg_change_res))
             .content(content)
-            .button("Cancel", SheetStyle.TONAL)
-            .button("Preview", SheetStyle.PRIMARY, dismiss = false) {
+            .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+            .button(getString(R.string.btn_preview), SheetStyle.PRIMARY, dismiss = false) {
                 val newWidth = widthInput.text.toString().trim().toIntOrNull()
                 val newHeight = heightInput.text.toString().trim().toIntOrNull()
                 if (newWidth == null || newHeight == null) {
-                    Toasty.warning(this, "Please enter width and height", Toast.LENGTH_SHORT, true).show()
+                    Toasty.warning(this, getString(R.string.toast_enter_wh), Toast.LENGTH_SHORT, true).show()
                     return@button
                 }
                 if (newWidth < 300 || newHeight < 300) {
-                    Toasty.warning(this, "That resolution is too small", Toast.LENGTH_SHORT, true).show()
+                    Toasty.warning(this, getString(R.string.toast_res_small), Toast.LENGTH_SHORT, true).show()
                     return@button
                 }
                 if (!hasShizukuPermission()) return@button
@@ -2351,7 +2445,7 @@ class MainActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) { showResolutionPreviewCountdown() }
                     } else {
                         withContext(Dispatchers.Main) {
-                            Toasty.error(this@MainActivity, "Couldn't apply that resolution", Toast.LENGTH_SHORT, true).show()
+                            Toasty.error(this@MainActivity, getString(R.string.toast_res_fail), Toast.LENGTH_SHORT, true).show()
                         }
                     }
                 }
@@ -2374,19 +2468,19 @@ class MainActivity : AppCompatActivity() {
 
         val sheet = Sheet(this)
         sheet.icon(R.drawable.ic_warning, Color.parseColor("#E09B00"))
-            .title("Keep this resolution?")
-            .message("Reverting in 6 seconds…")
+            .title(getString(R.string.dlg_keep_res))
+            .message(getString(R.string.dlg_keep_res_msg))
             .content(bar)
             .cancelable(false)
-            .button("Revert", SheetStyle.TONAL) {
+            .button(getString(R.string.btn_revert), SheetStyle.TONAL) {
                 decided = true
                 timerJob?.cancel()
-                runAdbCommand("wm size reset && wm density reset", "Resolution reverted") { fetchSystemStatuses() }
+                runAdbCommand("wm size reset && wm density reset", getString(R.string.msg_res_reverted)) { fetchSystemStatuses() }
             }
-            .button("Keep", SheetStyle.PRIMARY) {
+            .button(getString(R.string.btn_keep), SheetStyle.PRIMARY) {
                 decided = true
                 timerJob?.cancel()
-                Toasty.success(this, "Resolution saved", Toast.LENGTH_SHORT, true).show()
+                Toasty.success(this, getString(R.string.toast_res_saved), Toast.LENGTH_SHORT, true).show()
                 fetchSystemStatuses()
                 showInterstitialAd()
             }
@@ -2395,13 +2489,13 @@ class MainActivity : AppCompatActivity() {
         timerJob = lifecycleScope.launch(Dispatchers.Main) {
             for (step in 60 downTo 0) {
                 bar.progress = step * 100
-                sheet.messageView?.text = "Reverting in ${(step + 9) / 10} seconds…"
+                sheet.messageView?.text = getString(R.string.revert_n, (step + 9) / 10)
                 delay(100)
             }
             if (!decided) {
                 decided = true
                 sheet.dismiss()
-                runAdbCommand("wm size reset && wm density reset", "Auto-reverted: no confirmation") { fetchSystemStatuses() }
+                runAdbCommand("wm size reset && wm density reset", getString(R.string.msg_res_auto_reverted)) { fetchSystemStatuses() }
             }
         }
     }
@@ -2410,7 +2504,7 @@ class MainActivity : AppCompatActivity() {
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
             startActivity(intent)
-            Toasty.info(this, "Please allow 'Display over other apps' to use the crosshair", Toast.LENGTH_LONG, true).show()
+            Toasty.info(this, getString(R.string.toast_allow_overlay_cross), Toast.LENGTH_LONG, true).show()
             return
         }
 
@@ -2463,7 +2557,7 @@ class MainActivity : AppCompatActivity() {
         styles.forEachIndexed { i, name ->
             chipGroup.addView(Chip(this).apply {
                 id = chipIds[i]
-                text = name
+                text = xl(name)
                 isCheckable = true
                 isChecked = i == styleIdx
                 isCheckedIconVisible = false
@@ -2476,23 +2570,23 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val swatchRow = colorSwatchRow(this, colorValues, colors, colorIdx) { i ->
+        val swatchRow = colorSwatchRow(this, colorValues, colors.map { xl(it) }, colorIdx) { i ->
             colorIdx = i
             refresh()
         }
 
 
-        val sizeLabel = sectionLabel("SIZE  ·  ${sizes[sizeIdx]}")
+        val sizeLabel = sectionLabel(getString(R.string.size_label, xl(sizes[sizeIdx])))
         val slider = com.google.android.material.slider.Slider(this).apply {
             valueFrom = 0f
             valueTo = (sizes.size - 1).toFloat()
             stepSize = 1f
             value = sizeIdx.toFloat()
-            setLabelFormatter { v -> sizes[v.toInt().coerceIn(sizes.indices)] }
+            setLabelFormatter { v -> xl(sizes[v.toInt().coerceIn(sizes.indices)]) }
             addOnChangeListener { _, v, fromUser ->
                 if (fromUser) {
                     sizeIdx = v.toInt()
-                    sizeLabel.text = "SIZE  ·  ${sizes[sizeIdx]}"
+                    sizeLabel.text = getString(R.string.size_label, xl(sizes[sizeIdx]))
                     refresh()
                 }
             }
@@ -2506,9 +2600,9 @@ class MainActivity : AppCompatActivity() {
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(preview)
-            addView(sectionLabel("SHAPE"))
+            addView(sectionLabel(getString(R.string.lbl_shape)))
             addView(hScroll)
-            addView(sectionLabel("COLOR"))
+            addView(sectionLabel(getString(R.string.lbl_color)))
             addView(swatchRow)
             addView(sizeLabel)
             addView(slider)
@@ -2517,11 +2611,11 @@ class MainActivity : AppCompatActivity() {
 
         val sheet = Sheet(this)
         sheet.icon(R.drawable.ic_tune)
-            .title("Crosshair")
-            .message("Changes show live on your screen once the crosshair is running.")
+            .title(getString(R.string.dlg_crosshair))
+            .message(getString(R.string.dlg_crosshair_msg))
             .content(content)
-            .button("Cancel", SheetStyle.TONAL)
-            .button(if (wasEnabled) "Save" else "Start", SheetStyle.PRIMARY) {
+            .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+            .button(if (wasEnabled) getString(R.string.btn_save) else getString(R.string.btn_start), SheetStyle.PRIMARY) {
                 saved = true
                 prefs.edit()
                     .putInt("CrosshairStyleIdx", styleIdx)
@@ -2531,7 +2625,7 @@ class MainActivity : AppCompatActivity() {
                 startCrosshairService(styles[styleIdx], colors[colorIdx], sizes[sizeIdx])
             }
         if (wasEnabled) {
-            sheet.button("Turn off", SheetStyle.DANGER) {
+            sheet.button(getString(R.string.btn_turn_off), SheetStyle.DANGER) {
                 saved = true
                 stopCrosshairService()
             }
@@ -2549,7 +2643,7 @@ class MainActivity : AppCompatActivity() {
     private fun pushCrosshair(style: String, color: String, size: String) {
         startService(Intent(this, CrosshairService::class.java).apply {
             putExtra("STYLE", style)
-            putExtra("COLOR", color)
+            putExtra(getString(R.string.lbl_color), color)
             putExtra("SIZE", size)
         })
     }
@@ -2557,7 +2651,7 @@ class MainActivity : AppCompatActivity() {
     private fun startCrosshairService(style: String, color: String, size: String) {
         val intent = Intent(this, CrosshairService::class.java).apply {
             putExtra("STYLE", style)
-            putExtra("COLOR", color)
+            putExtra(getString(R.string.lbl_color), color)
             putExtra("SIZE", size)
         }
         startService(intent)
@@ -2571,8 +2665,8 @@ class MainActivity : AppCompatActivity() {
             .putString("CrosshairSize", size)
             .apply()
 
-        findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: $style ($color, $size)"
-        Toasty.success(this, "Crosshair Updated", Toast.LENGTH_SHORT, true).show()
+        findViewById<TextView>(R.id.tvStatusCrosshair).text = getString(R.string.status_crosshair, xl(style.orEmpty()), xl(color.orEmpty()), xl(size.orEmpty()))
+        Toasty.success(this, getString(R.string.toast_cross_updated), Toast.LENGTH_SHORT, true).show()
         showInterstitialAd()
     }
 
@@ -2586,8 +2680,8 @@ class MainActivity : AppCompatActivity() {
             .putBoolean("CrosshairEnabled", false)
             .apply()
 
-        findViewById<TextView>(R.id.tvStatusCrosshair).text = "Status: Disabled"
-        Toasty.success(this, "Crosshair disabled", Toast.LENGTH_SHORT, true).show()
+        findViewById<TextView>(R.id.tvStatusCrosshair).text = getString(R.string.status_disabled)
+        Toasty.success(this, getString(R.string.toast_cross_off), Toast.LENGTH_SHORT, true).show()
     }
 
     private fun findGames(): List<ResolveInfo> {
@@ -2608,7 +2702,7 @@ class MainActivity : AppCompatActivity() {
     private fun showGamePicker(title: String, message: String, onPick: (ResolveInfo) -> Unit) {
         val games = findGames()
         if (games.isEmpty()) {
-            Toasty.info(this, "No games found on your device", Toast.LENGTH_SHORT, true).show()
+            Toasty.info(this, getString(R.string.toast_no_games), Toast.LENGTH_SHORT, true).show()
             return
         }
         val pm = packageManager
@@ -2627,12 +2721,12 @@ class MainActivity : AppCompatActivity() {
             .title(title)
             .message(message)
             .content(list)
-            .button("Close", SheetStyle.TEXT)
+            .button(getString(R.string.btn_close), SheetStyle.TEXT)
             .show()
     }
 
     private fun showGameModeSelectorDialog() {
-        showGamePicker("Native Game Mode", "Pick a game to run in Performance mode.") { selectedApp ->
+        showGamePicker(getString(R.string.dlg_native_gm), getString(R.string.dlg_native_gm_msg)) { selectedApp ->
             val pkgName = selectedApp.activityInfo.packageName
             val appName = selectedApp.loadLabel(packageManager).toString()
 
@@ -2648,17 +2742,17 @@ class MainActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         if (exitCode == 0) {
-                            Toasty.success(this@MainActivity, "Performance Mode enabled for $appName", Toast.LENGTH_SHORT, true).show()
+                            Toasty.success(this@MainActivity, getString(R.string.toast_gm_enabled, appName), Toast.LENGTH_SHORT, true).show()
                             getSharedPreferences("BenimaruPrefs", Context.MODE_PRIVATE).edit().putString("LastGameMode", pkgName).apply()
                             fetchSystemStatuses()
                             showInterstitialAd()
                         } else {
-                            Toasty.warning(this@MainActivity, "Your device's custom OS blocks Native Game Mode. Please use the 'Optimize System' or 'Launch Game' buttons instead.", Toast.LENGTH_LONG, true).show()
+                            Toasty.warning(this@MainActivity, getString(R.string.toast_gm_blocked), Toast.LENGTH_LONG, true).show()
                         }
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        Toasty.error(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT, true).show()
+                        Toasty.error(this@MainActivity, getString(R.string.toast_error, e.message ?: ""), Toast.LENGTH_SHORT, true).show()
                     }
                 }
             }
@@ -2666,7 +2760,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showGameLauncherDialog() {
-        showGamePicker("Launch a game", "Choose a game to start.") { selectedApp ->
+        showGamePicker(getString(R.string.dlg_launch_game), getString(R.string.dlg_launch_game_msg)) { selectedApp ->
             val pm = packageManager
             val pkgName = selectedApp.activityInfo.packageName
             val appName = selectedApp.loadLabel(pm).toString()
@@ -2676,21 +2770,21 @@ class MainActivity : AppCompatActivity() {
                 if (launchIntent != null) {
                     startActivity(launchIntent)
                 } else {
-                    Toasty.error(this, "Failed to launch game", Toast.LENGTH_SHORT, true).show()
+                    Toasty.error(this, getString(R.string.toast_launch_fail), Toast.LENGTH_SHORT, true).show()
                 }
             }
 
             Sheet(this)
                 .icon(R.drawable.ic_play)
                 .title(appName)
-                .message("Pre-compiling the game's code can reduce in-game stutter. It takes 10-30 seconds.")
-                .button("Optimize & launch", SheetStyle.PRIMARY) {
+                .message(getString(R.string.dlg_precompile_msg))
+                .button(getString(R.string.btn_optimize_launch), SheetStyle.PRIMARY) {
                     val progress = ProgressSheet(this)
                         .icon(R.drawable.ic_tune)
-                        .title("Optimizing $appName")
-                        .message("Pre-compiling game code. Please keep the app open.")
+                        .title(getString(R.string.dlg_optimizing, appName))
+                        .message(getString(R.string.dlg_precompiling_msg))
                     progress.show(indeterminate = true)
-                    progress.setIndeterminate("Working…")
+                    progress.setIndeterminate(getString(R.string.txt_working))
 
                     lifecycleScope.launch(Dispatchers.IO) {
                         try {
@@ -2698,22 +2792,22 @@ class MainActivity : AppCompatActivity() {
                             process.waitFor()
                             withContext(Dispatchers.Main) {
                                 progress.dismiss()
-                                Toasty.success(this@MainActivity, "$appName optimized", Toast.LENGTH_SHORT, true).show()
+                                Toasty.success(this@MainActivity, getString(R.string.toast_optimized, appName), Toast.LENGTH_SHORT, true).show()
                                 showInterstitialAd { launchGame() }
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
                                 progress.dismiss()
-                                Toasty.error(this@MainActivity, "Optimization failed: ${e.message}", Toast.LENGTH_LONG, true).show()
+                                Toasty.error(this@MainActivity, getString(R.string.toast_opt_failed, e.message ?: ""), Toast.LENGTH_LONG, true).show()
                             }
                         }
                     }
                 }
-                .button("Launch now", SheetStyle.TONAL) {
+                .button(getString(R.string.btn_launch_now), SheetStyle.TONAL) {
                     launchGame()
-                    Toasty.success(this, "Launching $appName", Toast.LENGTH_SHORT, true).show()
+                    Toasty.success(this, getString(R.string.toast_launching, appName), Toast.LENGTH_SHORT, true).show()
                 }
-                .button("Cancel", SheetStyle.TEXT)
+                .button(getString(R.string.btn_cancel), SheetStyle.TEXT)
                 .show()
         }
     }
@@ -2722,17 +2816,17 @@ class MainActivity : AppCompatActivity() {
         if (isFinishing || isDestroyed) return
         Sheet(this)
             .icon(R.drawable.ic_download)
-            .title("Shizuku required")
-            .message("Benimaru Tool uses Shizuku to apply system tweaks without root. Download it now to continue.")
+            .title(getString(R.string.dlg_shizuku_required))
+            .message(getString(R.string.dlg_shizuku_required_msg))
             .cancelable(false)
-            .button("Exit", SheetStyle.TONAL) { finishAffinity() }
-            .button("Download", SheetStyle.PRIMARY) { downloadShizukuApk() }
+            .button(getString(R.string.btn_exit), SheetStyle.TONAL) { finishAffinity() }
+            .button(getString(R.string.btn_download), SheetStyle.PRIMARY) { downloadShizukuApk() }
             .show()
     }
 
     private fun downloadShizukuApk() {
         downloadAndInstall(
-            "Downloading Shizuku",
+            getString(R.string.dl_shizuku),
             "https://github.com/RikkaApps/Shizuku/releases/download/v13.6.0/shizuku-v13.6.0.r1086.2650830c-release.apk",
             "shizuku-v13.6.0.apk",
             finishAfterInstall = true
@@ -2744,10 +2838,10 @@ class MainActivity : AppCompatActivity() {
             pendingApk = file
             Sheet(this)
                 .icon(R.drawable.ic_lock)
-                .title("Allow installs")
-                .message("To install this file, allow Benimaru Tool to install apps. Come back here afterwards and the installer will open.")
-                .button("Not now", SheetStyle.TONAL)
-                .button("Open settings", SheetStyle.PRIMARY) {
+                .title(getString(R.string.dlg_allow_installs))
+                .message(getString(R.string.dlg_allow_installs_msg))
+                .button(getString(R.string.btn_not_now), SheetStyle.TONAL)
+                .button(getString(R.string.btn_open_settings), SheetStyle.PRIMARY) {
                     startActivity(
                         Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
                     )
@@ -2765,7 +2859,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             if (finishAfter) finishAffinity()
         } catch (e: Exception) {
-            Toasty.error(this, "Failed to open installer: ${e.message}", Toast.LENGTH_LONG, true).show()
+            Toasty.error(this, getString(R.string.toast_installer_failed, e.message ?: ""), Toast.LENGTH_LONG, true).show()
         }
     }
 
@@ -2820,19 +2914,19 @@ class MainActivity : AppCompatActivity() {
         fun stateOf(id: Int, text: String): TweakState {
             val t = text.removePrefix("Status:").trim()
             return when {
-                t.isEmpty() || t.startsWith("Default") || t.startsWith("Ready") ||
-                    t.startsWith("Unknown") || t.startsWith("Checking") -> TweakState.NEUTRAL
-                id == R.id.tvStatusDevOptions -> if (t.startsWith("Enabled")) TweakState.WARN else TweakState.ACTIVE
+                t.isEmpty() || t.startsWith(getString(R.string.w_default)) || t.startsWith(getString(R.string.w_ready)) ||
+                    t.startsWith(getString(R.string.w_unknown)) || t.startsWith(getString(R.string.w_checking)) -> TweakState.NEUTRAL
+                id == R.id.tvStatusDevOptions -> if (t.startsWith(getString(R.string.w_enabled))) TweakState.WARN else TweakState.ACTIVE
                 id == R.id.tvStatusThermal -> TweakState.WARN
-                id == R.id.tvStatusBlurs -> if (t.startsWith("Disabled")) TweakState.ACTIVE else TweakState.NEUTRAL
-                t.startsWith("Disabled") -> TweakState.NEUTRAL
+                id == R.id.tvStatusBlurs -> if (t.startsWith(getString(R.string.w_disabled))) TweakState.ACTIVE else TweakState.NEUTRAL
+                t.startsWith(getString(R.string.w_disabled)) -> TweakState.NEUTRAL
                 else -> TweakState.ACTIVE
             }
         }
 
         fun refresh() {
             val active = states.values.count { it != TweakState.NEUTRAL }
-            findViewById<TextView>(R.id.tvActiveSummary)?.text = "$active of ${statusIds.size} active"
+            findViewById<TextView>(R.id.tvActiveSummary)?.text = getString(R.string.summary_active, active, statusIds.size)
         }
 
         fun apply(tv: TextView, id: Int) {
@@ -2868,7 +2962,7 @@ class MainActivity : AppCompatActivity() {
         val tvShizuku = findViewById<TextView>(R.id.tvShizukuStatus)
 
         val color = Color.parseColor(if (isConnected) "#4ADE80" else "#FF6B6B")
-        tvShizuku.text = if (isConnected) "Shizuku" else "Offline"
+        tvShizuku.text = if (isConnected) "Shizuku" else getString(R.string.shizuku_offline)
         tvShizuku.setTextColor(Color.WHITE)
         cardShizuku.setCardBackgroundColor(Color.parseColor(if (isConnected) "#334ADE80" else "#33FF6B6B"))
         cardShizuku.strokeColor = Color.parseColor(if (isConnected) "#664ADE80" else "#66FF6B6B")
@@ -2881,7 +2975,7 @@ class MainActivity : AppCompatActivity() {
 
         cardShizuku.setOnClickListener {
             if (isConnected) {
-                Toasty.success(this, "Shizuku is connected and ready", Toast.LENGTH_SHORT, true).show()
+                Toasty.success(this, getString(R.string.toast_shizuku_ok), Toast.LENGTH_SHORT, true).show()
             } else {
                 checkShizukuStatus()
             }

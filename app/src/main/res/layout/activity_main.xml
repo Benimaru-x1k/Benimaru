@@ -46,7 +46,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="16dp"
-        android:text="Performance tweaks powered by Shizuku, no root needed"
+        android:text="@string/tagline"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -80,7 +80,7 @@
                 app:chipStrokeWidth="1dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All"
+                android:text="@string/chip_all"
                 android:checked="true" />
 
             <com.google.android.material.chip.Chip
@@ -91,7 +91,7 @@
                 app:chipStrokeWidth="1dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Performance" />
+                android:text="@string/chip_performance" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipDisplay"
@@ -101,7 +101,7 @@
                 app:chipStrokeWidth="1dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Display" />
+                android:text="@string/chip_display" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipNetwork"
@@ -111,7 +111,7 @@
                 app:chipStrokeWidth="1dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Network" />
+                android:text="@string/chip_network" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipGaming"
@@ -121,7 +121,7 @@
                 app:chipStrokeWidth="1dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gaming" />
+                android:text="@string/chip_gaming" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
@@ -185,7 +185,7 @@
                                 android:layout_height="wrap_content"
                                 android:ellipsize="end"
                                 android:maxLines="1"
-                                android:text="DEVICE INFO"
+                                android:text="@string/lbl_device_info"
                                 android:textColor="#FFFFFF"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -195,7 +195,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="Android Version: Checking..."
+                                android:text="@string/android_version_checking"
                                 android:textColor="#BBDEFB"
                                 android:textSize="13sp" />
                         </LinearLayout>
@@ -311,7 +311,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:maxLines="1"
-                                    android:text="STORAGE"
+                                    android:text="@string/lbl_storage"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -359,7 +359,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:maxLines="1"
-                                    android:text="BATTERY"
+                                    android:text="@string/lbl_battery"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -417,7 +417,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:maxLines="1"
-                                    android:text="SDK LEVEL"
+                                    android:text="@string/lbl_sdk_level"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -456,7 +456,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:maxLines="1"
-                                    android:text="DISPLAY"
+                                    android:text="@string/lbl_display"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -494,7 +494,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:maxLines="1"
-                                    android:text="FREE SPACE"
+                                    android:text="@string/lbl_free_space"
                                     android:textColor="#B3FFFFFF"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -529,7 +529,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Tweaks"
+                    android:text="@string/lbl_tweaks"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -540,7 +540,7 @@
                     android:background="@drawable/bg_summary_pill"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="5dp"
-                    android:text="0 active"
+                    android:text="@string/zero_active"
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -570,7 +570,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -579,7 +579,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Enabled Fixed Performance"
+                        android:text="@string/title_fixed_perf"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -592,7 +592,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Lock device performance to a fixed state to maintain consistent frame rates."
+                        android:text="@string/desc_fixed_perf"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -606,7 +606,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Unknown"
+                            android:text="@string/status_unknown"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -616,7 +616,7 @@
                             android:id="@+id/btnResetFixedPerf"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -653,7 +653,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -662,7 +662,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Optimize System Performance"
+                        android:text="@string/title_optimize"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -675,7 +675,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Clear background processes and allocate resources to active applications."
+                        android:text="@string/desc_optimize"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -689,7 +689,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Ready"
+                            android:text="@string/status_ready"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -699,7 +699,7 @@
                             android:id="@+id/btnResetOptimize"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -736,7 +736,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -745,7 +745,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adjust Refresh Rate"
+                        android:text="@string/title_refresh"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -758,7 +758,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Modify the screen refresh rate to balance smooth visuals and battery life."
+                        android:text="@string/desc_refresh"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -772,7 +772,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -782,7 +782,7 @@
                             android:id="@+id/btnResetRefresh"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -819,7 +819,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -828,7 +828,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Improve Network Performance"
+                        android:text="@string/title_network"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -841,7 +841,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Prioritize network traffic and reduce ping for a lag-free experience."
+                        android:text="@string/desc_network"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -855,7 +855,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -865,7 +865,7 @@
                             android:id="@+id/btnResetNetwork"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -902,7 +902,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -911,7 +911,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Improve Touch Latency and Response"
+                        android:text="@string/title_touch"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -924,7 +924,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Increase touch sampling rate for faster and more precise screen interactions."
+                        android:text="@string/desc_touch"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -938,7 +938,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -948,7 +948,7 @@
                             android:id="@+id/btnResetTouch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -985,7 +985,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -994,7 +994,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Speed Up UI Animations"
+                        android:text="@string/title_anim"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1007,7 +1007,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Reduces system animation scales to 0.5x, making app launches and navigation feel twice as fast."
+                        android:text="@string/desc_anim"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1021,7 +1021,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1031,7 +1031,7 @@
                             android:id="@+id/btnResetAnimations"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1068,7 +1068,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1077,7 +1077,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Disable Window Blurs"
+                        android:text="@string/title_blurs"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1090,7 +1090,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Disables real-time background blurring behind notifications and dialogs to reduce GPU load."
+                        android:text="@string/desc_blurs"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1104,7 +1104,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1114,7 +1114,7 @@
                             android:id="@+id/btnResetBlurs"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1151,7 +1151,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1160,7 +1160,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Gaming Focus Mode"
+                        android:text="@string/title_focus"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1173,7 +1173,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Blocks heads-up notification banners from dropping down over the screen while playing."
+                        android:text="@string/desc_focus"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1187,7 +1187,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1197,7 +1197,7 @@
                             android:id="@+id/btnResetDnd"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1234,7 +1234,7 @@
                         android:background="@drawable/bg_badge_free"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="FREE"
+                        android:text="@string/badge_free"
                         android:textColor="#2E7D32"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1243,7 +1243,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Hide Developer Options"
+                        android:text="@string/title_devopts"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1256,7 +1256,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Instantly turns off Developer Options to allow banking apps and anti-cheat games to run properly."
+                        android:text="@string/desc_devopts"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1270,7 +1270,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1280,7 +1280,7 @@
                             android:id="@+id/btnResetDevOptions"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1326,7 +1326,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Change Screen Resolution"
+                        android:text="@string/title_resolution"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1339,7 +1339,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adjust the display resolution to improve gaming performance and battery life."
+                        android:text="@string/desc_resolution"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1353,7 +1353,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1363,7 +1363,7 @@
                             android:id="@+id/btnResetResolution"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1409,7 +1409,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Custom DNS"
+                        android:text="@string/title_dns"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1422,7 +1422,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Set a private DNS provider for reliable ad blocking, tracker protection, and lower latency."
+                        android:text="@string/desc_dns"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1436,7 +1436,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Checking..."
+                            android:text="@string/status_checking"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1446,7 +1446,7 @@
                             android:id="@+id/btnResetDns"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1492,7 +1492,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Enable Crosshair Overlay"
+                        android:text="@string/title_crosshair"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1505,7 +1505,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Displays a customizable crosshair in the center of the screen for FPS games."
+                        android:text="@string/desc_crosshair"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1519,7 +1519,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Disabled"
+                            android:text="@string/status_disabled"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1529,7 +1529,7 @@
                             android:id="@+id/btnResetCrosshair"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1575,7 +1575,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Real-time Hardware Monitor"
+                        android:text="@string/title_monitor"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1588,7 +1588,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Displays a floating, draggable overlay with live RAM, CPU freq, and Battery stats like MSI Afterburner."
+                        android:text="@string/desc_monitor"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1602,7 +1602,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Disabled"
+                            android:text="@string/status_disabled"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1612,7 +1612,7 @@
                             android:id="@+id/btnResetMonitor"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1659,7 +1659,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Auto Click &amp; Auto Swipe"
+                        android:text="@string/title_autoclick"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1672,7 +1672,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="A floating button that automatically taps or swipes the screen at set intervals. Ideal for games that restrict AFK play."
+                        android:text="@string/desc_autoclick"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1686,7 +1686,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Disabled"
+                            android:text="@string/status_disabled"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1696,7 +1696,7 @@
                             android:id="@+id/btnResetAutoClick"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1742,7 +1742,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Native Game Mode API"
+                        android:text="@string/title_gamemode"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1755,7 +1755,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="For Android 12+. Drops system limits and heavily prioritizes CPU/GPU for the selected game."
+                        android:text="@string/desc_gamemode"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1769,7 +1769,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Default"
+                            android:text="@string/status_default"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1779,7 +1779,7 @@
                             android:id="@+id/btnResetGameMode"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1826,7 +1826,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Disable Thermal Throttling"
+                        android:text="@string/title_thermal"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1839,7 +1839,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tricks the device into thinking it is cool to prevent performance drops. WARNING: Device will get hot."
+                        android:text="@string/desc_thermal"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1853,7 +1853,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Default"
+                            android:text="@string/status_default"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1863,7 +1863,7 @@
                             android:id="@+id/btnResetThermal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1909,7 +1909,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Storage Optimizer (Fstrim)"
+                        android:text="@string/title_fstrim"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -1922,7 +1922,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Forces the storage controller to wipe deleted data blocks, instantly restoring read/write speeds."
+                        android:text="@string/desc_fstrim"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -1936,7 +1936,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Ready"
+                            android:text="@string/status_ready"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -1946,7 +1946,7 @@
                             android:id="@+id/btnResetFstrim"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1992,7 +1992,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="RAM Booster"
+                        android:text="@string/title_ram"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -2005,7 +2005,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="See which apps are using the most memory right now and stop the heavy ones in one tap."
+                        android:text="@string/desc_ram"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -2019,7 +2019,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Ready"
+                            android:text="@string/status_ready"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -2029,7 +2029,7 @@
                             android:id="@+id/btnResetRamBooster"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -2075,7 +2075,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Clear App Caches"
+                        android:text="@string/title_cache"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -2088,7 +2088,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Removes temporary cache files from every app to free up storage. Your accounts and saved data stay safe."
+                        android:text="@string/desc_cache"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -2102,7 +2102,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Ready"
+                            android:text="@string/status_ready"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -2112,7 +2112,7 @@
                             android:id="@+id/btnResetCache"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESET"
+                            android:text="@string/btn_reset"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -2158,7 +2158,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Freeze Bloatware"
+                        android:text="@string/title_freeze"
                         android:textColor="?android:attr/textColorPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
@@ -2171,7 +2171,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Freeze apps you don't use so they stop using RAM and background CPU. Fully reversible with one tap."
+                        android:text="@string/desc_freeze"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textSize="14sp" />
                     <LinearLayout
@@ -2185,7 +2185,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Status: Ready"
+                            android:text="@string/status_ready"
                             android:textColor="?android:attr/textColorSecondary"
                             android:drawablePadding="8dp"
                             android:gravity="center_vertical"
@@ -2195,7 +2195,7 @@
                             android:id="@+id/btnResetFreeze"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RESTORE"
+                            android:text="@string/btn_restore_caps"
                             android:textColor="@color/statusText"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -2253,7 +2253,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:maxLines="1"
-                android:text="Launch Game"
+                android:text="@string/btn_launch_game"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -2275,7 +2275,7 @@
                 android:maxLines="1"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:text="Remove Ads"
+                android:text="@string/btn_remove_ads"
                 android:textColor="?android:attr/textColorPrimary"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -2292,7 +2292,7 @@
                 android:layout_height="52dp"
                 android:layout_marginStart="6dp"
                 android:backgroundTint="#26E53935"
-                android:contentDescription="Reset all functions"
+                android:contentDescription="@string/cd_reset_all"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:minWidth="0dp"

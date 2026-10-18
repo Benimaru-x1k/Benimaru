@@ -34,11 +34,13 @@ class AutoClickService : Service() {
         const val MODE_SWIPE = 1
         const val MODE_BOTH = 2
 
-        fun modeLabel(mode: Int) = when (mode) {
-            MODE_SWIPE -> "Auto swipe"
-            MODE_BOTH -> "Tap + swipe"
-            else -> "Auto click"
-        }
+        fun modeLabel(ctx: android.content.Context, mode: Int): String = ctx.getString(
+            when (mode) {
+                MODE_SWIPE -> R.string.mode_swipe
+                MODE_BOTH -> R.string.mode_both
+                else -> R.string.mode_click
+            }
+        )
     }
 
     private lateinit var windowManager: WindowManager
@@ -154,7 +156,7 @@ class AutoClickService : Service() {
             Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED
         } catch (e: Throwable) { false }
         if (!ready) {
-            Toast.makeText(this, "Shizuku is not running or permission is missing", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.svc_shizuku_missing), Toast.LENGTH_LONG).show()
             return
         }
 

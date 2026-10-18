@@ -38,8 +38,8 @@ class FloatingResolutionService : Service() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
-        val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
+        val prefs = getSharedPreferences(Prefs.THEME, Context.MODE_PRIVATE)
+        val isDarkModeSaved = prefs.getBoolean(Prefs.KEY_DARK_MODE, false)
 
         val config = android.content.res.Configuration(resources.configuration)
         val nightModeFlag = if (isDarkModeSaved) {

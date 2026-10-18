@@ -22,7 +22,7 @@ import rikka.shizuku.Shizuku
 class AutoClickService : Service() {
 
     companion object {
-        const val PREFS = "BenimaruPrefs"
+        const val PREFS = Prefs.MAIN
         const val KEY_MODE = "AutoMode"
         const val KEY_INTERVAL = "AutoIntervalSec"
         const val KEY_X = "AutoX"

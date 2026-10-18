@@ -11,7 +11,7 @@
 
 [![Release](https://img.shields.io/github/v/release/Benimaru-x1k/Benimaru?logo=github&label=Release)](../../releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Benimaru-x1k/Benimaru/total?logo=github&label=Downloads&color=brightgreen)](../../releases)
-[![Languages](https://img.shields.io/badge/Languages-EN%20%7C%20PT-0A84FF?logo=googletranslate&logoColor=white)](#)
+[![Languages](https://img.shields.io/badge/Languages-Multi--language-0A84FF?logo=googletranslate&logoColor=white)](#)
 
 </div>
 

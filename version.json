@@ -1,7 +1,7 @@
 {
   "versionCode": 25,
   "versionName": "3.5",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.5/BenimaruTool-v3.5.apk",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/3.5/BenimaruTool-v3.5.apk",
   "mandatory": true,
   "releaseNotes": "🚀 3.5 Update!\n\n- NEW: Português (Brasil/Portugal). The app follows your phone's language automatically\n- Enable Fixed Performance now has an Aggressive mode: it also turns off battery saver, adaptive battery and Doze for maximum performance. Expect more heat and faster battery drain. RESET undoes it\n- Custom DPI input: turn off \"Auto calculate DPI\" to type your own DPI in Change Screen Resolution (Direct Change and Floating Menu)\n- Real-time Hardware Monitor now has 2 new rows: STO (storage used/total) and NET (live download/upload speed)"
 }

@@ -4,13 +4,14 @@
 
 **The Ultimate Rootless Android Optimization & Gaming Utility**
 
-[![Platform: Android](https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84?logo=android&logoColor=white)](#)
-[![API: Shizuku](https://img.shields.io/badge/API-Shizuku-blue?logo=android)](#)
+[![Platform: Android](https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
+[![API: Shizuku](https://img.shields.io/badge/API-Shizuku-blue?logo=android)](https://shizuku.rikka.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?logo=kotlin&logoColor=white)](#)
+[![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 
 [![Release](https://img.shields.io/github/v/release/Benimaru-x1k/Benimaru?logo=github&label=Release)](../../releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Benimaru-x1k/Benimaru/total?logo=github&label=Downloads&color=brightgreen)](../../releases)
+[![Languages](https://img.shields.io/badge/Languages-EN%20%7C%20PT-0A84FF?logo=googletranslate&logoColor=white)](#)
 
 </div>
 

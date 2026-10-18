@@ -65,6 +65,13 @@
       "devices": [
         "6c6d8b33e81ed5e7"
       ]
+    },
+    {
+      "username": "Fritz",
+      "passwordHash": "d8b5bf6b6f3e874fdb15626c25ebf50079c1ca8d934b28827461ea7ce8f72f79",
+      "devices": [
+        "fa900084f0a52e62"
+      ]
     }
   ]
 }

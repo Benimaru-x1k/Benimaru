@@ -7,9 +7,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
+import android.net.TrafficStats
 import android.os.BatteryManager
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
+import android.os.StatFs
+import android.os.SystemClock
 import android.text.Html
 import android.view.Display
 import android.view.Gravity
@@ -38,6 +42,15 @@ class RealtimeMonitorService : Service() {
     private lateinit var tvBatLevel: TextView
     private lateinit var tvDispFps: TextView
     private lateinit var pbRam: ProgressBar
+    private lateinit var tvStoUsed: TextView
+    private lateinit var tvStoTotal: TextView
+    private lateinit var pbStorage: ProgressBar
+    private lateinit var tvNetDown: TextView
+    private lateinit var tvNetUp: TextView
+
+    private var lastRxBytes = 0L
+    private var lastTxBytes = 0L
+    private var lastNetSampleAt = 0L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -56,6 +69,11 @@ class RealtimeMonitorService : Service() {
         tvBatLevel = overlayView.findViewById(R.id.tvBatLevel)
         tvDispFps = overlayView.findViewById(R.id.tvDispFps)
         pbRam = overlayView.findViewById(R.id.pbOverlayRam)
+        tvStoUsed = overlayView.findViewById(R.id.tvStoUsed)
+        tvStoTotal = overlayView.findViewById(R.id.tvStoTotal)
+        pbStorage = overlayView.findViewById(R.id.pbOverlayStorage)
+        tvNetDown = overlayView.findViewById(R.id.tvNetDown)
+        tvNetUp = overlayView.findViewById(R.id.tvNetUp)
 
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -146,6 +164,19 @@ class RealtimeMonitorService : Service() {
         }
         val white = "#E5E7EB"
 
+        val storage = StatFs(Environment.getDataDirectory().path)
+        val gb = 1024.0 * 1024.0 * 1024.0
+        val totalStorageGb = storage.totalBytes / gb
+        val usedStorageGb = (storage.totalBytes - storage.availableBytes) / gb
+        val storagePercent = if (storage.totalBytes > 0) (((storage.totalBytes - storage.availableBytes) * 100) / storage.totalBytes).toInt() else 0
+        val storageColor = when {
+            storagePercent >= 90 -> "#F87171"
+            storagePercent >= 80 -> "#FBBF24"
+            else -> "#E5E7EB"
+        }
+
+        val net = sampleNetworkSpeed()
+
         withContext(Dispatchers.Main) {
             tvCpuTemp.text = formatHtml(span(cpuTemp, "°C", tempColor(cpuTempC)))
             tvCpuFreq.text = formatHtml(span(cpuFreq, "MHz", white))
@@ -159,8 +190,41 @@ class RealtimeMonitorService : Service() {
 
 
             tvDispFps.text = formatHtml(span(refreshRate.toString(), "Hz", "#F9A8D4"))
+
+            tvStoUsed.text = formatHtml(span(String.format("%.1f", usedStorageGb), "GB", storageColor))
+            tvStoTotal.text = formatHtml(span(String.format("%.0f", totalStorageGb), "GB", white))
+            pbStorage.progress = storagePercent
+
+            tvNetDown.text = formatHtml(span("↓ " + net.first.first, net.first.second, "#4ADE80"))
+            tvNetUp.text = formatHtml(span("↑ " + net.second.first, net.second.second, "#F9A8D4"))
         }
     }
+
+    private fun sampleNetworkSpeed(): Pair<Pair<String, String>, Pair<String, String>> {
+        val rx = TrafficStats.getTotalRxBytes()
+        val tx = TrafficStats.getTotalTxBytes()
+        if (rx < 0 || tx < 0) return ("--" to "KB/s") to ("--" to "KB/s")
+
+        val now = SystemClock.elapsedRealtime()
+        val elapsed = now - lastNetSampleAt
+        val down: Long
+        val up: Long
+        if (lastNetSampleAt == 0L || elapsed <= 0L) {
+            down = 0L
+            up = 0L
+        } else {
+            down = ((rx - lastRxBytes) * 1000L / elapsed).coerceAtLeast(0L)
+            up = ((tx - lastTxBytes) * 1000L / elapsed).coerceAtLeast(0L)
+        }
+        lastRxBytes = rx
+        lastTxBytes = tx
+        lastNetSampleAt = now
+        return formatSpeed(down) to formatSpeed(up)
+    }
+
+    private fun formatSpeed(bytesPerSec: Long): Pair<String, String> =
+        if (bytesPerSec >= 1024L * 1024L) String.format("%.1f", bytesPerSec / (1024.0 * 1024.0)) to "MB/s"
+        else (bytesPerSec / 1024L).toString() to "KB/s"
 
     private fun span(value: String, unit: String, color: String): String =
         "<font color='$color'>$value</font> <small><font color='#9CA3AF'>$unit</font></small>"

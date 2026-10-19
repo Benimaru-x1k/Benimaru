@@ -126,6 +126,7 @@ private class PremiumModeTabs(
     val buyTab: MaterialButton
 )
 
+/** The "Login | Get Premium" segmented toggle at the top of the premium dialog. */
 private fun MainActivity.createPremiumModeTabs(): PremiumModeTabs {
     val toggle = com.google.android.material.button.MaterialButtonToggleGroup(this).apply {
         isSingleSelection = true
@@ -148,6 +149,7 @@ private fun MainActivity.createPremiumModeTabs(): PremiumModeTabs {
     return PremiumModeTabs(toggle, loginTab, buyTab)
 }
 
+/** Returns the error message to show for the credentials, or null when they are acceptable. */
 private fun MainActivity.premiumFieldError(user: String, pass: String, forPurchase: Boolean): String? {
     if (user.isEmpty() || pass.isEmpty()) return getString(R.string.err_enter_user_pass)
     if (forPurchase) {

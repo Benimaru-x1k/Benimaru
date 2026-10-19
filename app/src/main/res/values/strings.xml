@@ -42,7 +42,7 @@
     <string name="title_crosshair">Enable Crosshair Overlay</string>
     <string name="desc_crosshair">Displays a customizable crosshair in the center of the screen for FPS games.</string>
     <string name="title_monitor">Real-time Hardware Monitor</string>
-    <string name="desc_monitor">Displays a floating, draggable overlay with live RAM, CPU freq, and Battery stats like MSI Afterburner.</string>
+    <string name="desc_monitor">Displays a floating, draggable overlay with live RAM, CPU freq, storage, battery, refresh rate and network speed stats like MSI Afterburner.</string>
     <string name="title_autoclick">Auto Click &amp; Auto Swipe</string>
     <string name="desc_autoclick">A floating button that automatically taps or swipes the screen at set intervals. Ideal for games that restrict AFK play.</string>
     <string name="title_gamemode">Native Game Mode API</string>
@@ -262,6 +262,7 @@
     <string name="dns_malicious">Blocks malicious links</string>
     <string name="dns_personalized">Personalized blocking</string>
     <string name="dns_stable">Stable and reliable</string>
+    <string name="dns_family_safe">Blocks adult content (family safe)</string>
     <string name="dlg_private_dns">Private DNS</string>
     <string name="dlg_private_dns_msg">Choose a provider for ad blocking, tracker protection and lower latency.</string>
     <string name="dns_off_desc">Turn private DNS off (automatic)</string>
@@ -275,7 +276,7 @@
     <string name="toast_min_gt_max">Minimum can\'t be higher than maximum</string>
     <string name="sw_aspect">Auto-match aspect ratio</string>
     <string name="sw_dpi">Auto calculate DPI</string>
-    <string name="info_dpi">When Auto calculate DPI is on, DPI is scaled to match the new resolution. When it is off, your current DPI is kept. You\'ll get 6 seconds to confirm, otherwise it reverts.</string>
+    <string name="info_dpi">When Auto calculate DPI is on, DPI is scaled to match the new resolution. When it is off, your current DPI is kept unless you type your own DPI. You\'ll get 6 seconds to confirm, otherwise it reverts.</string>
     <string name="toast_enter_wh">Please enter width and height</string>
     <string name="toast_res_small">That resolution is too small</string>
     <string name="toast_res_fail">Couldn\'t apply that resolution</string>
@@ -338,6 +339,10 @@
     <string name="freed_suffix">about %1$s MB freed</string>
     <string name="toast_dns_set">DNS set to %1$s</string>
     <string name="toast_hz_set">Refresh rate set to %1$s - %2$s Hz</string>
+    <string name="hint_dpi">DPI</string>
+    <string name="hint_dpi_now">DPI (now %1$s)</string>
+    <string name="toast_dpi_invalid">DPI must be between %1$d and %2$d</string>
+    <string name="svc_dpi_invalid">DPI must be between %1$d and %2$d</string>
     <string name="hint_width_now">Width (now %1$s)</string>
     <string name="hint_height_now">Height (now %1$s)</string>
     <string name="revert_n">Reverting in %1$s seconds…</string>
@@ -417,4 +422,16 @@
     <string name="shizuku_offline">Offline</string>
     <string name="toast_shizuku_ok">Shizuku is connected and ready</string>
     <string name="svc_current">Current: %1$s×%2$s · %3$s dpi</string>
+
+    <!-- Fix Gyro Delay -->
+    <string name="title_gyro">Fix Gyro Delay</string>
+    <string name="desc_gyro">Resets the sensors, turns off Battery Saver and measures how fast your gyroscope really updates, to find out what is causing aim lag.</string>
+    <string name="dlg_gyro_working">Fixing gyroscope...</string>
+    <string name="dlg_gyro_working_msg">Resetting sensors and measuring the update rate. This takes a few seconds.</string>
+    <string name="dlg_gyro_result">Gyroscope check</string>
+    <string name="gyro_result_good">Your gyroscope updates at %1$d Hz (before the fix: %2$d Hz). The sensor itself is fast enough, so if aiming still feels delayed, the cause is in the game: lower its gyro smoothing and raise its FPS.</string>
+    <string name="gyro_result_low">Your gyroscope updates at only %1$d Hz (before the fix: %2$d Hz). Close background apps, keep Battery Saver off and restart your phone if the delay continues.</string>
+    <string name="gyro_not_found">This device has no gyroscope, so there is nothing to fix.</string>
+    <string name="status_gyro">Status: Gyro %1$d Hz</string>
+
 </resources>

@@ -159,7 +159,6 @@ private fun MainActivity.createSystemAppsWarning(): TextView = infoCard(
     visibility = View.GONE
 }
 
-
 private fun MainActivity.confirmFreezeSystemApps(sys: List<AppEntry>, onConfirm: () -> Unit) {
     Sheet(this)
         .icon(R.drawable.ic_reset)

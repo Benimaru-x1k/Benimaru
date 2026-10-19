@@ -17,7 +17,6 @@ import es.dmoral.toasty.Toasty
 import java.io.File
 import rikka.shizuku.Shizuku
 
-
 class MainActivity : AppCompatActivity() {
 
 

@@ -7,6 +7,7 @@ import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -85,6 +86,12 @@ internal fun MainActivity.showResolutionDialog() {
         addView(heightLayout)
     }
 
+    val (dpiLayout, dpiInput) = styledField(this, getString(R.string.hint_dpi_now, currentDpi), InputType.TYPE_CLASS_NUMBER, topMarginDp = 10)
+    dpiLayout.visibility = if (autoDpiSwitch.isChecked) View.GONE else View.VISIBLE
+    autoDpiSwitch.setOnCheckedChangeListener { _, isChecked ->
+        dpiLayout.visibility = if (isChecked) View.GONE else View.VISIBLE
+    }
+
     var isAutoCalculating = false
     fun link(source: TextInputEditText, target: TextInputEditText, calc: (Int) -> Int) {
         source.addTextChangedListener(object : TextWatcher {
@@ -121,6 +128,7 @@ internal fun MainActivity.showResolutionDialog() {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply { bottomMargin = dp(12) })
         addView(fields)
+        addView(dpiLayout)
         addView(infoCard(this@showResolutionDialog, getString(R.string.info_dpi)),
             LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 .apply { topMargin = dp(14) })
@@ -142,11 +150,17 @@ internal fun MainActivity.showResolutionDialog() {
                 Toasty.warning(this, getString(R.string.toast_res_small), Toast.LENGTH_SHORT, true).show()
                 return@button
             }
+            val manualDpiText = dpiInput.text.toString().trim()
+            val manualDpi = if (autoDpiSwitch.isChecked || manualDpiText.isEmpty()) null else manualDpiText.toIntOrNull()
+            if (!autoDpiSwitch.isChecked && manualDpiText.isNotEmpty() && (manualDpi == null || manualDpi !in AppConfig.MIN_DPI..AppConfig.MAX_DPI)) {
+                Toasty.warning(this, getString(R.string.toast_dpi_invalid, AppConfig.MIN_DPI, AppConfig.MAX_DPI), Toast.LENGTH_SHORT, true).show()
+                return@button
+            }
             if (!hasShizukuPermission()) return@button
             sheet.dismiss()
 
             val cmd = resolutionCommand(
-                newWidth, newHeight, autoDpiSwitch.isChecked, currentWidth, currentHeight, currentDpi
+                newWidth, newHeight, autoDpiSwitch.isChecked, manualDpi, currentWidth, currentHeight, currentDpi
             )
             applyResolutionCommand(cmd)
         }
@@ -154,12 +168,14 @@ internal fun MainActivity.showResolutionDialog() {
 }
 
 private fun resolutionCommand(
-    newWidth: Int, newHeight: Int, adjustDpi: Boolean,
+    newWidth: Int, newHeight: Int, adjustDpi: Boolean, manualDpi: Int?,
     currentWidth: Float, currentHeight: Float, currentDpi: Int
 ): String = if (adjustDpi) {
     val scalingRatio = minOf(newWidth / currentWidth, newHeight / currentHeight)
     val newDpi = (scalingRatio * currentDpi).toInt()
     "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+} else if (manualDpi != null) {
+    "wm size ${newWidth}x${newHeight} && wm density $manualDpi"
 } else {
     "wm size ${newWidth}x${newHeight}"
 }

@@ -8,8 +8,8 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val prefs = getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE)
-        val isDarkModeSaved = prefs.getBoolean("isDarkMode", false)
+        val prefs = getSharedPreferences(Prefs.THEME, Context.MODE_PRIVATE)
+        val isDarkModeSaved = prefs.getBoolean(Prefs.KEY_DARK_MODE, false)
 
         if (isDarkModeSaved) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)

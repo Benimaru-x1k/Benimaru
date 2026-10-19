@@ -79,6 +79,8 @@ class FloatingResolutionService : Service() {
 
         val etWidth = floatingView.findViewById<EditText>(R.id.etFloatWidth)
         val etHeight = floatingView.findViewById<EditText>(R.id.etFloatHeight)
+        val layoutDpi = floatingView.findViewById<View>(R.id.layoutFloatDpi)
+        val etDpi = floatingView.findViewById<EditText>(R.id.etFloatDpi)
 
         val switchAutoMatch = floatingView.findViewById<MaterialSwitch>(R.id.switchFloatAutoMatch)
         val switchAutoDpi = floatingView.findViewById<MaterialSwitch>(R.id.switchFloatAutoDpi)
@@ -97,6 +99,11 @@ class FloatingResolutionService : Service() {
 
         floatingView.findViewById<TextView>(R.id.tvFloatCurrent)?.text =
             getString(R.string.svc_current, currentWidth.toInt(), currentHeight.toInt(), currentDpi)
+
+        layoutDpi.visibility = if (switchAutoDpi?.isChecked != false) View.GONE else View.VISIBLE
+        switchAutoDpi?.setOnCheckedChangeListener { _, isChecked ->
+            layoutDpi.visibility = if (isChecked) View.GONE else View.VISIBLE
+        }
 
         var isAutoCalculating = false
 
@@ -240,12 +247,22 @@ class FloatingResolutionService : Service() {
                 return@setOnClickListener
             }
 
-            val cmd = if (switchAutoDpi?.isChecked != false) {
+            val autoDpi = switchAutoDpi?.isChecked != false
+            val manualDpiText = etDpi.text.toString().trim()
+            val manualDpi = if (autoDpi || manualDpiText.isEmpty()) null else manualDpiText.toIntOrNull()
+            if (!autoDpi && manualDpiText.isNotEmpty() && (manualDpi == null || manualDpi !in AppConfig.MIN_DPI..AppConfig.MAX_DPI)) {
+                Toast.makeText(this, getString(R.string.svc_dpi_invalid, AppConfig.MIN_DPI, AppConfig.MAX_DPI), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val cmd = if (autoDpi) {
                 val widthRatio = newWidth.toFloat() / currentWidth
                 val heightRatio = newHeight.toFloat() / currentHeight
                 val scalingRatio = minOf(widthRatio, heightRatio)
                 val newDpi = (scalingRatio * currentDpi).toInt()
                 "wm size ${newWidth}x${newHeight} && wm density $newDpi"
+            } else if (manualDpi != null) {
+                "wm size ${newWidth}x${newHeight} && wm density $manualDpi"
             } else {
                 "wm size ${newWidth}x${newHeight}"
             }

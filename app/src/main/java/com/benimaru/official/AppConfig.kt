@@ -13,6 +13,9 @@ object AppConfig {
     const val PREMIUM_RECHECK_INTERVAL_MS = 60 * 1000L
     const val PREMIUM_OFFLINE_GRACE_MS = 7L * 24L * 60L * 60L * 1000L
 
+    const val MIN_DPI = 72
+    const val MAX_DPI = 1000
+
     const val REPO_RAW_BASE = "https://raw.githubusercontent.com/Benimaru-x1k/Benimaru/main"
     const val USERS_URL = "$REPO_RAW_BASE/users.json"
     const val SIGNATURE_URL = "$REPO_RAW_BASE/signature.txt"

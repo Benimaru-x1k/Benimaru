@@ -41,7 +41,7 @@
     <string name="title_crosshair">Ativar mira na tela</string>
     <string name="desc_crosshair">Exibe uma mira personalizável no centro da tela para jogos de tiro (FPS).</string>
     <string name="title_monitor">Monitor de hardware em tempo real</string>
-    <string name="desc_monitor">Exibe uma sobreposição flutuante e arrastável com RAM, frequência da CPU e bateria ao vivo, como o MSI Afterburner.</string>
+    <string name="desc_monitor">Exibe uma sobreposição flutuante e arrastável com RAM, frequência da CPU, armazenamento, bateria, taxa de atualização e velocidade da rede ao vivo, como o MSI Afterburner.</string>
     <string name="title_autoclick">Clique e deslize automáticos</string>
     <string name="desc_autoclick">Um botão flutuante que toca ou desliza na tela automaticamente em intervalos definidos. Ideal para jogos que restringem o modo AFK.</string>
     <string name="title_gamemode">API nativa de Modo de Jogo</string>
@@ -261,6 +261,7 @@
     <string name="dns_malicious">Bloqueia links maliciosos</string>
     <string name="dns_personalized">Bloqueio personalizado</string>
     <string name="dns_stable">Estável e confiável</string>
+    <string name="dns_family_safe">Bloqueia conteúdo adulto (seguro para a família)</string>
     <string name="dlg_private_dns">DNS privado</string>
     <string name="dlg_private_dns_msg">Escolha um provedor para bloquear anúncios, proteger contra rastreadores e reduzir a latência.</string>
     <string name="dns_off_desc">Desativar o DNS privado (automático)</string>
@@ -274,7 +275,7 @@
     <string name="toast_min_gt_max">O mínimo não pode ser maior que o máximo</string>
     <string name="sw_aspect">Manter proporção automaticamente</string>
     <string name="sw_dpi">Calcular DPI automaticamente</string>
-    <string name="info_dpi">Com \"Calcular DPI automaticamente\" ativado, o DPI é ajustado à nova resolução. Desativado, seu DPI atual é mantido. Você terá 6 segundos para confirmar; caso contrário, a alteração é revertida.</string>
+    <string name="info_dpi">Com \"Calcular DPI automaticamente\" ativado, o DPI é ajustado à nova resolução. Desativado, seu DPI atual é mantido, a menos que você digite o seu próprio DPI. Você terá 6 segundos para confirmar; caso contrário, a alteração é revertida.</string>
     <string name="toast_enter_wh">Digite a largura e a altura</string>
     <string name="toast_res_small">Essa resolução é pequena demais</string>
     <string name="toast_res_fail">Não foi possível aplicar essa resolução</string>
@@ -337,6 +338,10 @@
     <string name="freed_suffix">cerca de %1$s MB liberados</string>
     <string name="toast_dns_set">DNS definido para %1$s</string>
     <string name="toast_hz_set">Taxa de atualização definida para %1$s - %2$s Hz</string>
+    <string name="hint_dpi">DPI</string>
+    <string name="hint_dpi_now">DPI (atual %1$s)</string>
+    <string name="toast_dpi_invalid">O DPI deve estar entre %1$d e %2$d</string>
+    <string name="svc_dpi_invalid">O DPI deve estar entre %1$d e %2$d</string>
     <string name="hint_width_now">Largura (atual %1$s)</string>
     <string name="hint_height_now">Altura (atual %1$s)</string>
     <string name="revert_n">Revertendo em %1$s segundos…</string>
@@ -416,4 +421,16 @@
     <string name="shizuku_offline">Offline</string>
     <string name="toast_shizuku_ok">O Shizuku está conectado e pronto</string>
     <string name="svc_current">Atual: %1$s×%2$s · %3$s dpi</string>
+
+    <!-- Fix Gyro Delay -->
+    <string name="title_gyro">Corrigir atraso do giroscópio</string>
+    <string name="desc_gyro">Reinicia os sensores, desativa a economia de bateria e mede a velocidade real de atualização do giroscópio para descobrir o que causa o atraso na mira.</string>
+    <string name="dlg_gyro_working">Corrigindo o giroscópio...</string>
+    <string name="dlg_gyro_working_msg">Reiniciando os sensores e medindo a taxa de atualização. Leva alguns segundos.</string>
+    <string name="dlg_gyro_result">Verificação do giroscópio</string>
+    <string name="gyro_result_good">Seu giroscópio atualiza a %1$d Hz (antes da correção: %2$d Hz). O sensor é rápido o suficiente; se a mira ainda parecer atrasada, a causa está no jogo: reduza a suavização do giroscópio e aumente o FPS.</string>
+    <string name="gyro_result_low">Seu giroscópio atualiza a apenas %1$d Hz (antes da correção: %2$d Hz). Feche os apps em segundo plano, mantenha a economia de bateria desativada e reinicie o celular se o atraso continuar.</string>
+    <string name="gyro_not_found">Este aparelho não tem giroscópio, então não há nada para corrigir.</string>
+    <string name="status_gyro">Status: Giroscópio %1$d Hz</string>
+
 </resources>

@@ -7,7 +7,6 @@ import org.json.JSONObject
 
 internal enum class PremiumStatus { VALID, INVALID, UNREACHABLE }
 
-
 internal object PremiumRepository {
 
     fun checkStatus(username: String, storedHash: String, deviceId: String): PremiumStatus {

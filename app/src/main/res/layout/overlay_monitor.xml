@@ -34,6 +34,23 @@
     </TableRow>
 
     <TableRow android:layout_marginBottom="3dp">
+        <TextView android:fontFamily="@font/lexendregular" android:text="STO" android:textColor="#38BDF8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
+        <TextView android:id="@+id/tvStoUsed" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+        <TextView android:id="@+id/tvStoTotal" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+    </TableRow>
+    <TableRow android:layout_marginBottom="5dp">
+        <ProgressBar
+            android:id="@+id/pbOverlayStorage"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_span="3"
+            android:max="100"
+            android:progressBackgroundTint="#33FFFFFF"
+            android:progressTint="#38BDF8" />
+    </TableRow>
+
+    <TableRow android:layout_marginBottom="3dp">
         <TextView android:fontFamily="@font/lexendregular" android:text="BAT" android:textColor="#4ADE80" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
         <TextView android:id="@+id/tvBatTemp" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
         <TextView android:id="@+id/tvBatLevel" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
@@ -42,6 +59,12 @@
         <TextView android:fontFamily="@font/lexendregular" android:text="DISP" android:textColor="#F472B6" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
         <TextView android:text="" />
         <TextView android:id="@+id/tvDispFps" android:fontFamily="@font/lexendregular" android:gravity="end" android:paddingStart="14dp" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1"/>
+    </TableRow>
+
+    <TableRow android:layout_marginTop="3dp">
+        <TextView android:fontFamily="@font/lexendregular" android:text="NET" android:textColor="#A78BFA" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
+        <TextView android:id="@+id/tvNetDown" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+        <TextView android:id="@+id/tvNetUp" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
     </TableRow>
 
 </TableLayout>

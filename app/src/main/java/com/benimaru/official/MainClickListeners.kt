@@ -11,8 +11,6 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import es.dmoral.toasty.Toasty
 
-
-
 internal fun MainActivity.setupClickListeners() {
     val prefs = getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE)
 
@@ -22,7 +20,6 @@ internal fun MainActivity.setupClickListeners() {
     setupTweakResetListeners(prefs)
     setupBottomActionListeners(prefs)
 }
-
 
 private fun MainActivity.runTweakOnce(
     statusId: Int,
@@ -45,7 +42,6 @@ private fun MainActivity.bindCommandReset(buttonId: Int, command: String, messag
         runAdbCommand(command, getString(messageRes)) { fetchSystemStatuses() }
     }
 }
-
 
 private fun MainActivity.bindStatusReset(buttonId: Int, statusId: Int) {
     findViewById<TextView>(buttonId).setOnClickListener {
@@ -116,6 +112,8 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
         )
     }
 
+    findViewById<CardView>(R.id.cardFixGyro).setOnClickListener { fixGyroDelay() }
+
     findViewById<CardView>(R.id.cardAdjustRefreshRate).setOnClickListener { showRefreshRateDialog() }
 
     findViewById<CardView>(R.id.cardGameMode).setOnClickListener {
@@ -182,7 +180,6 @@ private fun MainActivity.setupPremiumCardListeners(prefs: SharedPreferences) {
     }
 }
 
-
 private fun MainActivity.setupOverlayResetListeners() {
     findViewById<TextView>(R.id.btnResetAutoClick).setOnClickListener {
         if (isAutoClickEnabled) stopAutoClickService()
@@ -194,7 +191,6 @@ private fun MainActivity.setupOverlayResetListeners() {
         if (isMonitorEnabled) toggleRealtimeMonitor()
     }
 }
-
 
 private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
     findViewById<TextView>(R.id.btnResetFreeze).setOnClickListener { restoreAllFrozen() }
@@ -227,6 +223,7 @@ private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
     bindStatusReset(R.id.btnResetRamBooster, R.id.tvStatusRamBooster)
     bindStatusReset(R.id.btnResetCache, R.id.tvStatusCache)
     bindStatusReset(R.id.btnResetFstrim, R.id.tvStatusFstrim)
+    bindStatusReset(R.id.btnResetGyro, R.id.tvStatusGyro)
 
     bindCommandReset(
         R.id.btnResetRefresh,
@@ -332,6 +329,7 @@ internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPrefere
             findViewById<TextView>(R.id.tvStatusFstrim).text = getString(R.string.status_ready)
             findViewById<TextView>(R.id.tvStatusRamBooster).text = getString(R.string.status_ready)
             findViewById<TextView>(R.id.tvStatusCache).text = getString(R.string.status_ready)
+            findViewById<TextView>(R.id.tvStatusGyro).text = getString(R.string.status_ready)
 
             fetchSystemStatuses()
         }

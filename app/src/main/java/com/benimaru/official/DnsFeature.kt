@@ -10,7 +10,9 @@ internal fun MainActivity.showDnsDialog() {
         Dns("Cloudflare", getString(R.string.dns_fastest), "one.one.one.one"),
         Dns("Quad9", getString(R.string.dns_malicious), "dns.quad9.net"),
         Dns("NextDNS", getString(R.string.dns_personalized), "dns.nextdns.io"),
-        Dns("Google", getString(R.string.dns_stable), "dns.google")
+        Dns("Google", getString(R.string.dns_stable), "dns.google"),
+        Dns("AdGuard", getString(R.string.dns_blocks_ads), "dns.adguard-dns.com"),
+        Dns("CleanBrowsing", getString(R.string.dns_family_safe), "family-filter-dns.cleanbrowsing.org")
     )
     val current = findViewById<TextView>(R.id.tvStatusDns).text.toString()
 

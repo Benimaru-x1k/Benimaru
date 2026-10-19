@@ -85,7 +85,6 @@ internal fun MainActivity.downloadAppUpdate(downloadUrl: String) {
 
 internal fun MainActivity.formatMb(bytes: Long): String = String.format("%.1f MB", bytes / (1024.0 * 1024.0))
 
-
 private suspend fun CoroutineScope.streamToPartFile(
     activity: MainActivity, c: HttpURLConnection, part: File, progress: ProgressSheet
 ): Pair<Long, Long> {

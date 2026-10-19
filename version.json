@@ -1,7 +1,7 @@
 {
-  "versionCode": 25,
-  "versionName": "3.5",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/3.5/BenimaruTool-v3.5.apk",
+  "versionCode": 26,
+  "versionName": "3.6",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/3.6/BenimaruTool-v3.6.apk",
   "mandatory": true,
-  "releaseNotes": "🚀 3.5 Update!\n\n- NEW: Português (Brasil/Portugal). The app follows your phone's language automatically\n- Enable Fixed Performance now has an Aggressive mode: it also turns off battery saver, adaptive battery and Doze for maximum performance. Expect more heat and faster battery drain. RESET undoes it"
+  "releaseNotes": "🚀 3.6 Update!\n\n- NEW: Fix Gyro Delay (free). It resets the sensors, turns off battery saver and measures your gyroscope's real update rate, so you can see if the aim lag comes from your phone or from the game\n- Custom DNS: added AdGuard and CleanBrowsing Family\n- Real-time Hardware Monitor: new Storage and Network speed meters\n- Custom Screen Resolution: type your own DPI (Direct change and Floating menu) when Auto calculate DPI is off"
 }

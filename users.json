@@ -72,6 +72,13 @@
       "devices": [
         "fa900084f0a52e62"
       ]
+    },
+    {
+      "username": "Kyo",
+      "passwordHash": "c65f6697835fbe2ff79e71cd59605717e1ede501bc68cd49d771b8c5385b5f66",
+      "devices": [
+        "665999b7d7941fed"
+      ]
     }
   ]
 }

@@ -50,7 +50,7 @@ internal fun MainActivity.setupFilterChips() {
     val chipGroup = findViewById<ChipGroup>(R.id.chipGroupCategories)
 
     val customTypeface = ResourcesCompat.getFont(this, R.font.lexendregular)
-    val chipIds = listOf(R.id.chipAll, R.id.chipPerformance, R.id.chipDisplay, R.id.chipNetwork, R.id.chipGaming)
+    val chipIds = listOf(R.id.chipAll, R.id.chipPerformance, R.id.chipDisplay, R.id.chipNetwork, R.id.chipGaming, R.id.chipTools)
     chipIds.forEach { id ->
         findViewById<Chip>(id)?.typeface = customTypeface
     }
@@ -60,7 +60,9 @@ internal fun MainActivity.setupFilterChips() {
     val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
     val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardAutoClick, R.id.cardGameMode, R.id.cardFixGyro)
 
-    val allCards = performanceCards + displayCards + networkCards + gamingCards
+    val toolsCards = listOf(R.id.cardShellExecute)
+
+    val allCards = performanceCards + displayCards + networkCards + gamingCards + toolsCards
 
     chipGroup.setOnCheckedChangeListener { _, checkedId ->
         allCards.forEach { findViewById<View>(it)?.visibility = View.GONE }
@@ -70,6 +72,7 @@ internal fun MainActivity.setupFilterChips() {
             R.id.chipDisplay -> displayCards
             R.id.chipNetwork -> networkCards
             R.id.chipGaming -> gamingCards
+            R.id.chipTools -> toolsCards
             else -> allCards
         }
 
@@ -95,14 +98,16 @@ internal fun MainActivity.setupStatusStyling() {
     val amber = Color.parseColor("#E09B00")
 
     fun stateOf(id: Int, text: String): TweakState {
-        val t = text.removePrefix("Status:").trim()
+        // Compare against the English source so this works in every language.
+        fun en(res: Int) = AppTranslator.english(this, res)
+        val t = AppTranslator.toEnglish(text).removePrefix("Status:").trim()
         return when {
-            t.isEmpty() || t.startsWith(getString(R.string.w_default)) || t.startsWith(getString(R.string.w_ready)) ||
-                t.startsWith(getString(R.string.w_unknown)) || t.startsWith(getString(R.string.w_checking)) -> TweakState.NEUTRAL
-            id == R.id.tvStatusDevOptions -> if (t.startsWith(getString(R.string.w_enabled))) TweakState.WARN else TweakState.ACTIVE
+            t.isEmpty() || t.startsWith(en(R.string.w_default)) || t.startsWith(en(R.string.w_ready)) ||
+                t.startsWith(en(R.string.w_unknown)) || t.startsWith(en(R.string.w_checking)) -> TweakState.NEUTRAL
+            id == R.id.tvStatusDevOptions -> if (t.startsWith(en(R.string.w_enabled))) TweakState.WARN else TweakState.ACTIVE
             id == R.id.tvStatusThermal -> TweakState.WARN
-            id == R.id.tvStatusBlurs -> if (t.startsWith(getString(R.string.w_disabled))) TweakState.ACTIVE else TweakState.NEUTRAL
-            t.startsWith(getString(R.string.w_disabled)) -> TweakState.NEUTRAL
+            id == R.id.tvStatusBlurs -> if (t.startsWith(en(R.string.w_disabled))) TweakState.ACTIVE else TweakState.NEUTRAL
+            t.startsWith(en(R.string.w_disabled)) -> TweakState.NEUTRAL
             else -> TweakState.ACTIVE
         }
     }

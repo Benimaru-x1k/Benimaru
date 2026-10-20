@@ -28,6 +28,8 @@ import kotlin.math.abs
 
 class FloatingResolutionService : Service() {
 
+    override fun getResources(): android.content.res.Resources = AppTranslator.wrap(super.getResources())
+
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
     private val serviceScope = CoroutineScope(Dispatchers.IO)
@@ -53,6 +55,7 @@ class FloatingResolutionService : Service() {
         val themeContext = android.view.ContextThemeWrapper(localizedContext, R.style.Theme_Benimaru)
 
         floatingView = LayoutInflater.from(themeContext).inflate(R.layout.layout_floating_resolution, null)
+        AppTranslator.translateTree(floatingView)
 
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,

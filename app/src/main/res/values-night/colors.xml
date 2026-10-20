@@ -21,4 +21,7 @@
     <color name="overlayStroke">#33FFFFFF</color>
     <color name="overlaySurfaceVariant">#1FFFFFFF</color>
     <color name="overlayPressedSurface">#33FFFFFF</color>
+    <color name="gradientCenter">#B71C1C</color>
+    <color name="outlineGold">#E0A800</color>
+    <color name="outlineGreen">#2E9E5B</color>
 </resources>

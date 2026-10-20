@@ -33,7 +33,7 @@ internal fun MainActivity.isPremium(): Boolean {
 internal fun MainActivity.updatePremiumButtonUI() {
     if (isPremium()) {
         val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
-        btnPremium.text = " Premium"
+        btnPremium.text = " " + getString(R.string.premium_label)
         btnPremium.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFD700"))
         btnPremium.setTextColor(Color.parseColor("#000000"))
         (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)
@@ -239,7 +239,7 @@ internal fun MainActivity.showRemoveAdsDialog() {
 
     val sheet = Sheet(this)
     sheet.icon(R.drawable.ic_crown, gold)
-        .title("Premium")
+        .title(getString(R.string.premium_label))
         .message(getString(R.string.txt_login_hint))
         .content(toggle)
         .content(form)

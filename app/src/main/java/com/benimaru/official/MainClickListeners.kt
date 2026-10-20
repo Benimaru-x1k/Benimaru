@@ -21,6 +21,8 @@ internal fun MainActivity.setupClickListeners() {
     setupBottomActionListeners(prefs)
 }
 
+private fun MainActivity.en(res: Int): String = AppTranslator.english(this, res)
+
 private fun MainActivity.runTweakOnce(
     statusId: Int,
     doneMarker: () -> String,
@@ -29,7 +31,8 @@ private fun MainActivity.runTweakOnce(
     successMessageRes: Int,
     onSuccess: () -> Unit = { fetchSystemStatuses() }
 ) {
-    val status = findViewById<TextView>(statusId).text.toString()
+    // Status text may be translated; compare against its English source.
+    val status = AppTranslator.toEnglish(findViewById<TextView>(statusId).text.toString())
     if (status.contains(doneMarker())) {
         Toasty.info(this, getString(alreadyToastRes), Toast.LENGTH_SHORT, true).show()
         return
@@ -62,7 +65,7 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
 
     findViewById<CardView>(R.id.cardOptimizeSystem).setOnClickListener {
         runTweakOnce(
-            R.id.tvStatusOptimize, { getString(R.string.w_recently) }, R.string.toast_already_optimized,
+            R.id.tvStatusOptimize, { en(R.string.w_recently) }, R.string.toast_already_optimized,
             "cmd activity kill-all", R.string.msg_sys_optimized
         ) {
             findViewById<TextView>(R.id.tvStatusOptimize).text = getString(R.string.status_recently)
@@ -71,14 +74,14 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
 
     findViewById<CardView>(R.id.cardImproveNetwork).setOnClickListener {
         runTweakOnce(
-            R.id.tvStatusNetwork, { getString(R.string.w_optimized) }, R.string.toast_already_optimized,
+            R.id.tvStatusNetwork, { en(R.string.w_optimized) }, R.string.toast_already_optimized,
             "settings put global tether_dun_required 0", R.string.msg_net_optimized
         )
     }
 
     findViewById<CardView>(R.id.cardImproveTouch).setOnClickListener {
         runTweakOnce(
-            R.id.tvStatusTouch, { getString(R.string.w_improved) }, R.string.toast_already_improved,
+            R.id.tvStatusTouch, { en(R.string.w_improved) }, R.string.toast_already_improved,
             "settings put system pointer_speed 7 && settings put secure long_press_timeout 250", R.string.msg_touch_improved
         )
     }
@@ -93,21 +96,21 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
 
     findViewById<CardView>(R.id.cardDisableBlurs).setOnClickListener {
         runTweakOnce(
-            R.id.tvStatusBlurs, { getString(R.string.w_disabled) }, R.string.toast_already_disabled,
+            R.id.tvStatusBlurs, { en(R.string.w_disabled) }, R.string.toast_already_disabled,
             "settings put global disable_window_blurs 1", R.string.msg_blurs_off
         )
     }
 
     findViewById<CardView>(R.id.cardGamingDnd).setOnClickListener {
         runTweakOnce(
-            R.id.tvStatusDnd, { getString(R.string.w_blocked) }, R.string.toast_already_blocked,
+            R.id.tvStatusDnd, { en(R.string.w_blocked) }, R.string.toast_already_blocked,
             "settings put global heads_up_notifications_enabled 0", R.string.msg_dnd_on
         )
     }
 
     findViewById<CardView>(R.id.cardDisableDevOptions).setOnClickListener {
         runTweakOnce(
-            R.id.tvStatusDevOptions, { getString(R.string.w_disabled) }, R.string.toast_already_disabled,
+            R.id.tvStatusDevOptions, { en(R.string.w_disabled) }, R.string.toast_already_disabled,
             "settings put global development_settings_enabled 0", R.string.msg_devopt_off
         )
     }
@@ -129,7 +132,7 @@ private fun MainActivity.setupPremiumCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardFstrim).setOnClickListener {
         handlePremiumFeature {
             runTweakOnce(
-                R.id.tvStatusFstrim, { getString(R.string.w_recently) }, R.string.toast_storage_already,
+                R.id.tvStatusFstrim, { en(R.string.w_recently) }, R.string.toast_storage_already,
                 "sm fstrim", R.string.msg_fstrim_done
             ) {
                 findViewById<TextView>(R.id.tvStatusFstrim).text = getString(R.string.status_recently)
@@ -139,6 +142,9 @@ private fun MainActivity.setupPremiumCardListeners(prefs: SharedPreferences) {
 
     findViewById<CardView>(R.id.cardFreezeApps).setOnClickListener {
         handlePremiumFeature { showFreezeAppsSheet() }
+    }
+    findViewById<CardView>(R.id.cardShellExecute).setOnClickListener {
+        handlePremiumFeature { showShellExecuteSheet() }
     }
     findViewById<CardView>(R.id.cardRamBooster).setOnClickListener {
         handlePremiumFeature { showRamBoosterSheet() }
@@ -224,6 +230,7 @@ private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
     bindStatusReset(R.id.btnResetCache, R.id.tvStatusCache)
     bindStatusReset(R.id.btnResetFstrim, R.id.tvStatusFstrim)
     bindStatusReset(R.id.btnResetGyro, R.id.tvStatusGyro)
+    bindStatusReset(R.id.btnResetShell, R.id.tvStatusShell)
 
     bindCommandReset(
         R.id.btnResetRefresh,
@@ -277,7 +284,7 @@ private fun MainActivity.setupBottomActionListeners(prefs: SharedPreferences) {
     }
 }
 
-internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPreferences) {
+internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPreferences, onDone: (() -> Unit)? = null) {
     run {
         val lastGame = prefs.getString(Prefs.KEY_LAST_GAME_MODE, "")
         val gameModeReset = if (lastGame.isNullOrEmpty()) "" else "cmd game mode standard $lastGame && "
@@ -330,8 +337,10 @@ internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPrefere
             findViewById<TextView>(R.id.tvStatusRamBooster).text = getString(R.string.status_ready)
             findViewById<TextView>(R.id.tvStatusCache).text = getString(R.string.status_ready)
             findViewById<TextView>(R.id.tvStatusGyro).text = getString(R.string.status_ready)
+            findViewById<TextView>(R.id.tvStatusShell)?.text = getString(R.string.status_ready)
 
             fetchSystemStatuses()
+            onDone?.invoke()
         }
     }
 }

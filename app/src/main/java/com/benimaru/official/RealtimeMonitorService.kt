@@ -27,6 +27,8 @@ import java.io.RandomAccessFile
 
 class RealtimeMonitorService : Service() {
 
+    override fun getResources(): android.content.res.Resources = AppTranslator.wrap(super.getResources())
+
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
     private lateinit var params: WindowManager.LayoutParams

@@ -434,4 +434,50 @@
     <string name="gyro_not_found">This device has no gyroscope, so there is nothing to fix.</string>
     <string name="status_gyro">Status: Gyro %1$d Hz</string>
 
+    <!-- Premium label / tools category -->
+    <string name="badge_premium_star">★ PREMIUM</string>
+    <string name="premium_label">Premium</string>
+    <string name="chip_tools">Tools</string>
+
+    <!-- Shell Execute -->
+    <string name="title_shell">Shell Execute</string>
+    <string name="desc_shell">Pick your own .sh script and run it live inside the app with Shizuku shell access. Watch every line of output as it happens.</string>
+    <string name="shell_msg">Run a shell script with Shizuku privileges and follow its output live.</string>
+    <string name="shell_pick_title">Select a script</string>
+    <string name="shell_pick_sub">Choose a .sh file from your device</string>
+    <string name="shell_change">Change</string>
+    <string name="shell_file_meta">%1$s  ·  %2$d lines</string>
+    <string name="shell_preview">SCRIPT PREVIEW</string>
+    <string name="shell_btn_execute">Execute script</string>
+    <string name="shell_err_read">Couldn\'t read that file</string>
+    <string name="shell_err_binary">That doesn\'t look like a text script</string>
+    <string name="shell_err_large">That script is too large (max 1 MB)</string>
+    <string name="shell_err_empty">That script is empty</string>
+    <string name="shell_warn_title">Reset all functions first</string>
+    <string name="shell_warn_msg">Active tweaks in this app (refresh rate, resolution, DNS, animations, thermal limits, overlays and more) can conflict with the commands in your script and cause unexpected results.\n\nWe strongly recommend resetting all functions before you run it.</string>
+    <string name="shell_warn_trust">Scripts run with Shizuku shell privileges and can change system settings. Only run scripts you trust.</string>
+    <string name="shell_btn_reset_run">Reset all &amp; execute</string>
+    <string name="shell_btn_run_anyway">Execute without reset</string>
+    <string name="shell_running">Running…</string>
+    <string name="shell_done_ok">Finished · exit code %1$d</string>
+    <string name="shell_done_fail">Failed · exit code %1$d</string>
+    <string name="shell_stopped">Stopped</string>
+    <string name="shell_btn_stop">Stop</string>
+    <string name="shell_btn_copy">Copy output</string>
+    <string name="shell_copied">Output copied</string>
+    <string name="shell_no_output">(no output)</string>
+    <string name="shell_trimmed">… earlier output trimmed …</string>
+    <string name="shell_elapsed">%1$s s</string>
+    <string name="shell_stage_fail">Couldn\'t prepare the script on the device</string>
+    <string name="status_shell_last">Status: Last run · exit code %1$d</string>
+    <string name="status_shell_stopped">Status: Last run stopped</string>
+
+    <!-- Automatic language -->
+    <string name="lang_setup_title">Setting up your language</string>
+    <string name="lang_setup_msg">Preparing %1$s. The language pack downloads once, then the app works offline in your language.</string>
+    <string name="lang_phase_download">Downloading language pack…</string>
+    <string name="lang_phase_translate">Translating… %1$d%%</string>
+    <string name="btn_skip">Skip</string>
+    <string name="toast_lang_failed">Couldn\'t download your language pack. The app will stay in English for now.</string>
+
 </resources>

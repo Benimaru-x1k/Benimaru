@@ -12,8 +12,8 @@ android {
         applicationId = "com.benimaru.official"
         minSdk = 24
         targetSdk = 37
-        versionCode = 26
-        versionName = "3.6"
+        versionCode = 27
+        versionName = "3.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -44,4 +44,5 @@ dependencies {
     implementation("dev.rikka.shizuku:provider:13.1.0")
     implementation("com.github.GrenderG:Toasty:1.5.2")
     implementation("com.unity3d.ads:unity-ads:4.20.1")
+    implementation("com.google.mlkit:translate:17.0.3")
 }

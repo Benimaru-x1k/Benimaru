@@ -153,7 +153,8 @@ internal fun MainActivity.updateShizukuBannerUI(isConnected: Boolean) {
     tvShizuku.text = if (isConnected) "Shizuku" else getString(R.string.shizuku_offline)
     tvShizuku.setTextColor(Color.WHITE)
     cardShizuku.setCardBackgroundColor(Color.parseColor(if (isConnected) "#334ADE80" else "#33FF6B6B"))
-    cardShizuku.strokeColor = Color.parseColor(if (isConnected) "#664ADE80" else "#66FF6B6B")
+    cardShizuku.strokeColor = Color.parseColor(if (isConnected) "#B34ADE80" else "#B3FF6B6B")
+    cardShizuku.strokeWidth = dp(2)
 
     AppCompatResources.getDrawable(this, R.drawable.ic_status_dot)?.let { d ->
         val dot = DrawableCompat.wrap(d.mutate())

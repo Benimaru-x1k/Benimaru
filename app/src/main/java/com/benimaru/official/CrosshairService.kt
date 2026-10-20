@@ -12,6 +12,8 @@ import android.view.WindowManager
 
 class CrosshairService : Service() {
 
+    override fun getResources(): android.content.res.Resources = AppTranslator.wrap(super.getResources())
+
     private lateinit var windowManager: WindowManager
     private lateinit var crosshairView: CrosshairView
 

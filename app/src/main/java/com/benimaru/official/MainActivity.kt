@@ -3,11 +3,14 @@ package com.benimaru.official
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
@@ -30,6 +33,13 @@ class MainActivity : AppCompatActivity() {
     internal var lastPremiumRecheckAt = 0L
     internal var isRecheckingPremium = false
 
+    internal var onScriptPicked: ((Uri?) -> Unit)? = null
+    internal val scriptPicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val cb = onScriptPicked
+        onScriptPicked = null
+        cb?.invoke(uri)
+    }
+
     internal var lastInterstitialAt = 0L
     internal var interstitialEligibleActions = 0
 
@@ -47,10 +57,14 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    override fun getResources(): Resources = AppTranslator.wrap(super.getResources())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppTranslator.init(applicationContext)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        AppTranslator.translateTree(findViewById(android.R.id.content))
 
         val isNightMode = setupWindowAppearance()
         setupThemeToggle(isNightMode)
@@ -70,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         setupBottomBarScrollBehavior()
         setupStatusStyling()
         refreshFreezeStatus()
+        setupLanguageIfNeeded()
     }
 
     override fun onResume() {

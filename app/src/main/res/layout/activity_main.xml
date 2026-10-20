@@ -122,6 +122,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/chip_gaming" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTools"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                app:checkedIconVisible="false"
+                app:chipCornerRadius="20dp"
+                app:chipStrokeWidth="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chip_tools" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
@@ -211,8 +221,8 @@
                             app:cardBackgroundColor="#26000000"
                             app:cardCornerRadius="50dp"
                             app:cardElevation="0dp"
-                            app:strokeColor="#40FFFFFF"
-                            app:strokeWidth="1dp">
+                            app:strokeColor="#80FFFFFF"
+                            app:strokeWidth="1.5dp">
 
                             <TextView
                                 android:id="@+id/tvShizukuStatus"
@@ -557,7 +567,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -640,7 +650,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -723,7 +733,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -806,7 +816,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -889,7 +899,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -972,7 +982,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1055,7 +1065,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1138,7 +1148,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1221,7 +1231,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1304,7 +1314,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#662E9E5B"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1387,7 +1397,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1400,7 +1410,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1470,7 +1480,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1483,7 +1493,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1553,7 +1563,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1566,7 +1576,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1636,7 +1646,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1649,7 +1659,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1720,7 +1730,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1733,7 +1743,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1803,7 +1813,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1816,7 +1826,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1887,7 +1897,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1900,7 +1910,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -1970,7 +1980,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1983,7 +1993,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -2053,7 +2063,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -2066,7 +2076,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -2136,7 +2146,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -2149,7 +2159,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -2219,7 +2229,7 @@
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#26808080"
+                app:strokeColor="#66E0A800"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -2232,7 +2242,7 @@
                         android:background="@drawable/bg_badge_premium"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:text="★ PREMIUM"
+                        android:text="@string/badge_premium_star"
                         android:textColor="#8A6D00"
                         android:textSize="11sp"
                         android:letterSpacing="0.08"
@@ -2291,6 +2301,105 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardShellExecute"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#66E0A800"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_badge_premium"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="3dp"
+                            android:text="@string/badge_premium_star"
+                            android:textColor="#8A6D00"
+                            android:textSize="11sp"
+                            android:letterSpacing="0.08"
+                            android:textStyle="bold" />
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_terminal"
+                            app:tint="#E0A800" />
+                    </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_shell"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#20808080" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/desc_shell"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="14sp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:id="@+id/tvStatusShell"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/status_ready"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:drawablePadding="8dp"
+                            android:gravity="center_vertical"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/btnResetShell"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/btn_reset"
+                            android:textColor="@color/statusText"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:background="@drawable/bg_reset_pill"
+                            android:clickable="true"
+                            android:focusable="true"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <LinearLayout
                 android:id="@+id/bannerAdContainer"
                 android:layout_width="match_parent"
@@ -2313,13 +2422,13 @@
         app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="28dp"
         app:cardElevation="12dp"
-        app:strokeColor="#33808080"
-        app:strokeWidth="1dp"
+        app:strokeWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
+            android:background="@drawable/bg_dock_outline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"

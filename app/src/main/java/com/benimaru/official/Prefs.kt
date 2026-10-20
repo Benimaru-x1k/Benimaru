@@ -26,4 +26,5 @@ object Prefs {
     const val KEY_CROSSHAIR_COLOR_IDX = "CrosshairColorIdx"
     const val KEY_CROSSHAIR_SIZE_IDX = "CrosshairSizeIdx"
     const val KEY_MONITOR_ENABLED = "MonitorEnabled"
+    const val KEY_LANG_RETRY_AFTER = "LangRetryAfter"
 }

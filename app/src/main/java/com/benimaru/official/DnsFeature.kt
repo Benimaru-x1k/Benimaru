@@ -14,7 +14,7 @@ internal fun MainActivity.showDnsDialog() {
         Dns("AdGuard", getString(R.string.dns_blocks_ads), "dns.adguard-dns.com"),
         Dns("CleanBrowsing", getString(R.string.dns_family_safe), "family-filter-dns.cleanbrowsing.org")
     )
-    val current = findViewById<TextView>(R.id.tvStatusDns).text.toString()
+    val current = AppTranslator.toEnglish(findViewById<TextView>(R.id.tvStatusDns).text.toString())
 
     val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
     val sheet = Sheet(this)
@@ -29,7 +29,7 @@ internal fun MainActivity.showDnsDialog() {
             runAdbCommand(cmd, getString(R.string.toast_dns_set, p.name), showAd = true) { fetchSystemStatuses() }
         })
     }
-    list.addView(optionRow(this, getString(R.string.w_default), getString(R.string.dns_off_desc), selected = current.contains(getString(R.string.w_default))) {
+    list.addView(optionRow(this, getString(R.string.w_default), getString(R.string.dns_off_desc), selected = current.contains(AppTranslator.english(this, R.string.w_default))) {
         sheet.dismiss()
         val cmd = "settings put global private_dns_mode default && settings delete global private_dns_specifier"
         runAdbCommand(cmd, getString(R.string.msg_dns_default), showAd = false) { fetchSystemStatuses() }

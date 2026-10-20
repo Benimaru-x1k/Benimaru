@@ -20,4 +20,7 @@
     <color name="overlayStroke">#33808080</color>
     <color name="overlaySurfaceVariant">#1F808080</color>
     <color name="overlayPressedSurface">#33808080</color>
+    <color name="gradientCenter">#1565C0</color>
+    <color name="outlineGold">#E0A800</color>
+    <color name="outlineGreen">#2E9E5B</color>
 </resources>

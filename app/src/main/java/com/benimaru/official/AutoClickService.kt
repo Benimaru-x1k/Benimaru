@@ -21,6 +21,8 @@ import rikka.shizuku.Shizuku
 
 class AutoClickService : Service() {
 
+    override fun getResources(): android.content.res.Resources = AppTranslator.wrap(super.getResources())
+
     companion object {
         const val PREFS = Prefs.MAIN
         const val KEY_MODE = "AutoMode"

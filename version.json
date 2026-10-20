@@ -1,7 +1,7 @@
 {
-  "versionCode": 26,
-  "versionName": "3.6",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/3.6/BenimaruTool-v3.6.apk",
+  "versionCode": 27,
+  "versionName": "3.7",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.7/BenimaruTool-v3.7.apk",
   "mandatory": true,
-  "releaseNotes": "🚀 3.6 Update!\n\n- NEW: Fix Gyro Delay (free). It resets the sensors, turns off battery saver and measures your gyroscope's real update rate, so you can see if the aim lag comes from your phone or from the game\n- Custom DNS: added AdGuard and CleanBrowsing Family\n- Real-time Hardware Monitor: new Storage and Network speed meters\n- Custom Screen Resolution: type your own DPI (Direct change and Floating menu) when Auto calculate DPI is off"
+  "releaseNotes": "🚀 3.7 Update!\n\n- NEW: Shell Execute (Premium). Pick your own .sh script and run it live inside the app, with a reset-first warning to avoid conflicts\n- Automatic language: the app now follows your device language (Bengali, Portuguese and more)\n- New look: gold outlines on Premium cards, green on Free cards, plus a fresh gradient dashboard and bottom bar"
 }

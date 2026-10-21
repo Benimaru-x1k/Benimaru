@@ -1,7 +1,7 @@
 {
-  "versionCode": 27,
-  "versionName": "3.7",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.7/BenimaruTool-v3.7.apk",
-  "mandatory": true,
-  "releaseNotes": "🚀 3.7 Update!\n\n- NEW: Shell Execute (Premium). Pick your own .sh script and run it live inside the app, with a reset-first warning to avoid conflicts\n- Automatic language: the app now follows your device language (Bengali, Portuguese and more)\n- New look: gold outlines on Premium cards, green on Free cards, plus a fresh gradient dashboard and bottom bar"
+  "versionCode": 28,
+  "versionName": "3.8",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.8/BenimaruTool-v3.8.apk",
+  "mandatory": false,
+  "releaseNotes": "🚀 3.8 Update!\n\n- NEW: Install APKS / XAPK (Free). Install .apks, .xapk and .apkm bundles right from your device, with game data (OBB) copied via Shizuku\n- Better translations: Portuguese now uses the hand-written text, with missing screens added and cleaner labels in other languages"
 }

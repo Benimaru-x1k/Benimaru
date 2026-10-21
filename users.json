@@ -79,6 +79,13 @@
       "devices": [
         "665999b7d7941fed"
       ]
+    },
+    {
+      "username": "gremlac",
+      "passwordHash": "b451ecb281f8433f4ed42fa475ebe3b82dc913159555692cde2e1679464abc3d",
+      "devices": [
+        "f4c746247d77d91f"
+      ]
     }
   ]
 }

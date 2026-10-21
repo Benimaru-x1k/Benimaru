@@ -433,4 +433,65 @@
     <string name="gyro_not_found">Este aparelho não tem giroscópio, então não há nada para corrigir.</string>
     <string name="status_gyro">Status: Giroscópio %1$d Hz</string>
 
+    <!-- Premium / Tools / Shell Execute -->
+    <string name="badge_premium_star">★ PREMIUM</string>
+    <string name="premium_label">Premium</string>
+    <string name="chip_tools">Ferramentas</string>
+    <string name="title_shell">Executar Shell</string>
+    <string name="desc_shell">Escolha seu próprio script .sh e execute-o ao vivo dentro do app, com acesso ao shell via Shizuku. Acompanhe cada linha da saída em tempo real.</string>
+    <string name="shell_msg">Execute um script shell com privilégios do Shizuku e acompanhe a saída ao vivo.</string>
+    <string name="shell_pick_title">Selecione um script</string>
+    <string name="shell_pick_sub">Escolha um arquivo .sh do seu aparelho</string>
+    <string name="shell_change">Alterar</string>
+    <string name="shell_file_meta">%1$s  ·  %2$d linhas</string>
+    <string name="shell_preview">PRÉVIA DO SCRIPT</string>
+    <string name="shell_btn_execute">Executar script</string>
+    <string name="shell_err_read">Não foi possível ler esse arquivo</string>
+    <string name="shell_err_binary">Isso não parece um script de texto</string>
+    <string name="shell_err_large">Esse script é grande demais (máx. 1 MB)</string>
+    <string name="shell_err_empty">Esse script está vazio</string>
+    <string name="shell_warn_title">Redefina todas as funções primeiro</string>
+    <string name="shell_warn_msg">Os ajustes ativos neste app (taxa de atualização, resolução, DNS, animações, limites térmicos, sobreposições e mais) podem entrar em conflito com os comandos do seu script e causar resultados inesperados.\n\nRecomendamos fortemente redefinir todas as funções antes de executá-lo.</string>
+    <string name="shell_warn_trust">Os scripts são executados com privilégios de shell do Shizuku e podem alterar configurações do sistema. Execute apenas scripts em que você confia.</string>
+    <string name="shell_btn_reset_run">Redefinir tudo e executar</string>
+    <string name="shell_btn_run_anyway">Executar sem redefinir</string>
+    <string name="shell_running">Executando…</string>
+    <string name="shell_done_ok">Concluído · código de saída %1$d</string>
+    <string name="shell_done_fail">Falhou · código de saída %1$d</string>
+    <string name="shell_stopped">Interrompido</string>
+    <string name="shell_btn_stop">Parar</string>
+    <string name="shell_btn_copy">Copiar saída</string>
+    <string name="shell_copied">Saída copiada</string>
+    <string name="shell_no_output">(sem saída)</string>
+    <string name="shell_trimmed">… saída anterior omitida …</string>
+    <string name="shell_elapsed">%1$s s</string>
+    <string name="shell_stage_fail">Não foi possível preparar o script no aparelho</string>
+    <string name="status_shell_last">Status: Última execução · código de saída %1$d</string>
+    <string name="status_shell_stopped">Status: Última execução interrompida</string>
+
+    <!-- Instalar APKS / XAPK -->
+    <string name="title_apk_install">Instalar APKS / XAPK</string>
+    <string name="desc_apk_install">Instale pacotes de apps divididos (.apks, .xapk, .apkm) direto do seu aparelho. Os dados do jogo (OBB) dentro de um XAPK também podem ser copiados com o Shizuku.</string>
+    <string name="apk_msg">Escolha um pacote de app e instale todas as partes de uma só vez.</string>
+    <string name="apk_pick_title">Selecione um pacote</string>
+    <string name="apk_pick_sub">Escolha um arquivo .apks, .xapk ou .apkm</string>
+    <string name="apk_change">Alterar</string>
+    <string name="apk_meta">Arquivos APK: %2$d  ·  %1$s</string>
+    <string name="apk_obb_note">Este pacote inclui dados do jogo (arquivos OBB: %1$d). O Shizuku é necessário para copiá-los para o seu aparelho.</string>
+    <string name="apk_btn_install">Instalar</string>
+    <string name="apk_err_read">Não foi possível ler esse arquivo</string>
+    <string name="apk_err_zip">Esse arquivo não é um pacote de app válido</string>
+    <string name="apk_err_noapk">Nenhum arquivo APK encontrado dentro do pacote</string>
+    <string name="apk_phase_read">Preparando o pacote…</string>
+    <string name="apk_phase_copy">Preparando… %1$d%%</string>
+    <string name="apk_confirm">Confirme a instalação na janela do sistema…</string>
+    <string name="apk_ok">Instalado com sucesso</string>
+    <string name="apk_cancelled">Instalação cancelada</string>
+    <string name="apk_fail_title">Falha na instalação</string>
+    <string name="apk_fail_unknown">O sistema não conseguiu instalar este pacote.</string>
+    <string name="apk_obb_copy">Copiando dados do jogo… %1$d%%</string>
+    <string name="apk_obb_ok">Instalado. Dados do jogo copiados.</string>
+    <string name="apk_obb_skipped">Instalado, mas os dados do jogo (OBB) não foram copiados. Inicie o Shizuku e escolha o pacote novamente para copiá-los.</string>
+    <string name="apk_obb_fail">Instalado, mas a cópia dos dados do jogo falhou.</string>
+
 </resources>

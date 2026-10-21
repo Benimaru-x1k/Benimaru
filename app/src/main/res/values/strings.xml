@@ -480,4 +480,29 @@
     <string name="btn_skip">Skip</string>
     <string name="toast_lang_failed">Couldn\'t download your language pack. The app will stay in English for now.</string>
 
+    <!-- Install APKS / XAPK -->
+    <string name="title_apk_install">Install APKS / XAPK</string>
+    <string name="desc_apk_install">Install split app bundles (.apks, .xapk, .apkm) straight from your device. Game data (OBB) inside an XAPK can be copied too with Shizuku.</string>
+    <string name="apk_msg">Pick an app bundle and install all of its parts in one go.</string>
+    <string name="apk_pick_title">Select a bundle</string>
+    <string name="apk_pick_sub">Choose a .apks, .xapk or .apkm file</string>
+    <string name="apk_change">Change</string>
+    <string name="apk_meta">APK files: %2$d  ·  %1$s</string>
+    <string name="apk_obb_note">This bundle includes game data (OBB files: %1$d). Shizuku is needed to copy it to your device.</string>
+    <string name="apk_btn_install">Install</string>
+    <string name="apk_err_read">Couldn\'t read that file</string>
+    <string name="apk_err_zip">That isn\'t a valid app bundle</string>
+    <string name="apk_err_noapk">No APK files found inside that bundle</string>
+    <string name="apk_phase_read">Preparing bundle…</string>
+    <string name="apk_phase_copy">Preparing… %1$d%%</string>
+    <string name="apk_confirm">Confirm the installation in the system dialog…</string>
+    <string name="apk_ok">Installed successfully</string>
+    <string name="apk_cancelled">Installation cancelled</string>
+    <string name="apk_fail_title">Installation failed</string>
+    <string name="apk_fail_unknown">The system couldn\'t install this bundle.</string>
+    <string name="apk_obb_copy">Copying game data… %1$d%%</string>
+    <string name="apk_obb_ok">Installed. Game data copied.</string>
+    <string name="apk_obb_skipped">Installed, but game data (OBB) was not copied. Start Shizuku, then pick the bundle again to copy it.</string>
+    <string name="apk_obb_fail">Installed, but copying game data failed.</string>
+
 </resources>

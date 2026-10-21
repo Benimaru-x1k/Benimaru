@@ -33,7 +33,7 @@ import org.json.JSONObject
 
 object AppTranslator {
 
-    private const val CACHE_VERSION = 1
+    private const val CACHE_VERSION = 2
 
     private class Loaded(
         val lang: String,
@@ -63,7 +63,7 @@ object AppTranslator {
     private val APP_PREFIX_EXCEPTIONS = setOf("tab_apps", "tab_system", "tab_frozen")
 
     private val PROTECTED = Regex(
-        "%(?:\\d+\\$)?[sd]|%%|\\.sh\\b|\\b(?:Benimaru|Shizuku|Telegram|Fstrim|Android|DNS|RAM|CPU|DPI|FPS|AFK|SDK|API|GB|MB|Hz)\\b"
+        "%(?:\\d+\\$)?[sd]|%%|\\.(?:sh|apks|xapk|apkm|apk|obb)\\b|\\b(?:Benimaru|Shizuku|Telegram|Fstrim|Android|DNS|RAM|CPU|DPI|FPS|AFK|SDK|API|GB|MB|Hz|APKS|XAPK|APKM|APK|OBB)\\b"
     )
     private val TOKEN = Regex("\\{\\s*(\\p{Nd}+)\\s*\\}")
 
@@ -81,6 +81,18 @@ object AppTranslator {
         return TranslateLanguage.fromLanguageTag(code)
     }
 
+    private val HANDWRITTEN_PROBES = intArrayOf(R.string.btn_cancel, R.string.btn_save, R.string.btn_apply)
+
+    // True when the current language ships its own values-xx/strings.xml (e.g. Portuguese).
+    // Those human translations must win; machine translation would only make them worse.
+    private fun hasHandwrittenResources(context: Context): Boolean {
+        val app = context.applicationContext
+        val cur = app.resources
+        val cfg = Configuration(cur.configuration).apply { setLocale(Locale.ENGLISH) }
+        val en = app.createConfigurationContext(cfg).resources
+        return HANDWRITTEN_PROBES.any { rawText(cur, it).toString() != en.getText(it).toString() }
+    }
+
     fun languageDisplayName(): String {
         val loc = Locale.getDefault()
         return loc.getDisplayLanguage(loc).replaceFirstChar { it.uppercase(loc) }
@@ -90,8 +102,9 @@ object AppTranslator {
     @Synchronized
     fun init(context: Context) {
         val lang = targetLanguage()
-        if (lang == null) {
+        if (lang == null || hasHandwrittenResources(context)) {
             loaded = null
+            if (lang != null) cacheFile(context.applicationContext, lang).delete()
             return
         }
         if (loaded?.lang == lang) return
@@ -103,6 +116,7 @@ object AppTranslator {
 
     fun needsSetup(context: Context): Boolean {
         val lang = targetLanguage() ?: return false
+        if (hasHandwrittenResources(context)) return false
         return loaded?.lang != lang
     }
 
@@ -112,7 +126,7 @@ object AppTranslator {
     @Synchronized
     fun startSetup(context: Context, onPhase: (Int) -> Unit, onDone: (Boolean) -> Unit) {
         val lang = targetLanguage()
-        if (lang == null) {
+        if (lang == null || hasHandwrittenResources(context)) {
             main.post { onDone(false) }
             return
         }
@@ -213,7 +227,9 @@ object AppTranslator {
         try {
             var i = 0
             val tokenized = PROTECTED.replace(core) { "{${i++}}" }
-            val raw = translator.translate(tokenized).await()
+            val shout = core.length > 2 && core.any { it.isLetter() } && core == core.uppercase(Locale.ROOT)
+            val translatedRaw = translator.translate(if (shout) tokenized.lowercase(Locale.ROOT) else tokenized).await()
+            val raw = if (shout) translatedRaw.uppercase(Locale.getDefault()) else translatedRaw
             val restored = restoreTokens(raw, protectedParts)
             if (restored != null && restored.isNotBlank()) return lead + restored + trail
         } catch (e: CancellationException) {

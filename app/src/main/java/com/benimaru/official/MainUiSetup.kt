@@ -60,7 +60,7 @@ internal fun MainActivity.setupFilterChips() {
     val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
     val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardAutoClick, R.id.cardGameMode, R.id.cardFixGyro)
 
-    val toolsCards = listOf(R.id.cardShellExecute)
+    val toolsCards = listOf(R.id.cardShellExecute, R.id.cardApkInstall)
 
     val allCards = performanceCards + displayCards + networkCards + gamingCards + toolsCards
 

@@ -86,6 +86,13 @@
       "devices": [
         "f4c746247d77d91f"
       ]
+    },
+    {
+      "username": "Derek",
+      "passwordHash": "2cd4377c3f8bee6c767e83fb239dd3e2f059dbdb1cc0752b21b6c0957833ed2a",
+      "devices": [
+        "5c38efd79510cc0b"
+      ]
     }
   ]
 }

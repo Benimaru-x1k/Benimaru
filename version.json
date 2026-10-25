@@ -1,7 +1,7 @@
 {
-  "versionCode": 28,
-  "versionName": "3.8",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.8/BenimaruTool-v3.8.apk",
+  "versionCode": 29,
+  "versionName": "3.9",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v3.9/BenimaruTool-v3.9.apk",
   "mandatory": false,
-  "releaseNotes": "🚀 3.8 Update!\n\n- NEW: Install APKS / XAPK (Free). Install .apks, .xapk and .apkm bundles right from your device, with game data (OBB) copied via Shizuku\n- Better translations: Portuguese now uses the hand-written text, with missing screens added and cleaner labels in other languages"
+  "releaseNotes": "🚀 3.9 Update!\n\n- NEW: Flag Secure (Free). Stops apps from blocking screenshots and screen recording, so you can capture screens that normally come out black."
 }

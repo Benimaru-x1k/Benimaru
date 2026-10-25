@@ -505,4 +505,18 @@
     <string name="apk_obb_skipped">Installed, but game data (OBB) was not copied. Start Shizuku, then pick the bundle again to copy it.</string>
     <string name="apk_obb_fail">Installed, but copying game data failed.</string>
 
+    <!-- Flag Secure -->
+    <string name="title_flag_secure">Flag Secure</string>
+    <string name="desc_flag_secure">Stops apps from blocking screenshots and screen recording, so you can capture screens that normally come out black.</string>
+    <string name="fs_msg">Turns off the system\'s secure-window protection so screenshots and recordings can capture protected screens. Reopen the protected app after turning it on.</string>
+    <string name="fs_status_on">Status: ON. Protected screens can be captured.</string>
+    <string name="fs_status_off">Status: OFF. Apps can still block screenshots.</string>
+    <string name="fs_warn_unsupported">Your system looks like a production build. Android only honours this setting on debuggable builds (userdebug or some custom ROMs), so protected apps may still appear black.</string>
+    <string name="fs_btn_on">Turn on</string>
+    <string name="fs_btn_off">Turn off</string>
+    <string name="fs_toast_on">Flag Secure is on. Reopen the protected app and take your screenshot.</string>
+    <string name="fs_toast_on_unsupported">Saved, but this system may ignore it. Reopen the protected app to test.</string>
+    <string name="fs_toast_off">Flag Secure is off.</string>
+    <string name="fs_toast_failed">Could not change the setting. Check that Shizuku is running.</string>
+
 </resources>

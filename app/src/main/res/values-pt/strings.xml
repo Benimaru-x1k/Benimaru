@@ -494,4 +494,18 @@
     <string name="apk_obb_skipped">Instalado, mas os dados do jogo (OBB) não foram copiados. Inicie o Shizuku e escolha o pacote novamente para copiá-los.</string>
     <string name="apk_obb_fail">Instalado, mas a cópia dos dados do jogo falhou.</string>
 
+    <!-- Flag Secure -->
+    <string name="title_flag_secure">Flag Secure</string>
+    <string name="desc_flag_secure">Impede que apps bloqueiem capturas e gravações de tela, para você capturar telas que normalmente saem pretas.</string>
+    <string name="fs_msg">Desativa a proteção de janelas seguras do sistema para que capturas e gravações possam registrar telas protegidas. Abra o app protegido novamente depois de ativar.</string>
+    <string name="fs_status_on">Status: ATIVADO. Telas protegidas podem ser capturadas.</string>
+    <string name="fs_status_off">Status: DESATIVADO. Os apps ainda podem bloquear capturas.</string>
+    <string name="fs_warn_unsupported">Seu sistema parece ser uma versão de produção. O Android só respeita essa configuração em versões depuráveis (userdebug ou algumas ROMs personalizadas), então apps protegidos ainda podem aparecer pretos.</string>
+    <string name="fs_btn_on">Ativar</string>
+    <string name="fs_btn_off">Desativar</string>
+    <string name="fs_toast_on">Flag Secure ativado. Abra o app protegido novamente e faça a captura.</string>
+    <string name="fs_toast_on_unsupported">Salvo, mas o sistema pode ignorar. Abra o app protegido novamente para testar.</string>
+    <string name="fs_toast_off">Flag Secure desativado.</string>
+    <string name="fs_toast_failed">Não foi possível alterar a configuração. Verifique se o Shizuku está em execução.</string>
+
 </resources>

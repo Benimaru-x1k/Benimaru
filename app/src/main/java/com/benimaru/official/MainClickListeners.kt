@@ -56,6 +56,7 @@ private fun MainActivity.bindStatusReset(buttonId: Int, statusId: Int) {
 
 private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardApkInstall).setOnClickListener { showApkInstallSheet() }
+    findViewById<CardView>(R.id.cardFlagSecure).setOnClickListener { showFlagSecureSheet() }
 
     findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
         if (prefs.getBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, false)) {

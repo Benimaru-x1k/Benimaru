@@ -62,6 +62,7 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 | 🧹 **System Optimization** | Clears background processes and aggressively reallocates resources to your active applications. |
 | 🔕 **Gaming Focus Mode** | Blocks intrusive heads-up notification banners from ruining your matches. |
 | 🏦 **Hide Developer Options** | Instantly toggles off Developer Options so banking apps and anti-cheat games run without triggering security warnings. |
+| 📸 **Flag Secure** | Stops apps from blocking screenshots and screen recording, so you can capture screens that normally come out black. Works on debuggable ROMs (userdebug and many custom ROMs). |
 
 
 ### ⚙️ App Experience
@@ -151,7 +152,10 @@ Benimaru Tool ships **one English source** and translates itself to your device 
 >
 > **Shell Execute** runs scripts with Shizuku shell privileges and can change system settings. Only run scripts you trust and understand.
 >
+> **Flag Secure** depends on your ROM. Android only honours it on debuggable builds, so on stock production ROMs protected apps may still appear black. Don't use it to capture content you aren't allowed to copy.
+> 
 > **Auto Click & Auto Swipe** automates screen input. Some games detect automated input and may penalize or ban accounts, so use it only where the game's rules allow it.
+> 
 
 ---
 

@@ -93,6 +93,13 @@
       "devices": [
         "5c38efd79510cc0b"
       ]
+    },
+    {
+      "username": "kentt.wav",
+      "passwordHash": "a799324cc12601dc07e1f9f334fc5baa316d1b027476af4ef892184349af0fc5",
+      "devices": [
+        "e013be7529d6baf2"
+      ]
     }
   ]
 }

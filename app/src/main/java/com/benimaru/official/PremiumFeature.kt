@@ -126,7 +126,6 @@ private class PremiumModeTabs(
     val buyTab: MaterialButton
 )
 
-/** The "Login | Get Premium" segmented toggle at the top of the premium dialog. */
 private fun MainActivity.createPremiumModeTabs(): PremiumModeTabs {
     val toggle = com.google.android.material.button.MaterialButtonToggleGroup(this).apply {
         isSingleSelection = true
@@ -149,7 +148,6 @@ private fun MainActivity.createPremiumModeTabs(): PremiumModeTabs {
     return PremiumModeTabs(toggle, loginTab, buyTab)
 }
 
-/** Returns the error message to show for the credentials, or null when they are acceptable. */
 private fun MainActivity.premiumFieldError(user: String, pass: String, forPurchase: Boolean): String? {
     if (user.isEmpty() || pass.isEmpty()) return getString(R.string.err_enter_user_pass)
     if (forPurchase) {
@@ -159,7 +157,7 @@ private fun MainActivity.premiumFieldError(user: String, pass: String, forPurcha
     return null
 }
 
-private fun MainActivity.copyAccountAndOpenTelegram(user: String, pass: String, deviceId: String, btn: android.widget.Button) {
+private fun MainActivity.copyAccountDetails(user: String, pass: String, deviceId: String, btn: android.widget.Button) {
     lifecycleScope.launch {
         val hash = withContext(Dispatchers.Default) { PremiumRepository.hashPassword(user, pass) }
         btn.isEnabled = true
@@ -170,8 +168,15 @@ private fun MainActivity.copyAccountAndOpenTelegram(user: String, pass: String, 
                 "Username: $user\nDevice ID: $deviceId\nPassword hash: $hash"
             )
         )
-        Toasty.info(this@copyAccountAndOpenTelegram, getString(R.string.toast_account_copied), Toast.LENGTH_LONG, true).show()
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppConfig.TELEGRAM_URL)))
+        Toasty.info(this@copyAccountDetails, getString(R.string.toast_account_copied), Toast.LENGTH_LONG, true).show()
+    }
+}
+
+private fun MainActivity.openExternalLink(url: String) {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (_: android.content.ActivityNotFoundException) {
+        Toasty.error(this, getString(R.string.toast_cannot_open_link), Toast.LENGTH_SHORT, true).show()
     }
 }
 
@@ -269,10 +274,16 @@ internal fun MainActivity.showRemoveAdsDialog() {
         }
     }
 
-    sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.PRIMARY, dismiss = false) { btn ->
+    sheet.button(getString(R.string.btn_copy_details), SheetStyle.TONAL, dismiss = false) { btn ->
         val (user, pass) = readFields(true) ?: return@button
         btn.isEnabled = false
-        copyAccountAndOpenTelegram(user, pass, deviceId, btn)
+        copyAccountDetails(user, pass, deviceId, btn)
+    }
+    sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.PRIMARY, dismiss = false) {
+        openExternalLink(AppConfig.TELEGRAM_URL)
+    }
+    sheet.button(getString(R.string.btn_buy_paypal), SheetStyle.PRIMARY, dismiss = false) {
+        openExternalLink(AppConfig.PAYPAL_URL)
     }
     sheet.button(getString(R.string.btn_close), SheetStyle.TEXT)
     sheet.show()
@@ -284,7 +295,7 @@ internal fun MainActivity.showRemoveAdsDialog() {
             getString(R.string.txt_login_hint)
         benefits.visibility = if (buyMode) View.VISIBLE else View.GONE
         sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
-        sheet.buttonViews[1].visibility = if (buyMode) View.VISIBLE else View.GONE
+        for (i in 1..3) sheet.buttonViews[i].visibility = if (buyMode) View.VISIBLE else View.GONE
         showError(null)
     }
     toggle.addOnButtonCheckedListener { _, checkedId, isChecked ->

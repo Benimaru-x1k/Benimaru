@@ -63,7 +63,7 @@ object AppTranslator {
     private val APP_PREFIX_EXCEPTIONS = setOf("tab_apps", "tab_system", "tab_frozen")
 
     private val PROTECTED = Regex(
-        "%(?:\\d+\\$)?[sd]|%%|\\.(?:sh|apks|xapk|apkm|apk|obb)\\b|\\b(?:Benimaru|Shizuku|Telegram|Fstrim|Android|DNS|RAM|CPU|DPI|FPS|AFK|SDK|API|GB|MB|Hz|APKS|XAPK|APKM|APK|OBB)\\b"
+        "%(?:\\d+\\$)?[sd]|%%|\\.(?:sh|apks|xapk|apkm|apk|obb)\\b|\\b(?:Benimaru|Shizuku|Telegram|Fstrim|Android|DNS|RAM|CPU|DPI|FPS|AFK|SDK|API|GB|MB|Hz|APKS|XAPK|APKM|APK|OBB|ANGLE|GPU|PNG|JPG|WebP|ASTC|ETC|PAK)\\b"
     )
     private val TOKEN = Regex("\\{\\s*(\\p{Nd}+)\\s*\\}")
 
@@ -83,8 +83,6 @@ object AppTranslator {
 
     private val HANDWRITTEN_PROBES = intArrayOf(R.string.btn_cancel, R.string.btn_save, R.string.btn_apply)
 
-    // True when the current language ships its own values-xx/strings.xml (e.g. Portuguese).
-    // Those human translations must win; machine translation would only make them worse.
     private fun hasHandwrittenResources(context: Context): Boolean {
         val app = context.applicationContext
         val cur = app.resources

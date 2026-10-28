@@ -58,9 +58,9 @@ internal fun MainActivity.setupFilterChips() {
     val performanceCards = listOf(R.id.cardFixedPerformance, R.id.cardOptimizeSystem, R.id.cardThermalThrottling, R.id.cardFstrim, R.id.cardDisableDevOptions, R.id.cardRamBooster, R.id.cardClearCache, R.id.cardFreezeApps)
     val displayCards = listOf(R.id.cardAdjustRefreshRate, R.id.cardFastAnimations, R.id.cardDisableBlurs, R.id.cardChangeResolution)
     val networkCards = listOf(R.id.cardImproveNetwork, R.id.cardCustomDns)
-    val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardAutoClick, R.id.cardGameMode, R.id.cardFixGyro)
+    val gamingCards = listOf(R.id.cardImproveTouch, R.id.cardGamingDnd, R.id.cardCrosshair, R.id.cardRealtimeMonitor, R.id.cardAutoClick, R.id.cardGameMode, R.id.cardFixGyro, R.id.cardShaderOptimization)
 
-    val toolsCards = listOf(R.id.cardShellExecute, R.id.cardApkInstall, R.id.cardFlagSecure)
+    val toolsCards = listOf(R.id.cardShellExecute, R.id.cardApkInstall, R.id.cardFlagSecure, R.id.cardTextureCompression)
 
     val allCards = performanceCards + displayCards + networkCards + gamingCards + toolsCards
 
@@ -91,14 +91,13 @@ internal fun MainActivity.setupStatusStyling() {
         R.id.tvStatusDevOptions, R.id.tvStatusResolution, R.id.tvStatusDns, R.id.tvStatusCrosshair,
         R.id.tvStatusMonitor, R.id.tvStatusGameMode, R.id.tvStatusThermal, R.id.tvStatusFstrim,
         R.id.tvStatusRamBooster, R.id.tvStatusCache, R.id.tvStatusFreeze, R.id.tvStatusAutoClick,
-            R.id.tvStatusGyro
+            R.id.tvStatusGyro, R.id.tvStatusShader, R.id.tvStatusTexture
     )
     val states = HashMap<Int, TweakState>()
     val green = Color.parseColor("#2E9E5B")
     val amber = Color.parseColor("#E09B00")
 
     fun stateOf(id: Int, text: String): TweakState {
-        // Compare against the English source so this works in every language.
         fun en(res: Int) = AppTranslator.english(this, res)
         val t = AppTranslator.toEnglish(text).removePrefix("Status:").trim()
         return when {

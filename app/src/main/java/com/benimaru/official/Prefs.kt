@@ -16,6 +16,7 @@ object Prefs {
     const val KEY_FP_PREV_ADAPTIVE_BATTERY = "FPPrevAdaptiveBattery"
     const val KEY_THERMAL_DISABLED = "ThermalDisabled"
     const val KEY_LAST_GAME_MODE = "LastGameMode"
+    const val KEY_SHADER_PKGS = "ShaderDriverPkgs"
     const val KEY_FROZEN_APPS = "FrozenApps"
 
     const val KEY_CROSSHAIR_ENABLED = "CrosshairEnabled"

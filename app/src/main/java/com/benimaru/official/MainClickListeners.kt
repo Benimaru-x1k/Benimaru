@@ -31,7 +31,6 @@ private fun MainActivity.runTweakOnce(
     successMessageRes: Int,
     onSuccess: () -> Unit = { fetchSystemStatuses() }
 ) {
-    // Status text may be translated; compare against its English source.
     val status = AppTranslator.toEnglish(findViewById<TextView>(statusId).text.toString())
     if (status.contains(doneMarker())) {
         Toasty.info(this, getString(alreadyToastRes), Toast.LENGTH_SHORT, true).show()
@@ -149,6 +148,12 @@ private fun MainActivity.setupPremiumCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardShellExecute).setOnClickListener {
         handlePremiumFeature { showShellExecuteSheet() }
     }
+    findViewById<CardView>(R.id.cardShaderOptimization).setOnClickListener {
+        handlePremiumFeature { showShaderOptimizationSheet() }
+    }
+    findViewById<CardView>(R.id.cardTextureCompression).setOnClickListener {
+        handlePremiumFeature { showTextureSheet() }
+    }
     findViewById<CardView>(R.id.cardRamBooster).setOnClickListener {
         handlePremiumFeature { showRamBoosterSheet() }
     }
@@ -203,6 +208,8 @@ private fun MainActivity.setupOverlayResetListeners() {
 
 private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
     findViewById<TextView>(R.id.btnResetFreeze).setOnClickListener { restoreAllFrozen() }
+    findViewById<TextView>(R.id.btnResetShader).setOnClickListener { resetShaderOptimizations() }
+    findViewById<TextView>(R.id.btnResetTexture).setOnClickListener { confirmRestoreAllTextures() }
 
     findViewById<TextView>(R.id.btnResetFixedPerf).setOnClickListener {
         runAdbCommand(fixedPerfResetCmd(prefs), getString(R.string.fp_reset_done)) {
@@ -342,6 +349,7 @@ internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPrefere
             findViewById<TextView>(R.id.tvStatusGyro).text = getString(R.string.status_ready)
             findViewById<TextView>(R.id.tvStatusShell)?.text = getString(R.string.status_ready)
 
+            resetShaderOptimizations(silent = true)
             fetchSystemStatuses()
             onDone?.invoke()
         }

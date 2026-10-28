@@ -100,6 +100,13 @@
       "devices": [
         "e013be7529d6baf2"
       ]
+    },
+    {
+      "username": "jah",
+      "passwordHash": "5cd8f525359ad967f77933e597570336ddd8fa83c4e12968c2b8fc58c175705a",
+      "devices": [
+        "4f947a384a10def5"
+      ]
     }
   ]
 }

@@ -36,6 +36,7 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 | 🎮 **Game Launcher & Optimizer** | Automatically detects installed games to launch instantly or **pre-compile their DEX code (Speed Profile)** to eliminate in-game stutters. |
 | 🎯 **FPS Crosshair Overlay** | Enable a customizable, center-screen crosshair to improve accuracy in mobile shooters. |
 | 👆 **Auto Click & Auto Swipe** | A draggable floating ▶/■ button that repeats taps or swipes at your chosen interval. Choose Auto click, Auto swipe, or Tap + swipe, and set the interval, tap position and swipe length. No Accessibility permission needed. |
+| ✨ **Shader Optimization** ⭐ | Pick a game and **pre-compile it** to cut stutter and loading hitches, then choose its **GPU driver** (native, ANGLE or system default) where your device supports it. Needs Android 10+ for driver selection. |
 
 ### 📺 Display & Visuals
 
@@ -63,6 +64,7 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 | 🔕 **Gaming Focus Mode** | Blocks intrusive heads-up notification banners from ruining your matches. |
 | 🏦 **Hide Developer Options** | Instantly toggles off Developer Options so banking apps and anti-cheat games run without triggering security warnings. |
 | 📸 **Flag Secure** | Stops apps from blocking screenshots and screen recording, so you can capture screens that normally come out black. Works on debuggable ROMs (userdebug and many custom ROMs). |
+| 🖼️ **Texture Compression and Resizing** ⭐ | Shrinks a game's loose texture images (PNG, JPG, WebP) by recompressing or resizing them to 75% or 50%, saving storage and memory. Originals are **backed up first** and can be restored anytime. Packed formats (bundles, OBB, PAK, ASTC/ETC) are left untouched. |
 
 
 ### ⚙️ App Experience

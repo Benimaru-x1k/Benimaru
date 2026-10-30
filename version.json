@@ -4,6 +4,6 @@
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.1/BenimaruTool-v4.1.apk",
   "mandatory": true,
   "premiumAvailable": false,
-  "premiumMessage": "Premium subscriptions are temporarily paused because I currently undergoing military enlistment training.\nNormal operations will resume as soon as I returns.",
+  "premiumMessage": "Premium subscriptions are temporarily paused because I currently undergoing military enlistment training.\n\nNormal operations will resume as soon as I returns.",
   "releaseNotes": "🛠️ 4.1 Update!\n\n- Many fixes across Crosshair, Auto Click, Shell Execute, Game Mode, Freeze Apps, Resolution and Texture Compression.\n- Reset All is safer and restores your previous touch and animation settings.\n- The app no longer closes when Shizuku isn't running.\n- Fixed a false \"unofficial app\" warning on some networks.\n- Premium: login works right after activation."
 }

@@ -66,10 +66,21 @@ internal fun MainActivity.launchShizukuApp() {
     val intent = packageManager.getLaunchIntentForPackage(AppConfig.SHIZUKU_PACKAGE)
     if (intent != null) {
         startActivity(intent)
-        finishAffinity()
     } else {
         Toasty.error(this, getString(R.string.toast_shizuku_launch_fail), Toast.LENGTH_SHORT, true).show()
-        finishAffinity()
+    }
+}
+
+internal fun MainActivity.refreshShizukuSilently() {
+    if (!isShizukuInstalled()) return
+    val ok = try {
+        Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+    } catch (e: Exception) {
+        false
+    }
+    if (ok != shizukuConnected) {
+        updateShizukuBannerUI(ok)
+        if (ok) fetchSystemStatuses()
     }
 }
 
@@ -146,6 +157,7 @@ internal fun MainActivity.downloadShizukuApk() {
 }
 
 internal fun MainActivity.updateShizukuBannerUI(isConnected: Boolean) {
+    shizukuConnected = isConnected
     val cardShizuku = findViewById<MaterialCardView>(R.id.cardShizukuStatus)
     val tvShizuku = findViewById<TextView>(R.id.tvShizukuStatus)
 

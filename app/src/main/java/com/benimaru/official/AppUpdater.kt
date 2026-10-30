@@ -1,5 +1,6 @@
 package com.benimaru.official
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -23,17 +24,60 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
-internal fun MainActivity.checkForUpdates() {
+
+internal fun MainActivity.savePremiumSalesFlag(json: JSONObject) {
+    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).edit()
+        .putBoolean(Prefs.KEY_PREMIUM_SALES_OPEN, json.optBoolean("premiumAvailable", true))
+        .putString(Prefs.KEY_PREMIUM_SALES_MSG, json.optString("premiumMessage", "").trim())
+        .apply()
+}
+
+internal fun MainActivity.premiumSalesOpen(): Boolean =
+    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getBoolean(Prefs.KEY_PREMIUM_SALES_OPEN, true)
+
+internal fun MainActivity.premiumSalesMessage(): String =
+    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getString(Prefs.KEY_PREMIUM_SALES_MSG, "").orEmpty()
+        .ifEmpty { getString(R.string.premium_closed_default) }
+
+
+internal fun MainActivity.refreshPremiumSalesFlag() {
+    val now = System.currentTimeMillis()
+    if (now - lastSalesFlagCheckAt < 10 * 60 * 1000L) return
+    lastSalesFlagCheckAt = now
     lifecycleScope.launch(Dispatchers.IO) {
         try {
-            val url = URL(AppConfig.VERSION_URL)
+            val conn = URL("${AppConfig.VERSION_URL}?t=${System.currentTimeMillis()}").openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 5000
+            conn.useCaches = false
+            if (conn.responseCode == 200) {
+                val text = conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
+                savePremiumSalesFlag(JSONObject(text))
+            } else {
+                conn.disconnect()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("BenimaruTool", "Failed to refresh premium sales flag", e)
+        }
+    }
+}
+
+internal fun MainActivity.checkForUpdates() {
+    lastSalesFlagCheckAt = System.currentTimeMillis()
+    lifecycleScope.launch(Dispatchers.IO) {
+        try {
+            val url = URL("${AppConfig.VERSION_URL}?t=${System.currentTimeMillis()}")
             val conn = url.openConnection() as HttpURLConnection
             conn.connectTimeout = 5000
             conn.readTimeout = 5000
+            conn.useCaches = false
 
             if (conn.responseCode == 200) {
                 val jsonString = conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
                 val jsonObject = JSONObject(jsonString)
+                savePremiumSalesFlag(jsonObject)
 
                 val latestVersionCode = jsonObject.getInt("versionCode")
                 val latestVersionName = jsonObject.getString("versionName")
@@ -75,12 +119,16 @@ internal fun MainActivity.showUpdateDialog(versionName: String, releaseNotes: St
         .content(infoCard(this, getString(R.string.update_whats_new, notes)))
         .cancelable(!mandatory)
     if (!mandatory) sheet.button(getString(R.string.btn_later), SheetStyle.TONAL)
-    sheet.button(getString(R.string.btn_update_now), SheetStyle.PRIMARY) { downloadAppUpdate(apkUrl) }
+    sheet.button(getString(R.string.btn_update_now), SheetStyle.PRIMARY) {
+        downloadAppUpdate(apkUrl) {
+            if (mandatory) showUpdateDialog(versionName, releaseNotes, apkUrl, true)
+        }
+    }
     sheet.show()
 }
 
-internal fun MainActivity.downloadAppUpdate(downloadUrl: String) {
-    downloadAndInstall(getString(R.string.dl_updating), downloadUrl, "BenimaruTool-update.apk", finishAfterInstall = false)
+internal fun MainActivity.downloadAppUpdate(downloadUrl: String, onFail: () -> Unit = {}) {
+    downloadAndInstall(getString(R.string.dl_updating), downloadUrl, "BenimaruTool-update.apk", finishAfterInstall = false, onFail = onFail)
 }
 
 internal fun MainActivity.formatMb(bytes: Long): String = String.format("%.1f MB", bytes / (1024.0 * 1024.0))
@@ -127,7 +175,9 @@ private suspend fun CoroutineScope.streamToPartFile(
     return downloaded to total
 }
 
-internal fun MainActivity.downloadAndInstall(title: String, url: String, fileName: String, finishAfterInstall: Boolean) {
+internal fun MainActivity.downloadAndInstall(
+    title: String, url: String, fileName: String, finishAfterInstall: Boolean, onFail: () -> Unit = {}
+) {
     val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
     if (dir == null) {
         Toasty.error(this, getString(R.string.toast_storage_na), Toast.LENGTH_SHORT, true).show()
@@ -175,6 +225,7 @@ internal fun MainActivity.downloadAndInstall(title: String, url: String, fileNam
             withContext(NonCancellable + Dispatchers.Main) {
                 progress.dismiss()
                 if (finishAfterInstall) showShizukuRequiredDialog()
+                onFail()
             }
             throw e
         } catch (e: Exception) {
@@ -183,6 +234,7 @@ internal fun MainActivity.downloadAndInstall(title: String, url: String, fileNam
                 progress.dismiss()
                 Toasty.error(this@downloadAndInstall, getString(R.string.toast_dl_failed, e.message ?: ""), Toast.LENGTH_LONG, true).show()
                 if (finishAfterInstall) showShizukuRequiredDialog()
+                onFail()
             }
         } finally {
             conn?.disconnect()
@@ -197,7 +249,7 @@ internal fun MainActivity.installApk(file: File, finishAfter: Boolean = true) {
             .icon(R.drawable.ic_lock)
             .title(getString(R.string.dlg_allow_installs))
             .message(getString(R.string.dlg_allow_installs_msg))
-            .button(getString(R.string.btn_not_now), SheetStyle.TONAL)
+            .button(getString(R.string.btn_not_now), SheetStyle.TONAL) { pendingApk = null }
             .button(getString(R.string.btn_open_settings), SheetStyle.PRIMARY) {
                 startActivity(
                     Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))

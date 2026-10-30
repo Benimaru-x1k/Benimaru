@@ -16,28 +16,48 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import com.unity3d.services.banners.BannerView
 import es.dmoral.toasty.Toasty
 import java.io.File
 import rikka.shizuku.Shizuku
+
+internal const val PICKER_SHELL = "shell"
+internal const val PICKER_APK = "apk"
 
 class MainActivity : AppCompatActivity() {
 
 
     internal val SHIZUKU_REQUEST_CODE = 100
     internal var pendingApk: File? = null
+    internal var shizukuConnected = false
+
+    @Volatile internal var rewardedReady = false
+    internal var bannerView: BannerView? = null
 
     internal var isCrosshairEnabled = false
     internal var isMonitorEnabled = false
     internal var isAutoClickEnabled = false
+    internal var overlayGraceUntil = 0L
 
     internal var lastPremiumRecheckAt = 0L
+    internal var lastSalesFlagCheckAt = 0L
     internal var isRecheckingPremium = false
 
     internal var onScriptPicked: ((Uri?) -> Unit)? = null
+    internal var pickerKind: String? = null
     internal val scriptPicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         val cb = onScriptPicked
+        val kind = pickerKind
         onScriptPicked = null
-        cb?.invoke(uri)
+        pickerKind = null
+        if (cb != null) {
+            cb.invoke(uri)
+        } else if (uri != null) {
+            when (kind) {
+                PICKER_SHELL -> showShellExecuteSheet(uri)
+                PICKER_APK -> showApkInstallSheet(uri)
+            }
+        }
     }
 
     internal var lastInterstitialAt = 0L
@@ -61,6 +81,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pickerKind = savedInstanceState?.getString("pickerKind")
         AppTranslator.init(applicationContext)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -84,7 +105,13 @@ class MainActivity : AppCompatActivity() {
         setupBottomBarScrollBehavior()
         setupStatusStyling()
         refreshFreezeStatus()
+        refreshOverlayStatuses()
         setupLanguageIfNeeded()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("pickerKind", pickerKind)
     }
 
     override fun onResume() {
@@ -93,6 +120,9 @@ class MainActivity : AppCompatActivity() {
         updatePremiumButtonUI()
         recheckPremiumIfNeeded()
         refreshFreezeStatus()
+        refreshShizukuSilently()
+        refreshOverlayStatuses()
+        refreshPremiumSalesFlag()
 
         val apk = pendingApk
         if (apk != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && packageManager.canRequestPackageInstalls()) {
@@ -103,6 +133,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        bannerView?.destroy()
+        bannerView = null
         Shizuku.removeRequestPermissionResultListener(permissionListener)
     }
 

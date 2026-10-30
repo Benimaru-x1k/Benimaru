@@ -30,6 +30,9 @@ import com.google.android.material.button.MaterialButton
 import es.dmoral.toasty.Toasty
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
@@ -68,28 +71,34 @@ private sealed class ScriptRead {
 }
 
 
-internal fun MainActivity.showShellExecuteSheet() {
+internal fun MainActivity.showShellExecuteSheet(initialUri: Uri? = null) {
     var script: PickedScript? = null
     var sheetRef: Sheet? = null
     val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
 
     var pick: () -> Unit = {}
-    pick = {
-        onScriptPicked = { uri ->
-            if (uri != null) {
-                when (val r = readScript(uri)) {
-                    is ScriptRead.Ok -> {
-                        script = r.script
-                        sheetRef?.buttonViews?.firstOrNull()?.isEnabled = true
-                        renderScriptPicker(box, r.script, pick)
-                    }
-                    ScriptRead.Unreadable -> toastErr(R.string.shell_err_read)
-                    ScriptRead.Binary -> toastErr(R.string.shell_err_binary)
-                    ScriptRead.TooLarge -> toastErr(R.string.shell_err_large)
-                    ScriptRead.Empty -> toastErr(R.string.shell_err_empty)
+
+    fun handleUri(uri: Uri) {
+        lifecycleScope.launch {
+            val r = withContext(Dispatchers.IO) { readScript(uri) }
+            if (isFinishing || isDestroyed) return@launch
+            when (r) {
+                is ScriptRead.Ok -> {
+                    script = r.script
+                    sheetRef?.buttonViews?.firstOrNull()?.isEnabled = true
+                    renderScriptPicker(box, r.script, pick)
                 }
+                ScriptRead.Unreadable -> toastErr(R.string.shell_err_read)
+                ScriptRead.Binary -> toastErr(R.string.shell_err_binary)
+                ScriptRead.TooLarge -> toastErr(R.string.shell_err_large)
+                ScriptRead.Empty -> toastErr(R.string.shell_err_empty)
             }
         }
+    }
+
+    pick = {
+        onScriptPicked = { uri -> if (uri != null) handleUri(uri) }
+        pickerKind = PICKER_SHELL
         scriptPicker.launch(arrayOf("*/*"))
     }
     renderScriptPicker(box, null, pick)
@@ -105,6 +114,7 @@ internal fun MainActivity.showShellExecuteSheet() {
         .button(getString(R.string.btn_close), SheetStyle.TONAL)
         .show()
     sheetRef?.buttonViews?.firstOrNull()?.isEnabled = false
+    initialUri?.let { handleUri(it) }
 }
 
 private fun MainActivity.toastErr(res: Int) {
@@ -235,6 +245,12 @@ private fun readLimited(input: InputStream): ByteArray {
 }
 
 
+private fun killScriptTree(remote: String) {
+    val cmd = "kill_tree() { for c in \$(pgrep -P \$1 2>/dev/null); do kill_tree \$c; done; kill -9 \$1 2>/dev/null; }; " +
+        "pid=\$(cat $remote.pid 2>/dev/null); [ -n \"\$pid\" ] && kill_tree \$pid; true"
+    runCatching { Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null).waitFor() }
+}
+
 private fun MainActivity.showShellWarning(script: PickedScript) {
     val prefs = getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE)
     Sheet(this)
@@ -314,6 +330,7 @@ internal fun MainActivity.runShellScript(script: PickedScript) {
         .button(getString(R.string.shell_btn_stop), SheetStyle.DANGER, dismiss = false)
         .button(getString(R.string.shell_btn_copy), SheetStyle.TONAL, dismiss = false)
         .show()
+    if (!sheet.isShowing()) return
     sheet.dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     val primaryBtn: MaterialButton = sheet.buttonViews[0]
     val copyBtn: MaterialButton = sheet.buttonViews[1]
@@ -354,26 +371,33 @@ internal fun MainActivity.runShellScript(script: PickedScript) {
         if (nearBottom) scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
     }
 
-    var process: Process? = null
-    var stopped = false
+    val processRef = AtomicReference<Process?>(null)
+    val stoppedFlag = AtomicBoolean(false)
     val startedAt = SystemClock.elapsedRealtime()
+    val remote = "/data/local/tmp/benimaru_exec_${System.currentTimeMillis()}.sh"
 
     emit("$ sh ${script.name}\n")
 
-    lifecycle.addObserver(object : DefaultLifecycleObserver {
-        override fun onDestroy(owner: LifecycleOwner) {
-            stopped = true
-            runCatching { process?.destroy() }
+    fun stopRemote() {
+        stoppedFlag.set(true)
+        val p = processRef.get()
+        thread(name = "shell-stop") {
+            killScriptTree(remote)
+            runCatching { p?.destroy() }
         }
-    })
-
-    primaryBtn.setOnClickListener {
-        stopped = true
-        primaryBtn.isEnabled = false
-        runCatching { process?.destroy() }
     }
 
-    val remote = "/data/local/tmp/benimaru_exec_${System.currentTimeMillis()}.sh"
+    val destroyObserver = object : DefaultLifecycleObserver {
+        override fun onDestroy(owner: LifecycleOwner) {
+            stopRemote()
+        }
+    }
+    lifecycle.addObserver(destroyObserver)
+
+    primaryBtn.setOnClickListener {
+        primaryBtn.isEnabled = false
+        stopRemote()
+    }
 
     val ticker = lifecycleScope.launch {
         while (isActive) {
@@ -402,28 +426,36 @@ internal fun MainActivity.runShellScript(script: PickedScript) {
                 exit = -2
             } else {
                 staged = true
-                val p = Shizuku.newProcess(
-                    arrayOf("sh", "-c", "cd /data/local/tmp && exec sh $remote 2>&1"), null, null
-                )
-                process = p
-                runCatching { p.outputStream.close() }
-                p.inputStream.reader(Charsets.UTF_8).use { r ->
-                    val buf = CharArray(4096)
-                    while (true) {
-                        val n = r.read(buf)
-                        if (n < 0) break
-                        emit(String(buf, 0, n))
+                if (stoppedFlag.get()) {
+                    exit = -3
+                } else {
+                    val p = Shizuku.newProcess(
+                        arrayOf("sh", "-c", "cd /data/local/tmp && echo \$\$ > $remote.pid && exec sh $remote 2>&1"), null, null
+                    )
+                    processRef.set(p)
+                    runCatching { p.outputStream.close() }
+                    if (stoppedFlag.get()) {
+                        killScriptTree(remote)
+                        runCatching { p.destroy() }
                     }
+                    p.inputStream.reader(Charsets.UTF_8).use { r ->
+                        val buf = CharArray(4096)
+                        while (true) {
+                            val n = r.read(buf)
+                            if (n < 0) break
+                            emit(String(buf, 0, n))
+                        }
+                    }
+                    exit = p.waitFor()
                 }
-                exit = p.waitFor()
             }
         } catch (e: Exception) {
-            if (!stopped) emit("\n[error] ${e.message ?: e.javaClass.simpleName}\n")
+            if (!stoppedFlag.get()) emit("\n[error] ${e.message ?: e.javaClass.simpleName}\n")
         } finally {
             withContext(NonCancellable) {
                 if (staged || exit != -2) {
                     runCatching {
-                        Shizuku.newProcess(arrayOf("sh", "-c", "rm -f $remote"), null, null).waitFor()
+                        Shizuku.newProcess(arrayOf("sh", "-c", "rm -f $remote $remote.pid"), null, null).waitFor()
                     }
                 }
             }
@@ -431,7 +463,9 @@ internal fun MainActivity.runShellScript(script: PickedScript) {
 
         withContext(Dispatchers.Main) {
             ticker.cancel()
+            lifecycle.removeObserver(destroyObserver)
             if (isFinishing || isDestroyed) return@withContext
+            val stopped = stoppedFlag.get()
 
             synchronized(lock) {
                 if (buffer.isEmpty() || buffer.toString() == "$ sh ${script.name}\n") {

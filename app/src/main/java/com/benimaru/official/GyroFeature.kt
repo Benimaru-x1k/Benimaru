@@ -29,22 +29,26 @@ internal fun MainActivity.fixGyroDelay() {
     progress.show(indeterminate = true)
 
     lifecycleScope.launch {
-        val before = measureGyroRateHz()
-        if (before == null) {
+        try {
+            val before = measureGyroRateHz()
+            if (before == null) {
+                progress.dismiss()
+                Toasty.error(this@fixGyroDelay, getString(R.string.gyro_not_found), Toast.LENGTH_LONG, true).show()
+                return@launch
+            }
+
+            withContext(Dispatchers.IO) {
+                runShell("dumpsys sensorservice enable")
+                runShell("settings put global low_power 0")
+            }
+
+            val after = measureGyroRateHz() ?: before
             progress.dismiss()
-            Toasty.error(this@fixGyroDelay, getString(R.string.gyro_not_found), Toast.LENGTH_LONG, true).show()
-            return@launch
+            findViewById<TextView>(R.id.tvStatusGyro).text = getString(R.string.status_gyro, after)
+            showGyroResult(before, after)
+        } finally {
+            progress.dismiss()
         }
-
-        withContext(Dispatchers.IO) {
-            runShell("dumpsys sensorservice enable")
-            runShell("settings put global low_power 0")
-        }
-
-        val after = measureGyroRateHz() ?: before
-        progress.dismiss()
-        findViewById<TextView>(R.id.tvStatusGyro).text = getString(R.string.status_gyro, after)
-        showGyroResult(before, after)
     }
 }
 

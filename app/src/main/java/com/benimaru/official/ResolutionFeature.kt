@@ -1,5 +1,6 @@
 package com.benimaru.official
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -7,8 +8,11 @@ import android.provider.Settings
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.DisplayMetrics
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
@@ -59,11 +63,22 @@ internal fun MainActivity.launchFloatingResolution() {
     }
 }
 
+@Suppress("DEPRECATION")
+internal fun Context.naturalDisplaySize(): Pair<Int, Int> {
+    val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = wm.defaultDisplay
+    val dm = DisplayMetrics()
+    display.getRealMetrics(dm)
+    val rotated = display.rotation == Surface.ROTATION_90 || display.rotation == Surface.ROTATION_270
+    return if (rotated) Pair(dm.heightPixels, dm.widthPixels) else Pair(dm.widthPixels, dm.heightPixels)
+}
+
 internal fun MainActivity.showResolutionDialog() {
     val metrics = resources.displayMetrics
     val currentDpi = metrics.densityDpi
-    val currentWidth = metrics.widthPixels.toFloat()
-    val currentHeight = metrics.heightPixels.toFloat()
+    val (naturalW, naturalH) = naturalDisplaySize()
+    val currentWidth = naturalW.toFloat()
+    val currentHeight = naturalH.toFloat()
     val aspectRatio = currentHeight / currentWidth
 
     val autoMatchSwitch = MaterialSwitch(this).apply {

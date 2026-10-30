@@ -91,6 +91,18 @@ internal fun MainActivity.scanInstalledApps(): List<AppEntry> {
         result += AppEntry(pkg, label, (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0, frozen)
         seen += pkg
     }
+    val missing = saved.filter { it !in seen }
+    if (missing.isNotEmpty()) {
+        val listing = runShell("pm list packages")
+        if (listing.code == 0 && listing.out.contains("package:")) {
+            val present = listing.out.lineSequence().map { it.trim().removePrefix("package:") }.toSet()
+            val gone = missing.filter { it !in present }
+            if (gone.isNotEmpty()) {
+                saved.removeAll(gone.toSet())
+                saveFrozen(saved)
+            }
+        }
+    }
     for (p in saved) if (p !in seen && !isBlockedPackage(p, block)) {
         result += AppEntry(p, p, false, true)
     }
@@ -333,6 +345,10 @@ internal fun MainActivity.applyFreezeChange(pkgs: List<String>, freeze: Boolean)
             if (r.code == 0 && !low.contains("exception") && !low.contains("error") && !low.contains("failed")) {
                 ok++
                 if (freeze) saved.add(p) else saved.remove(p)
+                saveFrozen(saved)
+            } else if (!freeze && (low.contains("unknown package") || low.contains("no such package"))) {
+                saved.remove(p)
+                saveFrozen(saved)
             } else failed += p
         }
         saveFrozen(saved)

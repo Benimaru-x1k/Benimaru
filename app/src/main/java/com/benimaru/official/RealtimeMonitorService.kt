@@ -23,11 +23,16 @@ import android.view.WindowManager
 import android.widget.ProgressBar
 import android.widget.TextView
 import kotlinx.coroutines.*
+import java.io.File
 import java.io.RandomAccessFile
 
 class RealtimeMonitorService : Service() {
 
     override fun getResources(): android.content.res.Resources = AppTranslator.wrap(super.getResources())
+
+    companion object {
+        @Volatile var running = false
+    }
 
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
@@ -106,6 +111,7 @@ class RealtimeMonitorService : Service() {
 
         windowManager.addView(overlayView, params)
         startMonitoring()
+        running = true
     }
 
     @Suppress("DEPRECATION")
@@ -138,7 +144,7 @@ class RealtimeMonitorService : Service() {
         val batTemp = (batteryStatus?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10
 
         val cpuFreq = getSysFileValue("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", divisor = 1000, fallback = "--")
-        val cpuTemp = getSysFileValue("/sys/class/thermal/thermal_zone0/temp", divisor = 1000, fallback = batTemp.toString())
+        val cpuTemp = readCpuTempC(fallback = batTemp.toString())
 
         val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         @Suppress("DEPRECATION")
@@ -233,20 +239,44 @@ class RealtimeMonitorService : Service() {
 
     private fun getSysFileValue(path: String, divisor: Long = 1, fallback: String = "--"): String {
         return try {
-            val reader = RandomAccessFile(path, "r")
-            val value = reader.readLine().toLong() / divisor
-            reader.close()
-            value.toString()
+            RandomAccessFile(path, "r").use { it.readLine().trim().toLong() / divisor }.toString()
         } catch (e: Exception) {
             fallback
         }
     }
 
+    private var cpuTempPath: String? = null
+    private var cpuTempPathResolved = false
+
+    private fun resolveCpuTempPath(): String {
+        for (i in 0..24) {
+            val zone = "/sys/class/thermal/thermal_zone$i"
+            val type = try {
+                File("$zone/type").readText().trim().lowercase()
+            } catch (e: Exception) {
+                break
+            }
+            if (type.contains("cpu") || type.contains("soc") || type.contains("cluster")) return "$zone/temp"
+        }
+        return "/sys/class/thermal/thermal_zone0/temp"
+    }
+
+    private fun readCpuTempC(fallback: String): String {
+        if (!cpuTempPathResolved) {
+            cpuTempPath = resolveCpuTempPath()
+            cpuTempPathResolved = true
+        }
+        val raw = getSysFileValue(cpuTempPath ?: return fallback, divisor = 1, fallback = "").toLongOrNull() ?: return fallback
+        val celsius = if (raw >= 1000) raw / 1000 else raw
+        return if (celsius in 1..150) celsius.toString() else fallback
+    }
+
     override fun onDestroy() {
+        running = false
         super.onDestroy()
         serviceJob.cancel()
         if (::overlayView.isInitialized) {
-            windowManager.removeView(overlayView)
+            try { windowManager.removeView(overlayView) } catch (_: Exception) {}
         }
     }
 }

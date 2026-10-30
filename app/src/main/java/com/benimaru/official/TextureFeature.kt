@@ -12,6 +12,7 @@ import es.dmoral.toasty.Toasty
 import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.roundToInt
+import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,11 +51,49 @@ private fun texReadRemote(path: String): ByteArray? = try {
 
 private fun texWriteRemote(path: String, bytes: ByteArray): Boolean = try {
     val tmp = path + TEX_TMP_SUFFIX
-    val p = Shizuku.newProcess(arrayOf("sh", "-c", "cat > '$tmp' && mv -f '$tmp' '$path'"), null, null)
+    val cmd = "own=\$(stat -c %u:%g '$path' 2>/dev/null); " +
+        "if cat > '$tmp' && mv -f '$tmp' '$path'; then " +
+        "[ -z \"\$own\" ] || chown \"\$own\" '$path' 2>/dev/null; true; " +
+        "else rm -f '$tmp'; false; fi"
+    val p = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
     p.outputStream.use { it.write(bytes) }
     p.waitFor() == 0
 } catch (e: Exception) {
     false
+}
+
+private fun texRemoteSize(path: String): Long? = try {
+    val p = Shizuku.newProcess(arrayOf("sh", "-c", "stat -c %s '$path' 2>/dev/null"), null, null)
+    val out = p.inputStream.bufferedReader().readText().trim()
+    p.waitFor()
+    out.toLongOrNull()
+} catch (e: Exception) {
+    null
+}
+
+
+private fun MainActivity.texMetaFile(pkg: String): File =
+    File(File(filesDir, "texture_meta").apply { mkdirs() }, "$pkg.json")
+
+private fun MainActivity.readTexMeta(pkg: String): MutableMap<String, Long> {
+    val map = mutableMapOf<String, Long>()
+    try {
+        val f = texMetaFile(pkg)
+        if (f.isFile) {
+            val o = JSONObject(f.readText())
+            o.keys().forEach { k -> map[k] = o.getLong(k) }
+        }
+    } catch (_: Exception) {
+    }
+    return map
+}
+
+private fun MainActivity.writeTexMeta(pkg: String, map: Map<String, Long>) {
+    try {
+        val f = texMetaFile(pkg)
+        if (map.isEmpty()) f.delete() else f.writeText(JSONObject(map).toString())
+    } catch (_: Exception) {
+    }
 }
 
 @Suppress("DEPRECATION")
@@ -95,7 +134,9 @@ private fun MainActivity.shrinkTextures(
     val result = TexResult()
     val backupDir = File(texBackupRoot(), pkg)
     val prefix = texDataRoot(pkg) + "/"
+    val meta = readTexMeta(pkg)
 
+    try {
     files.forEachIndexed { index, f ->
         if (isCancelled()) {
             result.cancelled = true
@@ -120,6 +161,10 @@ private fun MainActivity.shrinkTextures(
             if (mode != TexMode.RECOMPRESS && (w < 64 || h < 64)) return@forEachIndexed
 
             var bmp = BitmapFactory.decodeByteArray(orig, 0, orig.size) ?: return@forEachIndexed
+            if (ext == "png" && mode == TexMode.RECOMPRESS && bmp.hasAlpha()) {
+                bmp.recycle()
+                return@forEachIndexed
+            }
             if (mode != TexMode.RECOMPRESS) {
                 val nw = (w * mode.scale).roundToInt().coerceAtLeast(1)
                 val nh = (h * mode.scale).roundToInt().coerceAtLeast(1)
@@ -150,6 +195,7 @@ private fun MainActivity.shrinkTextures(
             if (texWriteRemote(f.path, newBytes)) {
                 result.changed++
                 result.saved += (orig.size - newBytes.size).toLong()
+                meta[rel] = newBytes.size.toLong()
             } else {
                 result.failed++
             }
@@ -159,18 +205,23 @@ private fun MainActivity.shrinkTextures(
             result.failed++
         }
     }
+    } finally {
+        writeTexMeta(pkg, meta)
+    }
     onProgress(files.size, files.size)
     return result
 }
 
-private fun MainActivity.restoreTextures(pkg: String?): Pair<Int, Int> {
+private fun MainActivity.restoreTextures(pkg: String?): Triple<Int, Int, Int> {
     var restored = 0
     var failed = 0
+    var stale = 0
     val root = texBackupRoot()
     val dirs = if (pkg != null) listOf(File(root, pkg)) else root.listFiles()?.toList().orEmpty()
     for (dir in dirs) {
         if (!dir.isDirectory || !TEX_SAFE_PKG.matches(dir.name)) continue
         val prefix = texDataRoot(dir.name) + "/"
+        val meta = readTexMeta(dir.name)
         var dirFailed = 0
         dir.walkTopDown().filter { it.isFile }.toList().forEach { f ->
             val rel = f.relativeTo(dir).invariantSeparatorsPath
@@ -179,18 +230,32 @@ private fun MainActivity.restoreTextures(pkg: String?): Pair<Int, Int> {
                 dirFailed++
                 return@forEach
             }
+            val expectedSize = meta[rel]
+            val currentSize = if (expectedSize != null) texRemoteSize(dest) else null
+            if (expectedSize != null && currentSize != null && currentSize != expectedSize) {
+                f.delete()
+                meta.remove(rel)
+                stale++
+                return@forEach
+            }
             val ok = try { texWriteRemote(dest, f.readBytes()) } catch (e: Exception) { false }
             if (ok) {
                 f.delete()
+                meta.remove(rel)
                 restored++
             } else {
                 dirFailed++
             }
         }
         failed += dirFailed
-        if (dirFailed == 0) dir.deleteRecursively()
+        if (dirFailed == 0) {
+            dir.deleteRecursively()
+            texMetaFile(dir.name).delete()
+        } else {
+            writeTexMeta(dir.name, meta)
+        }
     }
-    return restored to failed
+    return Triple(restored, failed, stale)
 }
 
 private fun MainActivity.setTextureStatus(changed: Int?) {
@@ -301,12 +366,16 @@ private fun MainActivity.runShrink(pkg: String, files: List<TexFile>, mode: TexM
 
     lifecycleScope.launch(Dispatchers.IO) {
         var lastPct = -1
-        val result = shrinkTextures(pkg, files, mode, { cancelled.get() }) { done, total ->
-            val pct = if (total == 0) 100 else done * 100 / total
-            if (pct != lastPct) {
-                lastPct = pct
-                runOnUiThread { progress.update(pct, getString(R.string.tex_progress, done, total)) }
+        val result = try {
+            shrinkTextures(pkg, files, mode, { cancelled.get() }) { done, total ->
+                val pct = if (total == 0) 100 else done * 100 / total
+                if (pct != lastPct) {
+                    lastPct = pct
+                    runOnUiThread { progress.update(pct, getString(R.string.tex_progress, done, total)) }
+                }
             }
+        } catch (e: Exception) {
+            TexResult(failed = 1)
         }
         withContext(Dispatchers.Main) {
             progress.dismiss()
@@ -333,15 +402,17 @@ private fun MainActivity.runRestore(pkg: String?) {
     progress.setIndeterminate(getString(R.string.txt_working))
 
     lifecycleScope.launch(Dispatchers.IO) {
-        val (restored, failed) = restoreTextures(pkg)
+        val (restored, failed, stale) = try { restoreTextures(pkg) } catch (e: Exception) { Triple(0, 1, 0) }
         withContext(Dispatchers.Main) {
             progress.dismiss()
+            if (!anyTextureBackup()) setTextureStatus(null)
             when {
                 failed > 0 -> Toasty.error(this@runRestore, getString(R.string.tex_toast_restore_failed), Toast.LENGTH_LONG, true).show()
                 restored > 0 -> {
-                    if (!anyTextureBackup()) setTextureStatus(null)
                     Toasty.success(this@runRestore, getString(R.string.tex_toast_restored), Toast.LENGTH_LONG, true).show()
+                    if (stale > 0) Toasty.info(this@runRestore, getString(R.string.tex_toast_restore_stale), Toast.LENGTH_LONG, true).show()
                 }
+                stale > 0 -> Toasty.info(this@runRestore, getString(R.string.tex_toast_restore_stale), Toast.LENGTH_LONG, true).show()
                 else -> Toasty.info(this@runRestore, getString(R.string.tex_toast_no_backup), Toast.LENGTH_SHORT, true).show()
             }
         }

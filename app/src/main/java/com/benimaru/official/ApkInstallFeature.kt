@@ -180,30 +180,33 @@ private fun shizukuReady(): Boolean = try {
 }
 
 
-internal fun MainActivity.showApkInstallSheet() {
+internal fun MainActivity.showApkInstallSheet(initialUri: Uri? = null) {
     var bundle: PickedBundle? = null
     var sheetRef: Sheet? = null
     val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
 
     var pick: () -> Unit = {}
-    pick = {
-        onScriptPicked = { uri ->
-            if (uri != null) {
-                lifecycleScope.launch {
-                    val result = withContext(Dispatchers.IO) { readBundle(uri) }
-                    when (result) {
-                        is BundleRead.Ok -> {
-                            bundle = result.bundle
-                            sheetRef?.buttonViews?.firstOrNull()?.isEnabled = true
-                            renderBundlePicker(box, result.bundle, pick)
-                        }
-                        BundleRead.Unreadable -> apkToastErr(R.string.apk_err_read)
-                        BundleRead.NotZip -> apkToastErr(R.string.apk_err_zip)
-                        BundleRead.NoApk -> apkToastErr(R.string.apk_err_noapk)
-                    }
+
+    fun handleUri(uri: Uri) {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) { readBundle(uri) }
+            if (isFinishing || isDestroyed) return@launch
+            when (result) {
+                is BundleRead.Ok -> {
+                    bundle = result.bundle
+                    sheetRef?.buttonViews?.firstOrNull()?.isEnabled = true
+                    renderBundlePicker(box, result.bundle, pick)
                 }
+                BundleRead.Unreadable -> apkToastErr(R.string.apk_err_read)
+                BundleRead.NotZip -> apkToastErr(R.string.apk_err_zip)
+                BundleRead.NoApk -> apkToastErr(R.string.apk_err_noapk)
             }
         }
+    }
+
+    pick = {
+        onScriptPicked = { uri -> if (uri != null) handleUri(uri) }
+        pickerKind = PICKER_APK
         scriptPicker.launch(arrayOf("*/*"))
     }
     renderBundlePicker(box, null, pick)
@@ -219,6 +222,7 @@ internal fun MainActivity.showApkInstallSheet() {
         .button(getString(R.string.btn_close), SheetStyle.TONAL)
         .show()
     sheetRef?.buttonViews?.firstOrNull()?.isEnabled = false
+    initialUri?.let { handleUri(it) }
 }
 
 private fun MainActivity.apkToastErr(res: Int) {

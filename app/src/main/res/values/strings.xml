@@ -577,6 +577,10 @@
     <string name="tex_toast_restored">Original textures restored.</string>
     <string name="tex_toast_restore_failed">Some files could not be restored.</string>
     <string name="tex_toast_no_backup">No backups to restore.</string>
+    <string name="tex_toast_restore_stale">Some files were replaced by a game update, so their old backups were skipped.</string>
+    <string name="btn_show_all_apps">Show all apps</string>
+    <string name="premium_closed_title">Premium is temporarily unavailable</string>
+    <string name="premium_closed_default">The developer is out of town right now and can\'t activate new Premium accounts. Please come back later, so you don\'t pay and then wait without activation. Existing Premium users are not affected.</string>
     <string name="tex_restore_title">Restore originals?</string>
     <string name="tex_restore_all_msg">Puts back the original textures for every game you shrank. Use this if a game glitches or fails to load.</string>
     <string name="tex_status_done">Status: %1$d textures shrunk</string>

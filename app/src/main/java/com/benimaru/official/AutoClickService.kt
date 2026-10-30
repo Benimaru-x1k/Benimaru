@@ -36,6 +36,8 @@ class AutoClickService : Service() {
         const val MODE_SWIPE = 1
         const val MODE_BOTH = 2
 
+        @Volatile var running = false
+
         fun modeLabel(ctx: android.content.Context, mode: Int): String = ctx.getString(
             when (mode) {
                 MODE_SWIPE -> R.string.mode_swipe
@@ -61,6 +63,7 @@ class AutoClickService : Service() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         buildOverlay()
+        running = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -169,7 +172,7 @@ class AutoClickService : Service() {
                 val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
                 val mode = prefs.getInt(KEY_MODE, MODE_TAP)
                 val intervalMs = (prefs.getFloat(KEY_INTERVAL, 5f).coerceIn(0.05f, 3600f) * 1000).toLong()
-                val dm = resources.displayMetrics
+                val dm = realMetrics()
                 val w = dm.widthPixels
                 val h = dm.heightPixels
                 val x = prefs.getInt(KEY_X, -1).let { if (it < 0) w / 2 else it.coerceIn(0, w - 1) }
@@ -199,6 +202,13 @@ class AutoClickService : Service() {
         }
     }
 
+    @Suppress("DEPRECATION")
+    private fun realMetrics(): android.util.DisplayMetrics {
+        val dm = android.util.DisplayMetrics()
+        windowManager.defaultDisplay.getRealMetrics(dm)
+        return dm
+    }
+
     private fun stopLoop() {
         loop?.cancel()
         loop = null
@@ -215,6 +225,7 @@ class AutoClickService : Service() {
     }
 
     override fun onDestroy() {
+        running = false
         stopLoop()
         job.cancel()
         if (viewAdded) {

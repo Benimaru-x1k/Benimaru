@@ -94,7 +94,7 @@ internal fun MainActivity.showCrosshairConfigDialog() {
     val savedStyle = styleIdx
     val savedColor = colorIdx
     val savedSize = sizeIdx
-    val wasEnabled = prefs.getBoolean(Prefs.KEY_CROSSHAIR_ENABLED, false)
+    val wasEnabled = isCrosshairEnabled
     var saved = false
 
     val preview = CrosshairPreviewView(this).apply {
@@ -176,7 +176,7 @@ internal fun MainActivity.showCrosshairConfigDialog() {
 internal fun MainActivity.pushCrosshair(style: String, color: String, size: String) {
     startService(Intent(this, CrosshairService::class.java).apply {
         putExtra("STYLE", style)
-        putExtra(getString(R.string.lbl_color), color)
+        putExtra("COLOR", color)
         putExtra("SIZE", size)
     })
 }
@@ -184,9 +184,10 @@ internal fun MainActivity.pushCrosshair(style: String, color: String, size: Stri
 internal fun MainActivity.startCrosshairService(style: String, color: String, size: String) {
     val intent = Intent(this, CrosshairService::class.java).apply {
         putExtra("STYLE", style)
-        putExtra(getString(R.string.lbl_color), color)
+        putExtra("COLOR", color)
         putExtra("SIZE", size)
     }
+    overlayGraceUntil = android.os.SystemClock.elapsedRealtime() + 2500
     startService(intent)
 
     isCrosshairEnabled = true

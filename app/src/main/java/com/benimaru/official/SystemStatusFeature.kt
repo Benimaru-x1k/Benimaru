@@ -125,8 +125,29 @@ private fun MainActivity.renderSystemStatuses(s: SystemStatuses) {
     findViewById<TextView>(R.id.tvStatusDevOptions).text = s.devOptions
 }
 
+internal fun MainActivity.refreshOverlayStatuses() {
+    renderOverlayStatuses(getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE))
+}
+
 private fun MainActivity.renderOverlayStatuses(prefs: SharedPreferences) {
-    val isCrosshairOn = prefs.getBoolean(Prefs.KEY_CROSSHAIR_ENABLED, false)
+    val grace = android.os.SystemClock.elapsedRealtime() < overlayGraceUntil
+    val fix = prefs.edit()
+    var hasStale = false
+    fun alive(key: String, running: Boolean): Boolean {
+        val flagged = prefs.getBoolean(key, false)
+        val on = flagged && (running || grace)
+        if (flagged && !on) {
+            fix.putBoolean(key, false)
+            hasStale = true
+        }
+        return on
+    }
+
+    val isCrosshairOn = alive(Prefs.KEY_CROSSHAIR_ENABLED, CrosshairService.running)
+    val isMonitorOn = alive(Prefs.KEY_MONITOR_ENABLED, RealtimeMonitorService.running)
+    val isAutoOn = alive(AutoClickService.KEY_ENABLED, AutoClickService.running)
+    if (hasStale) fix.apply()
+
     isCrosshairEnabled = isCrosshairOn
     if (isCrosshairOn) {
         val style = prefs.getString(Prefs.KEY_CROSSHAIR_STYLE, "Cross")
@@ -137,7 +158,6 @@ private fun MainActivity.renderOverlayStatuses(prefs: SharedPreferences) {
         findViewById<TextView>(R.id.tvStatusCrosshair).text = getString(R.string.status_disabled)
     }
 
-    val isMonitorOn = prefs.getBoolean(Prefs.KEY_MONITOR_ENABLED, false)
     isMonitorEnabled = isMonitorOn
     if (isMonitorOn) {
         findViewById<TextView>(R.id.tvStatusMonitor)?.text = getString(R.string.status_enabled)
@@ -145,7 +165,6 @@ private fun MainActivity.renderOverlayStatuses(prefs: SharedPreferences) {
         findViewById<TextView>(R.id.tvStatusMonitor)?.text = getString(R.string.status_disabled)
     }
 
-    val isAutoOn = prefs.getBoolean(AutoClickService.KEY_ENABLED, false)
     isAutoClickEnabled = isAutoOn
     findViewById<TextView>(R.id.tvStatusAutoClick)?.text = if (isAutoOn)
         getString(R.string.status_autoclick, AutoClickService.modeLabel(this, prefs.getInt(AutoClickService.KEY_MODE, 0)), prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f).toString())

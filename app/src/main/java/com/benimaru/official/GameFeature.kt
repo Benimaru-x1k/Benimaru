@@ -14,24 +14,49 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 
-internal fun MainActivity.findGames(): List<ResolveInfo> {
+private val GAME_PKG_SAFE = Regex("^[A-Za-z0-9._]+$")
+
+internal fun gameModePackages(prefs: android.content.SharedPreferences): Set<String> {
+    val all = LinkedHashSet<String>()
+    prefs.getStringSet(Prefs.KEY_GAME_MODE_PKGS, null)?.let { all.addAll(it) }
+    prefs.getString(Prefs.KEY_LAST_GAME_MODE, "")?.takeIf { it.isNotEmpty() }?.let { all.add(it) }
+    return all.filter { GAME_PKG_SAFE.matches(it) }.toSet()
+}
+
+internal fun gameModeResetCmd(prefs: android.content.SharedPreferences): String =
+    gameModePackages(prefs).joinToString("; ") { "cmd game mode standard $it" }
+
+internal fun clearGameModeState(prefs: android.content.SharedPreferences) {
+    prefs.edit().remove(Prefs.KEY_GAME_MODE_PKGS).putString(Prefs.KEY_LAST_GAME_MODE, "").apply()
+}
+
+internal fun MainActivity.findGames(all: Boolean = false): List<ResolveInfo> {
     val pm = packageManager
     val intent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
     return pm.queryIntentActivities(intent, 0)
-        .filter {
-            val appInfo = it.activityInfo.applicationInfo
-            val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
-            val isGameCategory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                appInfo.category == ApplicationInfo.CATEGORY_GAME
-            } else false
-            isGameFlag || isGameCategory
+        .filter { info ->
+            if (all) {
+                info.activityInfo.packageName != packageName
+            } else {
+                val appInfo = info.activityInfo.applicationInfo
+                val isGameFlag = (appInfo.flags and ApplicationInfo.FLAG_IS_GAME) != 0
+                val isGameCategory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    appInfo.category == ApplicationInfo.CATEGORY_GAME
+                } else false
+                isGameFlag || isGameCategory
+            }
         }
+        .distinctBy { it.activityInfo.packageName }
         .sortedBy { it.loadLabel(pm).toString().lowercase() }
 }
 
-internal fun MainActivity.showGamePicker(title: String, message: String, onPick: (ResolveInfo) -> Unit) {
-    val games = findGames()
+internal fun MainActivity.showGamePicker(title: String, message: String, showAll: Boolean = false, onPick: (ResolveInfo) -> Unit) {
+    val games = findGames(showAll)
     if (games.isEmpty()) {
+        if (!showAll) {
+            showGamePicker(title, message, true, onPick)
+            return
+        }
         Toasty.info(this, getString(R.string.toast_no_games), Toast.LENGTH_SHORT, true).show()
         return
     }
@@ -51,8 +76,12 @@ internal fun MainActivity.showGamePicker(title: String, message: String, onPick:
         .title(title)
         .message(message)
         .content(list)
-        .button(getString(R.string.btn_close), SheetStyle.TEXT)
-        .show()
+    if (!showAll) {
+        sheet.button(getString(R.string.btn_show_all_apps), SheetStyle.TONAL) {
+            showGamePicker(title, message, true, onPick)
+        }
+    }
+    sheet.button(getString(R.string.btn_close), SheetStyle.TEXT).show()
 }
 
 internal fun MainActivity.showGameModeSelectorDialog() {
@@ -73,7 +102,13 @@ internal fun MainActivity.showGameModeSelectorDialog() {
                 withContext(Dispatchers.Main) {
                     if (exitCode == 0) {
                         Toasty.success(this@showGameModeSelectorDialog, getString(R.string.toast_gm_enabled, appName), Toast.LENGTH_SHORT, true).show()
-                        getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).edit().putString(Prefs.KEY_LAST_GAME_MODE, pkgName).apply()
+                        val gmPrefs = getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE)
+                        val gmSet = (gmPrefs.getStringSet(Prefs.KEY_GAME_MODE_PKGS, null) ?: emptySet()).toMutableSet()
+                        gmSet.add(pkgName)
+                        gmPrefs.edit()
+                            .putStringSet(Prefs.KEY_GAME_MODE_PKGS, gmSet)
+                            .putString(Prefs.KEY_LAST_GAME_MODE, pkgName)
+                            .apply()
                         fetchSystemStatuses()
                         showInterstitialAd()
                     } else {
@@ -118,11 +153,15 @@ internal fun MainActivity.showGameLauncherDialog() {
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        val process = Shizuku.newProcess(arrayOf("sh", "-c", "cmd package compile -m speed -f $pkgName"), null, null)
-                        process.waitFor()
+                        val result = runShell("cmd package compile -m speed -f $pkgName")
+                        val compiled = result.code == 0 && result.out.contains("Success", ignoreCase = true)
                         withContext(Dispatchers.Main) {
                             progress.dismiss()
-                            Toasty.success(this@showGameLauncherDialog, getString(R.string.toast_optimized, appName), Toast.LENGTH_SHORT, true).show()
+                            if (compiled) {
+                                Toasty.success(this@showGameLauncherDialog, getString(R.string.toast_optimized, appName), Toast.LENGTH_SHORT, true).show()
+                            } else {
+                                Toasty.warning(this@showGameLauncherDialog, getString(R.string.toast_opt_failed, result.out.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty().take(80)), Toast.LENGTH_LONG, true).show()
+                            }
                             showInterstitialAd { launchGame() }
                         }
                     } catch (e: Exception) {

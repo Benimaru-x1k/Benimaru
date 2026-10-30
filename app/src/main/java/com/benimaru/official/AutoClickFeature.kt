@@ -65,6 +65,7 @@ internal fun MainActivity.showAutoClickDialog() {
                 .putInt(AutoClickService.KEY_SWIPE_LEN, lenEdit.text?.toString()?.toIntOrNull() ?: 300)
                 .putBoolean(AutoClickService.KEY_ENABLED, true)
                 .apply()
+            overlayGraceUntil = android.os.SystemClock.elapsedRealtime() + 2500
             startService(Intent(this, AutoClickService::class.java))
             isAutoClickEnabled = true
             findViewById<TextView>(R.id.tvStatusAutoClick).text = getString(R.string.status_autoclick, AutoClickService.modeLabel(this, mode), interval.toString())

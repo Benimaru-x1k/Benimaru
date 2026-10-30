@@ -26,6 +26,7 @@ internal fun MainActivity.toggleRealtimeMonitor() {
         findViewById<TextView>(R.id.tvStatusMonitor).text = getString(R.string.status_disabled)
         Toasty.success(this, getString(R.string.toast_monitor_off), Toast.LENGTH_SHORT, true).show()
     } else {
+        overlayGraceUntil = android.os.SystemClock.elapsedRealtime() + 2500
         startService(intent)
         isMonitorEnabled = true
         prefs.edit().putBoolean(Prefs.KEY_MONITOR_ENABLED, true).apply()

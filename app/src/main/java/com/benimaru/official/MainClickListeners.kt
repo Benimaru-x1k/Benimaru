@@ -9,7 +9,11 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.lifecycleScope
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 internal fun MainActivity.setupClickListeners() {
     val prefs = getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE)
@@ -22,6 +26,56 @@ internal fun MainActivity.setupClickListeners() {
 }
 
 private fun MainActivity.en(res: Int): String = AppTranslator.english(this, res)
+
+private class TweakSetting(val ns: String, val name: String, val ours: String, val fallback: String?) {
+    val prefKey get() = "${Prefs.PREV_SETTING_PREFIX}${ns}_$name"
+}
+
+private val TOUCH_SETTINGS = listOf(
+    TweakSetting("system", "pointer_speed", "7", null),
+    TweakSetting("secure", "long_press_timeout", "250", "400")
+)
+
+private val ANIM_SETTINGS = listOf(
+    TweakSetting("global", "window_animation_scale", "0.5", "1"),
+    TweakSetting("global", "transition_animation_scale", "0.5", "1"),
+    TweakSetting("global", "animator_duration_scale", "0.5", "1")
+)
+
+private val SAFE_SETTING_VALUE = Regex("^-?[0-9]+(\\.[0-9]+)?$")
+
+private fun MainActivity.snapshotSettings(prefs: SharedPreferences, settings: List<TweakSetting>) {
+    val ed = prefs.edit()
+    for (s in settings) {
+        val current = runAdbCommandWithResult("settings get ${s.ns} ${s.name}").trim()
+        if (current.isNotEmpty() && current != s.ours) ed.putString(s.prefKey, current)
+    }
+    ed.apply()
+}
+
+private fun restoreSettingsCmd(prefs: SharedPreferences, settings: List<TweakSetting>): String =
+    settings.joinToString("; ") { s ->
+        val prev = prefs.getString(s.prefKey, null)
+        when {
+            prev != null && SAFE_SETTING_VALUE.matches(prev) -> "settings put ${s.ns} ${s.name} $prev"
+            prev == "null" -> "settings delete ${s.ns} ${s.name}"
+            s.fallback == null -> "settings delete ${s.ns} ${s.name}"
+            else -> "settings put ${s.ns} ${s.name} ${s.fallback}"
+        }
+    }
+
+private fun clearSavedSettings(prefs: SharedPreferences, settings: List<TweakSetting>) {
+    val ed = prefs.edit()
+    settings.forEach { ed.remove(it.prefKey) }
+    ed.apply()
+}
+
+private fun MainActivity.snapshotThen(prefs: SharedPreferences, settings: List<TweakSetting>, action: () -> Unit) {
+    lifecycleScope.launch {
+        withContext(Dispatchers.IO) { snapshotSettings(prefs, settings) }
+        action()
+    }
+}
 
 private fun MainActivity.runTweakOnce(
     statusId: Int,
@@ -82,18 +136,22 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
     }
 
     findViewById<CardView>(R.id.cardImproveTouch).setOnClickListener {
-        runTweakOnce(
-            R.id.tvStatusTouch, { en(R.string.w_improved) }, R.string.toast_already_improved,
-            "settings put system pointer_speed 7 && settings put secure long_press_timeout 250", R.string.msg_touch_improved
-        )
+        snapshotThen(prefs, TOUCH_SETTINGS) {
+            runTweakOnce(
+                R.id.tvStatusTouch, { en(R.string.w_improved) }, R.string.toast_already_improved,
+                "settings put system pointer_speed 7 && settings put secure long_press_timeout 250", R.string.msg_touch_improved
+            )
+        }
     }
 
     findViewById<CardView>(R.id.cardFastAnimations).setOnClickListener {
-        runTweakOnce(
-            R.id.tvStatusAnimations, { "0.5x" }, R.string.toast_already_sped,
-            "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5",
-            R.string.msg_anim_fast
-        )
+        snapshotThen(prefs, ANIM_SETTINGS) {
+            runTweakOnce(
+                R.id.tvStatusAnimations, { "0.5x" }, R.string.toast_already_sped,
+                "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5",
+                R.string.msg_anim_fast
+            )
+        }
     }
 
     findViewById<CardView>(R.id.cardDisableBlurs).setOnClickListener {
@@ -224,10 +282,10 @@ private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
         }
     }
     findViewById<TextView>(R.id.btnResetGameMode).setOnClickListener {
-        val lastGame = prefs.getString(Prefs.KEY_LAST_GAME_MODE, "")
-        if (!lastGame.isNullOrEmpty()) {
-            runAdbCommand("cmd game mode standard $lastGame", getString(R.string.msg_gm_reset)) {
-                prefs.edit().putString(Prefs.KEY_LAST_GAME_MODE, "").apply()
+        val resetCmd = gameModeResetCmd(prefs)
+        if (resetCmd.isNotEmpty()) {
+            runAdbCommand("$resetCmd; true", getString(R.string.msg_gm_reset)) {
+                clearGameModeState(prefs)
                 fetchSystemStatuses()
             }
         } else {
@@ -248,22 +306,24 @@ private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
         R.string.msg_refresh_reset
     )
     bindCommandReset(R.id.btnResetNetwork, "settings delete global tether_dun_required", R.string.msg_net_reset)
-    bindCommandReset(
-        R.id.btnResetTouch,
-        "settings delete system pointer_speed && settings put secure long_press_timeout 400",
-        R.string.msg_touch_reset
-    )
+    findViewById<TextView>(R.id.btnResetTouch).setOnClickListener {
+        runAdbCommand(restoreSettingsCmd(prefs, TOUCH_SETTINGS), getString(R.string.msg_touch_reset)) {
+            clearSavedSettings(prefs, TOUCH_SETTINGS)
+            fetchSystemStatuses()
+        }
+    }
     bindCommandReset(R.id.btnResetResolution, "wm size reset && wm density reset", R.string.msg_res_reset)
     bindCommandReset(
         R.id.btnResetDns,
         "settings put global private_dns_mode default && settings delete global private_dns_specifier",
         R.string.msg_dns_reset
     )
-    bindCommandReset(
-        R.id.btnResetAnimations,
-        "settings put global window_animation_scale 1 && settings put global transition_animation_scale 1 && settings put global animator_duration_scale 1",
-        R.string.msg_anim_reset
-    )
+    findViewById<TextView>(R.id.btnResetAnimations).setOnClickListener {
+        runAdbCommand(restoreSettingsCmd(prefs, ANIM_SETTINGS), getString(R.string.msg_anim_reset)) {
+            clearSavedSettings(prefs, ANIM_SETTINGS)
+            fetchSystemStatuses()
+        }
+    }
     bindCommandReset(R.id.btnResetBlurs, "settings put global disable_window_blurs 0", R.string.msg_blurs_reset)
     bindCommandReset(R.id.btnResetDnd, "settings put global heads_up_notifications_enabled 1", R.string.msg_dnd_reset)
     bindCommandReset(R.id.btnResetDevOptions, "settings put global development_settings_enabled 1", R.string.msg_devopt_on)
@@ -296,38 +356,37 @@ private fun MainActivity.setupBottomActionListeners(prefs: SharedPreferences) {
 
 internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPreferences, onDone: (() -> Unit)? = null) {
     run {
-        val lastGame = prefs.getString(Prefs.KEY_LAST_GAME_MODE, "")
-        val gameModeReset = if (lastGame.isNullOrEmpty()) "" else "cmd game mode standard $lastGame && "
-        val aggressiveReset = if (prefs.getBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, false))
-            "{ ${fixedPerfAggressiveRestore(prefs)}; true; } && " else ""
-
-        val resetCmd = """
-            cmd power set-fixed-performance-mode-enabled false
-            cmd thermalservice reset
-            $gameModeReset$aggressiveReset
-            settings delete system min_refresh_rate
-            settings delete system peak_refresh_rate
-            wm size reset
-            wm density reset
-            settings delete system pointer_speed
-            settings put secure long_press_timeout 400
-            settings put global private_dns_mode default
-            settings delete global private_dns_specifier
-            settings put global window_animation_scale 1
-            settings put global transition_animation_scale 1
-            settings put global animator_duration_scale 1
-            settings put global disable_window_blurs 0
-            settings put global heads_up_notifications_enabled 1
-            settings put global development_settings_enabled 0
-        """.trimIndent().replace("\n", " && ").replace("&&  &&", "&&")
+        val steps = ArrayList<String>()
+        steps += "cmd power set-fixed-performance-mode-enabled false"
+        steps += "cmd thermalservice reset"
+        gameModeResetCmd(prefs).takeIf { it.isNotEmpty() }?.let { steps += it }
+        if (prefs.getBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, false)) {
+            steps += "{ ${fixedPerfAggressiveRestore(prefs)}; true; }"
+        }
+        steps += "settings delete system min_refresh_rate"
+        steps += "settings delete system peak_refresh_rate"
+        steps += "wm size reset"
+        steps += "wm density reset"
+        steps += restoreSettingsCmd(prefs, TOUCH_SETTINGS)
+        steps += "settings put global private_dns_mode default"
+        steps += "settings delete global private_dns_specifier"
+        steps += restoreSettingsCmd(prefs, ANIM_SETTINGS)
+        steps += "settings put global disable_window_blurs 0"
+        steps += "settings put global heads_up_notifications_enabled 1"
+        steps += "settings delete global tether_dun_required"
+        steps += "settings delete secure disable_secure_windows"
+        steps += "settings put global development_settings_enabled 1"
+        val resetCmd = steps.joinToString("; ")
 
         runAdbCommand(resetCmd, getString(R.string.msg_all_reset)) {
             prefs.edit()
                 .putBoolean(Prefs.KEY_FIXED_PERF, false)
                 .putBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, false)
                 .putBoolean(Prefs.KEY_THERMAL_DISABLED, false)
-                .putString(Prefs.KEY_LAST_GAME_MODE, "")
                 .apply()
+            clearGameModeState(prefs)
+            clearSavedSettings(prefs, TOUCH_SETTINGS)
+            clearSavedSettings(prefs, ANIM_SETTINGS)
 
 
             if (isMonitorEnabled) {

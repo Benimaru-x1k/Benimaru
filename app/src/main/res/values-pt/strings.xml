@@ -566,6 +566,10 @@
     <string name="tex_toast_restored">Texturas originais restauradas.</string>
     <string name="tex_toast_restore_failed">Alguns arquivos não puderam ser restaurados.</string>
     <string name="tex_toast_no_backup">Nenhum backup para restaurar.</string>
+    <string name="tex_toast_restore_stale">Alguns arquivos foram substituídos por uma atualização do jogo, então seus backups antigos foram ignorados.</string>
+    <string name="btn_show_all_apps">Mostrar todos os apps</string>
+    <string name="premium_closed_title">O Premium está temporariamente indisponível</string>
+    <string name="premium_closed_default">O desenvolvedor está fora da cidade e não pode ativar novas contas Premium agora. Volte mais tarde, para não pagar e depois ficar esperando sem ativação. Usuários Premium atuais não são afetados.</string>
     <string name="tex_restore_title">Restaurar originais?</string>
     <string name="tex_restore_all_msg">Devolve as texturas originais de todos os jogos reduzidos. Use se um jogo apresentar falhas ou não carregar.</string>
     <string name="tex_status_done">Status: %1$d texturas reduzidas</string>

@@ -13,6 +13,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+private val SHA256_HEX = Regex("^[0-9a-fA-F]{64}$")
+
 internal fun MainActivity.verifyAppSignature() {
     lifecycleScope.launch(Dispatchers.IO) {
         try {
@@ -27,10 +29,11 @@ internal fun MainActivity.verifyAppSignature() {
 
                 if (conn.responseCode == 200) {
                     val fetchedSig = conn.inputStream.bufferedReader().readText().trim()
-                    if (fetchedSig.isNotEmpty()) {
+                    if (SHA256_HEX.matches(fetchedSig)) {
                         expectedSignature = fetchedSig
                     }
                 }
+                conn.disconnect()
             } catch (e: Exception) {}
 
             if (!currentSignature.equals(expectedSignature, ignoreCase = true)) {

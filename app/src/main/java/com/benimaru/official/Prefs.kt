@@ -10,12 +10,16 @@ object Prefs {
     const val KEY_PREMIUM_USER = "PremiumUser"
     const val KEY_PREMIUM_HASH = "PremiumHash"
     const val KEY_PREMIUM_LAST_VERIFIED = "PremiumLastVerified"
+    const val KEY_PREMIUM_SALES_OPEN = "PremiumSalesOpen"
+    const val KEY_PREMIUM_SALES_MSG = "PremiumSalesMsg"
 
     const val KEY_FIXED_PERF = "FixedPerf"
     const val KEY_FIXED_PERF_AGGRESSIVE = "FixedPerfAggressive"
     const val KEY_FP_PREV_ADAPTIVE_BATTERY = "FPPrevAdaptiveBattery"
     const val KEY_THERMAL_DISABLED = "ThermalDisabled"
     const val KEY_LAST_GAME_MODE = "LastGameMode"
+    const val KEY_GAME_MODE_PKGS = "GameModePkgs"
+    const val PREV_SETTING_PREFIX = "PrevSetting_"
     const val KEY_SHADER_PKGS = "ShaderDriverPkgs"
     const val KEY_FROZEN_APPS = "FrozenApps"
 

@@ -21,6 +21,7 @@ import android.widget.Toast
 import com.google.android.material.materialswitch.MaterialSwitch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
@@ -32,7 +33,8 @@ class FloatingResolutionService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
-    private val serviceScope = CoroutineScope(Dispatchers.IO)
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -95,8 +97,9 @@ class FloatingResolutionService : Service() {
 
         val metrics = resources.displayMetrics
         val currentDpi = metrics.densityDpi
-        val currentWidth = metrics.widthPixels.toFloat()
-        val currentHeight = metrics.heightPixels.toFloat()
+        val (naturalW, naturalH) = naturalDisplaySize()
+        val currentWidth = naturalW.toFloat()
+        val currentHeight = naturalH.toFloat()
 
         val aspectRatio = currentHeight / currentWidth
 
@@ -281,9 +284,12 @@ class FloatingResolutionService : Service() {
         serviceScope.launch {
             try {
                 val process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
-                if (process.waitFor() == 0) {
-                    withContext(Dispatchers.Main) {
+                val exit = process.waitFor()
+                withContext(Dispatchers.Main) {
+                    if (exit == 0) {
                         Toast.makeText(this@FloatingResolutionService, successMsg, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@FloatingResolutionService, getString(R.string.svc_failed, "exit $exit"), Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
@@ -296,8 +302,9 @@ class FloatingResolutionService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceJob.cancel()
         if (::floatingView.isInitialized) {
-            windowManager.removeView(floatingView)
+            try { windowManager.removeView(floatingView) } catch (_: Exception) {}
         }
     }
 }

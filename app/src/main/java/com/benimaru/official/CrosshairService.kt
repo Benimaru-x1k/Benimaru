@@ -14,6 +14,10 @@ class CrosshairService : Service() {
 
     override fun getResources(): android.content.res.Resources = AppTranslator.wrap(super.getResources())
 
+    companion object {
+        @Volatile var running = false
+    }
+
     private lateinit var windowManager: WindowManager
     private lateinit var crosshairView: CrosshairView
 
@@ -51,6 +55,14 @@ class CrosshairService : Service() {
 
 
         windowManager.addView(crosshairView, params)
+
+        val prefs = getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE)
+        crosshairView.updateCrosshair(
+            prefs.getString(Prefs.KEY_CROSSHAIR_STYLE, null) ?: "Cross",
+            prefs.getString(Prefs.KEY_CROSSHAIR_COLOR, null) ?: "Red",
+            prefs.getString(Prefs.KEY_CROSSHAIR_SIZE, null) ?: "Medium"
+        )
+        running = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -65,9 +77,10 @@ class CrosshairService : Service() {
     }
 
     override fun onDestroy() {
+        running = false
         super.onDestroy()
         if (::crosshairView.isInitialized) {
-            windowManager.removeView(crosshairView)
+            try { windowManager.removeView(crosshairView) } catch (_: Exception) {}
         }
     }
 

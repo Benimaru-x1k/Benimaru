@@ -128,6 +128,7 @@ class Sheet(private val activity: Activity) {
     }
 
     fun show(): Sheet {
+        if (activity.isFinishing || activity.isDestroyed) return this
         val ctx: Context = activity
         val accent = Ui.accent(ctx)
 

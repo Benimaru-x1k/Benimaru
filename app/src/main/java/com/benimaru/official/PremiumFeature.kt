@@ -229,8 +229,14 @@ internal fun MainActivity.showRemoveAdsDialog() {
         getString(R.string.txt_password_note)
     )
 
+    val salesOpen = premiumSalesOpen()
+    val closedCard = infoCard(this, premiumSalesMessage(), tint = Color.parseColor("#E09B00")).apply {
+        visibility = View.GONE
+    }
+
     val form = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
+        addView(closedCard)
         addView(benefits)
         addView(userLayout)
         addView(passLayout)
@@ -289,13 +295,21 @@ internal fun MainActivity.showRemoveAdsDialog() {
     sheet.show()
 
     fun applyMode() {
-        sheet.messageView?.text = if (buyMode)
-            getString(R.string.txt_buy_hint)
-        else
-            getString(R.string.txt_login_hint)
-        benefits.visibility = if (buyMode) View.VISIBLE else View.GONE
+        val blocked = buyMode && !salesOpen
+        sheet.messageView?.text = when {
+            blocked -> getString(R.string.premium_closed_title)
+            buyMode -> getString(R.string.txt_buy_hint)
+            else -> getString(R.string.txt_login_hint)
+        }
+        closedCard.visibility = if (blocked) View.VISIBLE else View.GONE
+        val formVisibility = if (blocked) View.GONE else View.VISIBLE
+        userLayout.visibility = formVisibility
+        passLayout.visibility = formVisibility
+        deviceRow.visibility = formVisibility
+        note.visibility = formVisibility
+        benefits.visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE
         sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
-        for (i in 1..3) sheet.buttonViews[i].visibility = if (buyMode) View.VISIBLE else View.GONE
+        for (i in 1..3) sheet.buttonViews[i].visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE
         showError(null)
     }
     toggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -304,7 +318,7 @@ internal fun MainActivity.showRemoveAdsDialog() {
             applyMode()
         }
     }
-    toggle.check(loginTab.id)
+    toggle.check(if (salesOpen) loginTab.id else buyTab.id)
     applyMode()
 }
 
@@ -317,7 +331,7 @@ internal fun MainActivity.verifyPremiumAccount(username: String, pass: String, o
         var reason = getString(R.string.err_invalid_login)
         try {
             val hash = PremiumRepository.hashPassword(username, pass)
-            val conn = URL(AppConfig.USERS_URL)
+            val conn = URL("${AppConfig.USERS_URL}?t=${System.currentTimeMillis()}")
                 .openConnection() as HttpURLConnection
             conn.connectTimeout = 5000
             conn.readTimeout = 5000
@@ -375,7 +389,7 @@ internal fun MainActivity.verifyPremiumAccount(username: String, pass: String, o
                     .putString(Prefs.KEY_PREMIUM_HASH, verifiedHash)
                     .putLong(Prefs.KEY_PREMIUM_LAST_VERIFIED, System.currentTimeMillis())
                     .apply()
-                findViewById<LinearLayout>(R.id.bannerAdContainer).removeAllViews()
+                setupBannerAd()
                 updatePremiumButtonUI()
                 Toasty.success(this@verifyPremiumAccount, getString(R.string.toast_premium_activated), Toast.LENGTH_LONG, true).show()
             }

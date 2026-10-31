@@ -114,6 +114,13 @@
       "devices": [
         "824912b504e13104"
       ]
+    },
+    {
+      "username": "jhumri",
+      "passwordHash": "6066bab211e87342d2f01233002b4fd905644677bfb0668f5fc9b760db4fdf81",
+      "devices": [
+        "f0d57573b8600029"
+      ]
     }
   ]
 }

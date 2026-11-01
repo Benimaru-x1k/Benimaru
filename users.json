@@ -121,6 +121,13 @@
       "devices": [
         "f0d57573b8600029"
       ]
+    },
+    {
+      "username": "dinaz013",
+      "passwordHash": "e62a2f5e92d47d63bb5761173c2a5e40aaddc043dddcfdd6ef4f7bd1da279eb4",
+      "devices": [
+        "766f7fd299788717"
+      ]
     }
   ]
 }

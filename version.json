@@ -3,7 +3,7 @@
   "versionName": "4.2",
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.2/BenimaruTool-v4.2.apk",
   "mandatory": true,
-  "premiumAvailable": false,
+  "premiumAvailable": true,
   "premiumMessage": "Premium subscriptions are temporarily paused because I currently undergoing military enlistment training.\n\nNormal operations will resume as soon as I returns.",
   "releaseNotes": "🛠️ 4.2 Update!\n\n- Auto Click & Swipe: Direct Shizuku touch daemon, drag target UI, speed presets, position jitter, random intervals, and tap duration.\n\n- Real-Time Hardware Monitor: New edit mode (drag/resize), pass-through touches, metric toggles, size presets, and setup sheet.\n\n- Banking Mode: Added USB & Wireless Debugging toggles alongside Developer Options with auto-restore.\n\n- Premium Sheet: Redesigned status sheet, local device sign-out option, and updated PayPal integration."
 }

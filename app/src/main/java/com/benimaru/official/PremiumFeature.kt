@@ -7,14 +7,18 @@ import android.graphics.Color
 import android.net.Uri
 import android.provider.Settings
 import android.provider.Settings.Secure
+import android.graphics.Typeface
 import android.text.InputType
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import es.dmoral.toasty.Toasty
@@ -38,9 +42,7 @@ internal fun MainActivity.updatePremiumButtonUI() {
         btnPremium.setTextColor(Color.parseColor("#000000"))
         (btnPremium as? MaterialButton)?.iconTint = ColorStateList.valueOf(Color.BLACK)
 
-        btnPremium.setOnClickListener {
-            Toasty.success(this, getString(R.string.toast_you_premium), Toast.LENGTH_SHORT, true).show()
-        }
+        btnPremium.setOnClickListener { showPremiumStatusSheet() }
     } else {
         val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
         btnPremium.text = getString(R.string.btn_remove_ads)
@@ -92,7 +94,7 @@ internal fun MainActivity.recheckPremiumIfNeeded(force: Boolean = false) {
     }
 }
 
-internal fun MainActivity.revokePremium() {
+private fun MainActivity.clearPremiumLocally() {
     getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).edit()
         .remove(Prefs.KEY_ADS_REMOVED)
         .remove(Prefs.KEY_PREMIUM_USER)
@@ -101,7 +103,82 @@ internal fun MainActivity.revokePremium() {
         .apply()
     updatePremiumButtonUI()
     initializeUnityAds()
+}
+
+internal fun MainActivity.revokePremium() {
+    clearPremiumLocally()
     Toasty.warning(this, getString(R.string.toast_premium_inactive), Toast.LENGTH_LONG, true).show()
+}
+
+internal fun MainActivity.turnOffPremium() {
+    clearPremiumLocally()
+    Toasty.info(this, getString(R.string.toast_premium_turned_off), Toast.LENGTH_LONG, true).show()
+}
+
+private fun MainActivity.confirmTurnOffPremium() {
+    Sheet(this)
+        .icon(R.drawable.ic_crown, Color.parseColor("#E53935"))
+        .title(getString(R.string.premium_off_title))
+        .message(getString(R.string.premium_off_msg))
+        .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
+        .button(getString(R.string.premium_off_confirm), SheetStyle.DANGER) { turnOffPremium() }
+        .show()
+}
+
+internal fun MainActivity.showPremiumStatusSheet() {
+    val prefs = getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE)
+    val username = prefs.getString(Prefs.KEY_PREMIUM_USER, "").orEmpty()
+    val gold = Color.parseColor("#FFD700")
+    val red = Color.parseColor("#E53935")
+    var sheetRef: Sheet? = null
+
+    val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+
+    if (username.isNotBlank()) {
+        content.addView(TextView(this).apply {
+            text = getString(R.string.premium_account, username)
+            textSize = 14f
+            gravity = Gravity.CENTER_HORIZONTAL
+            setTextColor(Ui.onSurfaceVariant(this@showPremiumStatusSheet))
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+    }
+
+    content.addView(infoCard(this, getString(R.string.premium_active_benefits), gold).apply {
+        textSize = 15f
+        setLineSpacing(0f, 1.3f)
+        layoutParams = LinearLayout.LayoutParams(-1, -2).also { it.topMargin = dp(16) }
+    })
+
+    content.addView(TextView(this).apply {
+        text = getString(R.string.premium_manage)
+        textSize = 13f
+        setTypeface(typeface, Typeface.BOLD)
+        setTextColor(Ui.onSurfaceVariant(this@showPremiumStatusSheet))
+        setPadding(dp(4), dp(18), dp(4), 0)
+    })
+    val offIcon = AppCompatResources.getDrawable(this, R.drawable.ic_lock)?.mutate()?.let {
+        DrawableCompat.wrap(it).also { d -> DrawableCompat.setTint(d, red) }
+    }
+    content.addView(
+        optionRow(
+            this,
+            getString(R.string.premium_turn_off),
+            getString(R.string.premium_turn_off_desc),
+            icon = offIcon,
+            tintIcon = false
+        ) {
+            sheetRef?.dismiss()
+            confirmTurnOffPremium()
+        }
+    )
+
+    sheetRef = Sheet(this)
+        .icon(R.drawable.ic_crown, gold)
+        .title(getString(R.string.premium_sheet_title))
+        .message(getString(R.string.premium_sheet_msg))
+        .content(content)
+        .button(getString(R.string.btn_close), SheetStyle.TONAL)
+        .show()
 }
 
 internal fun MainActivity.handlePremiumFeature(action: () -> Unit) {

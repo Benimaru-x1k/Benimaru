@@ -92,7 +92,13 @@ private fun MainActivity.readSystemStatuses(prefs: SharedPreferences): SystemSta
     val headsUpStatus = if (headsUpOpt == "0") getString(R.string.status_dnd_blocked) else getString(R.string.status_default)
 
     val devOpt = runAdbCommandWithResult("settings get global development_settings_enabled")
-    val devOptStatus = if (devOpt == "1") getString(R.string.status_devopt_on) else getString(R.string.status_devopt_off)
+    val adbUsb = runAdbCommandWithResult("settings get global adb_enabled")
+    val adbWifi = runAdbCommandWithResult("settings get global adb_wifi_enabled")
+    val devOptStatus = when {
+        devOpt == "1" -> getString(R.string.status_devopt_on)
+        adbUsb == "1" || adbWifi == "1" -> getString(R.string.status_devopt_debug)
+        else -> getString(R.string.status_devopt_off)
+    }
 
     return SystemStatuses(
         fixedPerf = fixedPerfStatus,
@@ -167,6 +173,6 @@ private fun MainActivity.renderOverlayStatuses(prefs: SharedPreferences) {
 
     isAutoClickEnabled = isAutoOn
     findViewById<TextView>(R.id.tvStatusAutoClick)?.text = if (isAutoOn)
-        getString(R.string.status_autoclick, AutoClickService.modeLabel(this, prefs.getInt(AutoClickService.KEY_MODE, 0)), prefs.getFloat(AutoClickService.KEY_INTERVAL, 5f).toString())
+        getString(R.string.status_autoclick, AutoClickService.modeLabel(this, prefs.getInt(AutoClickService.KEY_MODE, 0)), AutoClickService.intervalLabel(prefs))
     else getString(R.string.status_disabled)
 }

@@ -1,27 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Floating hardware monitor card.
+
+    Layout rules (keep them when adding rows):
+    - 3 columns: 0 = label (hugs its text), 1 and 2 = values (share the leftover width, right aligned).
+    - Spacing is done with padding, never margins, so RealtimeMonitorService can scale it with the card size.
+    - Every text row uses the same vertical padding; every bar row sits snug under its text row.
+    - The tools:* attributes only fill the Android Studio preview. They never reach the device.
+-->
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/monitorRoot"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_overlay_card"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp"
-    android:paddingTop="9dp"
-    android:paddingBottom="8dp"
+    android:padding="12dp"
     android:shrinkColumns="*"
-    android:stretchColumns="*">
+    android:stretchColumns="1,2">
 
-    <TableRow android:layout_marginBottom="3dp">
-        <TextView android:fontFamily="@font/lexendregular" android:text="CPU" android:textColor="#38BDF8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
-        <TextView android:id="@+id/tvCpuTemp" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
-        <TextView android:id="@+id/tvCpuFreq" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+    <!-- CPU -->
+    <TableRow
+        android:id="@+id/rowCpu"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+        <TextView
+            android:fontFamily="@font/lexendregular"
+            android:letterSpacing="0.12"
+            android:text="CPU"
+            android:textColor="#38BDF8"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+        <TextView
+            android:id="@+id/tvCpuTemp"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="38 °C"
+            tools:textColor="#4ADE80" />
+        <TextView
+            android:id="@+id/tvCpuFreq"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="1800 MHz"
+            tools:textColor="#E5E7EB" />
     </TableRow>
-    <TableRow android:layout_marginBottom="3dp">
-        <TextView android:fontFamily="@font/lexendregular" android:text="RAM" android:textColor="#38BDF8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
-        <TextView android:id="@+id/tvRamUsed" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
-        <TextView android:id="@+id/tvRamTotal" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+
+    <!-- RAM -->
+    <TableRow
+        android:id="@+id/rowRam"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+        <TextView
+            android:fontFamily="@font/lexendregular"
+            android:letterSpacing="0.12"
+            android:text="RAM"
+            android:textColor="#38BDF8"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+        <TextView
+            android:id="@+id/tvRamUsed"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="3120 MB"
+            tools:textColor="#E5E7EB" />
+        <TextView
+            android:id="@+id/tvRamTotal"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="5800 MB"
+            tools:textColor="#E5E7EB" />
     </TableRow>
-    <TableRow android:layout_marginBottom="5dp">
+    <TableRow
+        android:id="@+id/rowRamBar"
+        android:paddingTop="1dp"
+        android:paddingBottom="3dp">
         <ProgressBar
             android:id="@+id/pbOverlayRam"
             style="?android:attr/progressBarStyleHorizontal"
@@ -30,15 +115,56 @@
             android:layout_span="3"
             android:max="100"
             android:progressBackgroundTint="#33FFFFFF"
-            android:progressTint="#38BDF8" />
+            android:progressTint="#38BDF8"
+            tools:progress="54" />
     </TableRow>
 
-    <TableRow android:layout_marginBottom="3dp">
-        <TextView android:fontFamily="@font/lexendregular" android:text="STO" android:textColor="#38BDF8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
-        <TextView android:id="@+id/tvStoUsed" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
-        <TextView android:id="@+id/tvStoTotal" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+    <!-- Storage -->
+    <TableRow
+        android:id="@+id/rowSto"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+        <TextView
+            android:fontFamily="@font/lexendregular"
+            android:letterSpacing="0.12"
+            android:text="STO"
+            android:textColor="#38BDF8"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+        <TextView
+            android:id="@+id/tvStoUsed"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="48.2 GB"
+            tools:textColor="#E5E7EB" />
+        <TextView
+            android:id="@+id/tvStoTotal"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="128 GB"
+            tools:textColor="#E5E7EB" />
     </TableRow>
-    <TableRow android:layout_marginBottom="5dp">
+    <TableRow
+        android:id="@+id/rowStoBar"
+        android:paddingTop="1dp"
+        android:paddingBottom="3dp">
         <ProgressBar
             android:id="@+id/pbOverlayStorage"
             style="?android:attr/progressBarStyleHorizontal"
@@ -47,24 +173,124 @@
             android:layout_span="3"
             android:max="100"
             android:progressBackgroundTint="#33FFFFFF"
-            android:progressTint="#38BDF8" />
+            android:progressTint="#38BDF8"
+            tools:progress="38" />
     </TableRow>
 
-    <TableRow android:layout_marginBottom="3dp">
-        <TextView android:fontFamily="@font/lexendregular" android:text="BAT" android:textColor="#4ADE80" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
-        <TextView android:id="@+id/tvBatTemp" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
-        <TextView android:id="@+id/tvBatLevel" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
-    </TableRow>
-    <TableRow>
-        <TextView android:fontFamily="@font/lexendregular" android:text="DISP" android:textColor="#F472B6" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
-        <TextView android:text="" />
-        <TextView android:id="@+id/tvDispFps" android:fontFamily="@font/lexendregular" android:gravity="end" android:paddingStart="14dp" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1"/>
+    <!-- Battery -->
+    <TableRow
+        android:id="@+id/rowBat"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+        <TextView
+            android:fontFamily="@font/lexendregular"
+            android:letterSpacing="0.12"
+            android:text="BAT"
+            android:textColor="#4ADE80"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+        <TextView
+            android:id="@+id/tvBatTemp"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="34 °C"
+            tools:textColor="#4ADE80" />
+        <TextView
+            android:id="@+id/tvBatLevel"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="82 %"
+            tools:textColor="#4ADE80" />
     </TableRow>
 
-    <TableRow android:layout_marginTop="3dp">
-        <TextView android:fontFamily="@font/lexendregular" android:text="NET" android:textColor="#A78BFA" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.12"/>
-        <TextView android:id="@+id/tvNetDown" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
-        <TextView android:id="@+id/tvNetUp" android:fontFamily="@font/lexendregular" android:textSize="12sp" android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="1" android:shadowDy="1" android:shadowRadius="1" android:fontFeatureSettings="tnum" android:gravity="end" android:paddingStart="14dp"/>
+    <!-- Display refresh rate: the value spans both value columns, so there is no empty placeholder view -->
+    <TableRow
+        android:id="@+id/rowDisp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+        <TextView
+            android:fontFamily="@font/lexendregular"
+            android:letterSpacing="0.12"
+            android:text="DISP"
+            android:textColor="#F472B6"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+        <TextView
+            android:id="@+id/tvDispFps"
+            android:layout_span="2"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="120 Hz"
+            tools:textColor="#F9A8D4" />
+    </TableRow>
+
+    <!-- Network -->
+    <TableRow
+        android:id="@+id/rowNet"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+        <TextView
+            android:fontFamily="@font/lexendregular"
+            android:letterSpacing="0.12"
+            android:text="NET"
+            android:textColor="#A78BFA"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+        <TextView
+            android:id="@+id/tvNetDown"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="↓ 120 KB/s"
+            tools:textColor="#4ADE80" />
+        <TextView
+            android:id="@+id/tvNetUp"
+            android:fontFamily="@font/lexendregular"
+            android:fontFeatureSettings="tnum"
+            android:gravity="end"
+            android:paddingStart="14dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="↑ 18 KB/s"
+            tools:textColor="#F9A8D4" />
     </TableRow>
 
 </TableLayout>

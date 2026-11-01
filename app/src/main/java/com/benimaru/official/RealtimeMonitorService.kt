@@ -5,6 +5,8 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.net.TrafficStats
@@ -15,6 +17,14 @@ import android.os.IBinder
 import android.os.StatFs
 import android.os.SystemClock
 import android.text.Html
+import android.util.DisplayMetrics
+import android.util.TypedValue
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.Toast
 import android.view.Display
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -32,10 +42,32 @@ class RealtimeMonitorService : Service() {
 
     companion object {
         @Volatile var running = false
+        private const val MIN_SCALE = 0.6f
+        private const val MAX_SCALE = 2.0f
+        private const val EDIT_TIMEOUT_MS = 120_000L
+
+        const val ACTION_EDIT = "com.benimaru.official.MONITOR_EDIT"
+        const val ACTION_SIZE = "com.benimaru.official.MONITOR_SIZE"
+        const val ACTION_ROWS = "com.benimaru.official.MONITOR_ROWS"
+        const val ACTION_RESET = "com.benimaru.official.MONITOR_RESET"
+        const val EXTRA_SCALE = "scale"
+        const val ROWS_ALL = 63
     }
 
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
+    private lateinit var container: FrameLayout
+    private lateinit var handleView: View
+    private lateinit var doneChip: TextView
+    private var editMode = false
+    private val autoLock = Runnable {
+        if (editMode) {
+            setEditMode(false)
+            Toast.makeText(this, getString(R.string.monitor_locked_auto), Toast.LENGTH_SHORT).show()
+        }
+    }
+    private var scale = 1f
+    private var hasSavedPosition = false
     private lateinit var params: WindowManager.LayoutParams
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
@@ -61,6 +93,8 @@ class RealtimeMonitorService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    private fun dp(v: Int) = (v * resources.displayMetrics.density + 0.5f).toInt()
+
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -82,6 +116,37 @@ class RealtimeMonitorService : Service() {
         tvNetDown = overlayView.findViewById(R.id.tvNetDown)
         tvNetUp = overlayView.findViewById(R.id.tvNetUp)
 
+        val prefs = getSharedPreferences(Prefs.MAIN, MODE_PRIVATE)
+
+        val handle = TextView(this).apply {
+            text = "◢"
+            textSize = 15f
+            setTextColor(Color.parseColor("#B3FFFFFF"))
+            gravity = Gravity.END or Gravity.BOTTOM
+            setPadding(dp(8), dp(8), dp(10), dp(4))
+        }
+        handle.visibility = View.GONE
+        handleView = handle
+        doneChip = TextView(this).apply {
+            text = getString(R.string.monitor_done)
+            textSize = 13f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(Color.BLACK)
+            setPadding(dp(14), dp(6), dp(14), dp(6))
+            background = Ui.rounded(Ui.accent(this@RealtimeMonitorService), dp(16))
+            visibility = View.GONE
+            setOnClickListener { setEditMode(false) }
+        }
+        container = FrameLayout(this).apply {
+            addView(overlayView, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            addView(handle, FrameLayout.LayoutParams(dp(40), dp(36), Gravity.END or Gravity.BOTTOM))
+            addView(doneChip, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.END))
+        }
+        collectBases(overlayView)
+
+        scale = prefs.getFloat(Prefs.KEY_MONITOR_SCALE, 1f).coerceIn(MIN_SCALE, MAX_SCALE)
+        applyScale(scale)
+
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
@@ -90,8 +155,12 @@ class RealtimeMonitorService : Service() {
         }
 
         val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+
+        val savedX = prefs.getInt(Prefs.KEY_MONITOR_X, -1)
+        val savedY = prefs.getInt(Prefs.KEY_MONITOR_Y, -1)
+        hasSavedPosition = savedX >= 0 && savedY >= 0
 
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -100,18 +169,196 @@ class RealtimeMonitorService : Service() {
             flags,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            x = 0
-            y = 50
+            gravity = Gravity.TOP or Gravity.START
+            x = if (hasSavedPosition) savedX else 0
+            y = if (hasSavedPosition) savedY else 50
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
 
-        windowManager.addView(overlayView, params)
+        setupTouch(handle)
+
+        windowManager.addView(container, params)
+        if (!hasSavedPosition) container.post { centerAtTop() } else container.post { clampToScreen() }
+        applyRowVisibility()
         startMonitoring()
         running = true
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (::container.isInitialized) {
+            when (intent?.action) {
+                ACTION_EDIT -> setEditMode(true)
+                ACTION_SIZE -> {
+                    setScale(intent?.getFloatExtra(EXTRA_SCALE, 1f) ?: 1f)
+                    container.post { savePlacement() }
+                }
+                ACTION_ROWS -> applyRowVisibility()
+                ACTION_RESET -> resetPlacement()
+            }
+        }
+        return START_STICKY
+    }
+
+    private fun setEditMode(on: Boolean) {
+        if (editMode == on) return
+        editMode = on
+        val pad = dp(36)
+        (overlayView.layoutParams as FrameLayout.LayoutParams).topMargin = if (on) pad else 0
+        overlayView.requestLayout()
+        params.y = if (on) (params.y - pad).coerceAtLeast(0) else params.y + pad
+        handleView.visibility = if (on) View.VISIBLE else View.GONE
+        doneChip.visibility = if (on) View.VISIBLE else View.GONE
+        params.flags = if (on) params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv() or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+        else params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv()
+        try { windowManager.updateViewLayout(container, params) } catch (_: Exception) {}
+        container.removeCallbacks(autoLock)
+        if (on) {
+            container.postDelayed(autoLock, EDIT_TIMEOUT_MS)
+            Toast.makeText(this, getString(R.string.toast_monitor_hint), Toast.LENGTH_LONG).show()
+        } else {
+            savePlacement()
+            container.post { clampToScreen() }
+        }
+    }
+
+    private fun applyRowVisibility() {
+        val mask = getSharedPreferences(Prefs.MAIN, MODE_PRIVATE).getInt(Prefs.KEY_MONITOR_ROWS, ROWS_ALL)
+        fun vis(bit: Int, vararg ids: Int) {
+            ids.forEach { overlayView.findViewById<View>(it)?.visibility = if ((mask and bit) != 0) View.VISIBLE else View.GONE }
+        }
+        vis(1, R.id.rowCpu)
+        vis(2, R.id.rowRam, R.id.rowRamBar)
+        vis(4, R.id.rowSto, R.id.rowStoBar)
+        vis(8, R.id.rowBat)
+        vis(16, R.id.rowDisp)
+        vis(32, R.id.rowNet)
+        container.post { clampToScreen() }
+    }
+
+
+    private class Base(val textPx: Float, val pl: Int, val pt: Int, val pr: Int, val pb: Int, val h: Int)
+    private val bases = LinkedHashMap<View, Base>()
+
+    private fun collectBases(v: View) {
+        bases[v] = Base(
+            (v as? TextView)?.textSize ?: 0f,
+            v.paddingLeft, v.paddingTop, v.paddingRight, v.paddingBottom,
+            v.layoutParams?.height ?: 0
+        )
+        if (v is ViewGroup) for (i in 0 until v.childCount) collectBases(v.getChildAt(i))
+    }
+
+    private fun applyScale(sc: Float) {
+        for ((v, b) in bases) {
+            if (v is TextView && b.textPx > 0f) v.setTextSize(TypedValue.COMPLEX_UNIT_PX, b.textPx * sc)
+            v.setPadding((b.pl * sc).toInt(), (b.pt * sc).toInt(), (b.pr * sc).toInt(), (b.pb * sc).toInt())
+            if (v is ProgressBar && b.h > 0) {
+                val lp = v.layoutParams
+                lp.height = (b.h * sc).toInt().coerceAtLeast(2)
+                v.layoutParams = lp
+            }
+        }
+    }
+
+    private fun setScale(newScale: Float) {
+        scale = newScale.coerceIn(MIN_SCALE, MAX_SCALE)
+        applyScale(scale)
+        container.post { clampToScreen() }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun realMetrics(): DisplayMetrics {
+        val dm = DisplayMetrics()
+        windowManager.defaultDisplay.getRealMetrics(dm)
+        return dm
+    }
+
+    private fun clampToScreen() {
+        val dm = realMetrics()
+        params.x = params.x.coerceIn(0, (dm.widthPixels - container.width).coerceAtLeast(0))
+        params.y = params.y.coerceIn(0, (dm.heightPixels - container.height).coerceAtLeast(0))
+        try { windowManager.updateViewLayout(container, params) } catch (_: Exception) {}
+    }
+
+    private fun centerAtTop() {
+        val dm = realMetrics()
+        params.x = ((dm.widthPixels - container.width) / 2).coerceAtLeast(0)
+        params.y = 50
+        try { windowManager.updateViewLayout(container, params) } catch (_: Exception) {}
+    }
+
+    private fun savePlacement() {
+        getSharedPreferences(Prefs.MAIN, MODE_PRIVATE).edit()
+            .putInt(Prefs.KEY_MONITOR_X, params.x)
+            .putInt(Prefs.KEY_MONITOR_Y, params.y + if (editMode) dp(36) else 0)
+            .putFloat(Prefs.KEY_MONITOR_SCALE, scale)
+            .apply()
+        hasSavedPosition = true
+    }
+
+    private fun resetPlacement() {
+        getSharedPreferences(Prefs.MAIN, MODE_PRIVATE).edit()
+            .remove(Prefs.KEY_MONITOR_X).remove(Prefs.KEY_MONITOR_Y).remove(Prefs.KEY_MONITOR_SCALE)
+            .apply()
+        hasSavedPosition = false
+        scale = 1f
+        applyScale(scale)
+        container.post { centerAtTop() }
+    }
+
+    private fun setupTouch(handle: View) {
+        val density = resources.displayMetrics.density
+
+        val scaleDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                setScale(scale * detector.scaleFactor)
+                return true
+            }
+        })
+        val gestures = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean = true
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                resetPlacement()
+                return true
+            }
+        })
+
+        var downX = 0f; var downY = 0f; var startX = 0; var startY = 0; var ignoreDrag = false
+        container.setOnTouchListener { _, e ->
+            if (editMode) { container.removeCallbacks(autoLock); container.postDelayed(autoLock, EDIT_TIMEOUT_MS) }
+            gestures.onTouchEvent(e)
+            scaleDetector.onTouchEvent(e)
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = e.rawX; downY = e.rawY; startX = params.x; startY = params.y; ignoreDrag = false
+                }
+                MotionEvent.ACTION_POINTER_DOWN -> ignoreDrag = true
+                MotionEvent.ACTION_MOVE -> if (!ignoreDrag && !scaleDetector.isInProgress && e.pointerCount == 1) {
+                    val dm = realMetrics()
+                    params.x = (startX + (e.rawX - downX).toInt()).coerceIn(0, (dm.widthPixels - container.width).coerceAtLeast(0))
+                    params.y = (startY + (e.rawY - downY).toInt()).coerceIn(0, (dm.heightPixels - container.height).coerceAtLeast(0))
+                    try { windowManager.updateViewLayout(container, params) } catch (_: Exception) {}
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> savePlacement()
+            }
+            true
+        }
+
+        var hDownX = 0f; var hDownY = 0f; var hStartScale = 1f
+        handle.setOnTouchListener { _, e ->
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> { hDownX = e.rawX; hDownY = e.rawY; hStartScale = scale }
+                MotionEvent.ACTION_MOVE -> {
+                    val delta = ((e.rawX - hDownX) + (e.rawY - hDownY)) / (160f * density)
+                    setScale(hStartScale + delta)
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> savePlacement()
+            }
+            true
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -275,8 +522,8 @@ class RealtimeMonitorService : Service() {
         running = false
         super.onDestroy()
         serviceJob.cancel()
-        if (::overlayView.isInitialized) {
-            try { windowManager.removeView(overlayView) } catch (_: Exception) {}
+        if (::container.isInitialized) {
+            try { windowManager.removeView(container) } catch (_: Exception) {}
         }
     }
 }

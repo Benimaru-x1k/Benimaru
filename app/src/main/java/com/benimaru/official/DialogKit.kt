@@ -193,6 +193,8 @@ class Sheet(private val activity: Activity) {
             val horizontal = buttons.size == 2 && buttons.none { it.style == SheetStyle.TEXT }
             val bar = LinearLayout(ctx).apply {
                 orientation = if (horizontal) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
+                isBaselineAligned = false
+                gravity = Gravity.CENTER_VERTICAL
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply { topMargin = ctx.dp(24) }
@@ -250,6 +252,11 @@ class Sheet(private val activity: Activity) {
             insetTop = 0
             insetBottom = 0
             maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            gravity = Gravity.CENTER
+            minWidth = 0
+            minimumWidth = 0
+            setPadding(ctx.dp(8), 0, ctx.dp(8), 0)
             when (b.style) {
                 SheetStyle.PRIMARY -> {
                     backgroundTintList = ColorStateList.valueOf(accent)

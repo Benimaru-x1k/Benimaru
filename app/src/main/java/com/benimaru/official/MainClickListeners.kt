@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Build
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
@@ -43,6 +44,17 @@ private val ANIM_SETTINGS = listOf(
 )
 
 private val SAFE_SETTING_VALUE = Regex("^-?[0-9]+(\\.[0-9]+)?$")
+
+private val BANKING_SETTINGS = listOf(
+    TweakSetting("global", "adb_enabled", "0", null),
+    TweakSetting("global", "adb_wifi_enabled", "0", null)
+)
+
+private fun bankingRestoreCmd(prefs: SharedPreferences): String? =
+    BANKING_SETTINGS.mapNotNull { st ->
+        prefs.getString(st.prefKey, null)?.takeIf { SAFE_SETTING_VALUE.matches(it) }
+            ?.let { "settings put ${st.ns} ${st.name} $it" }
+    }.takeIf { it.isNotEmpty() }?.joinToString("; ")
 
 private fun MainActivity.snapshotSettings(prefs: SharedPreferences, settings: List<TweakSetting>) {
     val ed = prefs.edit()
@@ -168,12 +180,7 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
         )
     }
 
-    findViewById<CardView>(R.id.cardDisableDevOptions).setOnClickListener {
-        runTweakOnce(
-            R.id.tvStatusDevOptions, { en(R.string.w_disabled) }, R.string.toast_already_disabled,
-            "settings put global development_settings_enabled 0", R.string.msg_devopt_off
-        )
-    }
+    findViewById<CardView>(R.id.cardDisableDevOptions).setOnClickListener { showDevOptionsSheet(prefs) }
 
     findViewById<CardView>(R.id.cardFixGyro).setOnClickListener { fixGyroDelay() }
 
@@ -185,6 +192,52 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
             return@setOnClickListener
         }
         handlePremiumFeature { showGameModeSelectorDialog() }
+    }
+}
+
+private fun MainActivity.showDevOptionsSheet(prefs: SharedPreferences) {
+    var banking = false
+    val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+    fun render() {
+        box.removeAllViews()
+        box.addView(optionRow(this, getString(R.string.dev_opt_basic), getString(R.string.dev_opt_basic_desc), selected = !banking) { banking = false; render() })
+        box.addView(optionRow(this, getString(R.string.dev_opt_banking), getString(R.string.dev_opt_banking_desc), selected = banking) { banking = true; render() })
+    }
+    render()
+    val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+    content.addView(box)
+    content.addView(infoCard(this, getString(R.string.dev_opt_warning), Color.parseColor("#E09B00")).apply {
+        layoutParams = LinearLayout.LayoutParams(-1, -2).also { it.topMargin = dp(14) }
+    })
+
+    Sheet(this)
+        .icon(R.drawable.ic_security)
+        .title(getString(R.string.title_devopts))
+        .message(getString(R.string.dev_opt_msg))
+        .content(content)
+        .button(getString(R.string.btn_cancel), SheetStyle.TEXT)
+        .button(getString(R.string.btn_apply), SheetStyle.PRIMARY) {
+            if (banking) applyBankingMode(prefs)
+            else runTweakOnce(
+                R.id.tvStatusDevOptions, { en(R.string.w_disabled) }, R.string.toast_already_disabled,
+                "settings put global development_settings_enabled 0", R.string.msg_devopt_off
+            )
+        }
+        .show()
+}
+
+private fun MainActivity.applyBankingMode(prefs: SharedPreferences) {
+    if (!hasShizukuPermission()) return
+    snapshotThen(prefs, BANKING_SETTINGS) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            runShell("settings put global development_settings_enabled 0")
+            runShell("settings put global adb_wifi_enabled 0")
+            runShell("settings put global adb_enabled 0")
+            withContext(Dispatchers.Main) {
+                findViewById<TextView>(R.id.tvStatusDevOptions)?.text = getString(R.string.status_devopt_off)
+                Toasty.success(this@applyBankingMode, getString(R.string.msg_devopt_banking), Toast.LENGTH_LONG, true).show()
+            }
+        }
     }
 }
 
@@ -228,7 +281,7 @@ private fun MainActivity.setupPremiumCardListeners(prefs: SharedPreferences) {
         handlePremiumFeature { showCrosshairConfigDialog() }
     }
     findViewById<CardView>(R.id.cardRealtimeMonitor).setOnClickListener {
-        handlePremiumFeature { toggleRealtimeMonitor() }
+        handlePremiumFeature { if (isMonitorEnabled) showMonitorSheet() else showMonitorSetupDialog() }
     }
     findViewById<CardView>(R.id.cardAutoClick).setOnClickListener {
         handlePremiumFeature { showAutoClickDialog() }
@@ -326,7 +379,13 @@ private fun MainActivity.setupTweakResetListeners(prefs: SharedPreferences) {
     }
     bindCommandReset(R.id.btnResetBlurs, "settings put global disable_window_blurs 0", R.string.msg_blurs_reset)
     bindCommandReset(R.id.btnResetDnd, "settings put global heads_up_notifications_enabled 1", R.string.msg_dnd_reset)
-    bindCommandReset(R.id.btnResetDevOptions, "settings put global development_settings_enabled 1", R.string.msg_devopt_on)
+    findViewById<TextView>(R.id.btnResetDevOptions).setOnClickListener {
+        val cmd = listOfNotNull("settings put global development_settings_enabled 1", bankingRestoreCmd(prefs)).joinToString("; ")
+        runAdbCommand(cmd, getString(R.string.msg_devopt_on)) {
+            clearSavedSettings(prefs, BANKING_SETTINGS)
+            fetchSystemStatuses()
+        }
+    }
 }
 
 
@@ -337,7 +396,7 @@ private fun MainActivity.setupBottomActionListeners(prefs: SharedPreferences) {
 
     findViewById<Button>(R.id.btnRemoveAds).setOnClickListener {
         if (isPremium()) {
-            Toasty.success(this, getString(R.string.toast_you_premium), Toast.LENGTH_SHORT, true).show()
+            showPremiumStatusSheet()
         } else {
             showRemoveAdsDialog()
         }
@@ -376,6 +435,7 @@ internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPrefere
         steps += "settings delete global tether_dun_required"
         steps += "settings delete secure disable_secure_windows"
         steps += "settings put global development_settings_enabled 1"
+        bankingRestoreCmd(prefs)?.let { steps += it }
         val resetCmd = steps.joinToString("; ")
 
         runAdbCommand(resetCmd, getString(R.string.msg_all_reset)) {
@@ -387,6 +447,7 @@ internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPrefere
             clearGameModeState(prefs)
             clearSavedSettings(prefs, TOUCH_SETTINGS)
             clearSavedSettings(prefs, ANIM_SETTINGS)
+            clearSavedSettings(prefs, BANKING_SETTINGS)
 
 
             if (isMonitorEnabled) {

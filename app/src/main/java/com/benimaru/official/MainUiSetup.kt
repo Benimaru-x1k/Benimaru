@@ -103,7 +103,7 @@ internal fun MainActivity.setupStatusStyling() {
         return when {
             t.isEmpty() || t.startsWith(en(R.string.w_default)) || t.startsWith(en(R.string.w_ready)) ||
                 t.startsWith(en(R.string.w_unknown)) || t.startsWith(en(R.string.w_checking)) -> TweakState.NEUTRAL
-            id == R.id.tvStatusDevOptions -> if (t.startsWith(en(R.string.w_enabled))) TweakState.WARN else TweakState.ACTIVE
+            id == R.id.tvStatusDevOptions -> if (t.startsWith(en(R.string.w_enabled)) || t.contains(en(R.string.w_debug_on))) TweakState.WARN else TweakState.ACTIVE
             id == R.id.tvStatusThermal -> TweakState.WARN
             id == R.id.tvStatusBlurs -> if (t.startsWith(en(R.string.w_disabled))) TweakState.ACTIVE else TweakState.NEUTRAL
             t.startsWith(en(R.string.w_disabled)) -> TweakState.NEUTRAL

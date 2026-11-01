@@ -365,8 +365,8 @@ internal fun MainActivity.showRemoveAdsDialog() {
     sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.PRIMARY, dismiss = false) {
         openExternalLink(AppConfig.TELEGRAM_URL)
     }
-    sheet.button(getString(R.string.btn_buy_paypal), SheetStyle.PRIMARY, dismiss = false) {
-        openExternalLink(AppConfig.PAYPAL_URL)
+    sheet.button(getString(R.string.btn_buy_usdt), SheetStyle.PRIMARY, dismiss = false) {
+        showUsdtPaymentSheet()
     }
     sheet.button(getString(R.string.btn_close), SheetStyle.TEXT)
     sheet.show()
@@ -473,4 +473,63 @@ internal fun MainActivity.verifyPremiumAccount(username: String, pass: String, o
             onDone(ok, reason)
         }
     }
+}
+
+
+internal fun MainActivity.showUsdtPaymentSheet() {
+    val address = AppConfig.USDT_TRC20_ADDRESS
+    val email = AppConfig.PAYMENT_EMAIL
+
+    fun copy(label: String, value: String, toast: Int) {
+        val cb = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        cb.setPrimaryClip(android.content.ClipData.newPlainText(label, value))
+        Toasty.success(this, getString(toast), Toast.LENGTH_SHORT, true).show()
+    }
+
+    val qr = android.widget.ImageView(this).apply {
+        val bmp = android.graphics.BitmapFactory.decodeResource(resources, R.drawable.usdt_trc20_qr)
+        setImageDrawable(android.graphics.drawable.BitmapDrawable(resources, bmp).apply { setFilterBitmap(false) })
+        adjustViewBounds = true
+        scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+        layoutParams = LinearLayout.LayoutParams(dp(220), dp(220)).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+    }
+
+    val addressRow = optionRow(
+        this, getString(R.string.txt_usdt_address_label), address,
+        icon = Ui.drawable(this, R.drawable.ic_lock)
+    ) { copy("USDT TRC20", address, R.string.toast_usdt_address_copied) }
+
+    val emailRow = optionRow(
+        this, getString(R.string.txt_usdt_email_label), email,
+        icon = Ui.drawable(this, R.drawable.ic_security)
+    ) { copy("Email", email, R.string.toast_email_copied) }
+
+    val warning = infoCard(this, getString(R.string.txt_usdt_warning), tint = Color.parseColor("#E09B00"))
+    val emailNote = infoCard(this, getString(R.string.txt_usdt_email_note))
+
+    val content = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        addView(qr)
+        addView(addressRow)
+        addView(warning, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(12) })
+        addView(emailNote, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(12) })
+        addView(emailRow)
+    }
+
+    Sheet(this)
+        .icon(R.drawable.ic_crown, Color.parseColor("#26A17B"))
+        .title(getString(R.string.txt_usdt_title))
+        .message(getString(R.string.txt_usdt_message))
+        .content(content)
+        .button(getString(R.string.btn_copy_usdt_address), SheetStyle.PRIMARY, dismiss = false) {
+            copy("USDT TRC20", address, R.string.toast_usdt_address_copied)
+        }
+        .button(getString(R.string.btn_close), SheetStyle.TEXT)
+        .show()
 }

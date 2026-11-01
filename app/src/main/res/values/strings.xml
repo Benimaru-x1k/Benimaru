@@ -126,7 +126,16 @@
     <string name="btn_watch_ad">Watch ad to unlock</string>
     <string name="btn_copy_details">Copy account details</string>
     <string name="btn_buy_telegram">Buy directly via Telegram</string>
-    <string name="btn_buy_paypal">Buy via PayPal</string>
+    <string name="btn_buy_usdt">Pay with USDT (TRC20)</string>
+    <string name="btn_copy_usdt_address">Copy USDT address</string>
+    <string name="txt_usdt_title">Pay with USDT (TRC20)</string>
+    <string name="txt_usdt_message">Scan the QR code or copy the address below and send your payment in USDT on the TRON (TRC20) network.</string>
+    <string name="txt_usdt_address_label">USDT TRC20 address</string>
+    <string name="txt_usdt_email_label">Send account details to</string>
+    <string name="txt_usdt_warning">Send only USDT on the TRON (TRC20) network. Funds sent on any other network will be lost.</string>
+    <string name="txt_usdt_email_note">After sending the payment, email your account details (username, password and device ID from \"Copy account details\") and the transaction ID to:</string>
+    <string name="toast_usdt_address_copied">USDT address copied</string>
+    <string name="toast_email_copied">Email copied</string>
     <string name="toast_cannot_open_link">No app found to open this link.</string>
     <string name="btn_optimize_launch">Optimize &amp; launch</string>
     <string name="btn_launch_now">Launch now</string>
@@ -259,7 +268,7 @@
     <string name="err_password_short">Use a password with at least 6 characters.</string>
     <string name="txt_verifying">Verifying…</string>
     <string name="toast_account_copied">Account details copied. Paste them in the chat.</string>
-    <string name="txt_buy_hint">Choose a username and password, then tap \"Copy account details\". Send the copied details to us on Telegram, or pay via PayPal and include them in your payment note.</string>
+    <string name="txt_buy_hint">Choose a username and password, then tap \"Copy account details\". Send the copied details to us on Telegram, or pay with USDT (TRC20) and email them to us after payment.</string>
     <string name="err_invalid_login">Invalid username or password.</string>
     <string name="err_device_limit">Account limit exceeded (max 2 devices allowed).</string>
     <string name="err_network">Network error. Please check your connection.</string>

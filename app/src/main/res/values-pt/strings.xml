@@ -125,7 +125,16 @@
     <string name="btn_watch_ad">Assistir anúncio para desbloquear</string>
     <string name="btn_copy_details">Copiar dados da conta</string>
     <string name="btn_buy_telegram">Comprar direto pelo Telegram</string>
-    <string name="btn_buy_paypal">Comprar via PayPal</string>
+    <string name="btn_buy_usdt">Pagar com USDT (TRC20)</string>
+    <string name="btn_copy_usdt_address">Copiar endereço USDT</string>
+    <string name="txt_usdt_title">Pagar com USDT (TRC20)</string>
+    <string name="txt_usdt_message">Escaneie o QR code ou copie o endereço abaixo e envie o pagamento em USDT pela rede TRON (TRC20).</string>
+    <string name="txt_usdt_address_label">Endereço USDT TRC20</string>
+    <string name="txt_usdt_email_label">Enviar dados da conta para</string>
+    <string name="txt_usdt_warning">Envie apenas USDT pela rede TRON (TRC20). Fundos enviados por outra rede serão perdidos.</string>
+    <string name="txt_usdt_email_note">Após enviar o pagamento, envie por e-mail os dados da conta (usuário, senha e ID do dispositivo de \"Copiar dados da conta\") e o ID da transação para:</string>
+    <string name="toast_usdt_address_copied">Endereço USDT copiado</string>
+    <string name="toast_email_copied">E-mail copiado</string>
     <string name="toast_cannot_open_link">Nenhum aplicativo encontrado para abrir este link.</string>
     <string name="btn_optimize_launch">Otimizar e iniciar</string>
     <string name="btn_launch_now">Iniciar agora</string>
@@ -258,7 +267,7 @@
     <string name="err_password_short">Use uma senha com pelo menos 6 caracteres.</string>
     <string name="txt_verifying">Verificando…</string>
     <string name="toast_account_copied">Dados da conta copiados. Cole-os no chat.</string>
-    <string name="txt_buy_hint">Escolha um usuário e uma senha e toque em \"Copiar dados da conta\". Envie os dados copiados pelo Telegram ou pague via PayPal e inclua-os na nota do pagamento.</string>
+    <string name="txt_buy_hint">Escolha um usuário e uma senha e toque em \"Copiar dados da conta\". Envie os dados copiados pelo Telegram ou pague com USDT (TRC20) e envie-os por e-mail após o pagamento.</string>
     <string name="err_invalid_login">Usuário ou senha inválidos.</string>
     <string name="err_device_limit">Limite da conta excedido (máximo de 2 dispositivos).</string>
     <string name="err_network">Erro de rede. Verifique sua conexão.</string>

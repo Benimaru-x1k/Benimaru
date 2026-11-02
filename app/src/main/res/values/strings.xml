@@ -144,7 +144,7 @@
     <string name="toast_you_premium">You are a Premium user!</string>
     <string name="toast_premium_inactive">Your Premium access is no longer active.</string>
     <string name="dlg_premium_feature">Premium feature</string>
-    <string name="dlg_premium_feature_msg">Watch one short video to unlock ALL premium tools for good, or get Premium to also remove ads.</string>
+    <string name="dlg_premium_feature_msg">Watch one short video to unlock ALL premium tools until you close the app, or get Premium to unlock them permanently and remove ads.</string>
     <string name="toast_loading_ad">Loading Ad...</string>
     <string name="toast_ad_failed">Ad failed to load. Please try again later.</string>
     <string name="toast_unlocked">All premium tools unlocked!</string>

@@ -143,7 +143,7 @@
     <string name="toast_you_premium">Você é um usuário Premium!</string>
     <string name="toast_premium_inactive">Seu acesso Premium não está mais ativo.</string>
     <string name="dlg_premium_feature">Recurso Premium</string>
-    <string name="dlg_premium_feature_msg">Assista a um vídeo curto para desbloquear TODOS os recursos premium para sempre, ou assine o Premium para também remover os anúncios.</string>
+    <string name="dlg_premium_feature_msg">Assista a um vídeo curto para desbloquear TODOS os recursos premium até fechar o app, ou assine o Premium para liberá-los permanentemente e remover os anúncios.</string>
     <string name="toast_loading_ad">Carregando anúncio...</string>
     <string name="toast_ad_failed">Falha ao carregar o anúncio. Tente novamente mais tarde.</string>
     <string name="toast_unlocked">Todos os recursos premium desbloqueados!</string>

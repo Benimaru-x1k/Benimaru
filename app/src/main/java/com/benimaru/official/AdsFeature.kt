@@ -28,6 +28,7 @@ private const val REWARD_CALLBACK_GRACE_MS = 1500L
 internal fun MainActivity.initializeLevelPlay() {
     if (isPremium()) return
 
+    // Already initialised (e.g. Premium was switched off again): just make sure ads exist.
     if (levelPlayInitialized) {
         createAdUnits()
         setupBannerAd()

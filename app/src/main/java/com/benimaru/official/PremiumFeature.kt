@@ -34,16 +34,15 @@ internal fun MainActivity.isPremium(): Boolean {
     return getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getBoolean(Prefs.KEY_ADS_REMOVED, false)
 }
 
-internal fun MainActivity.areFeaturesUnlockedByAd(): Boolean {
-    return getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getBoolean(Prefs.KEY_FEATURES_UNLOCKED_BY_AD, false)
-}
+
+@Volatile private var featuresUnlockedThisSession = false
+
+internal fun areFeaturesUnlockedByAd(): Boolean = featuresUnlockedThisSession
 
 internal fun MainActivity.hasPremiumFeatures(): Boolean = isPremium() || areFeaturesUnlockedByAd()
 
-internal fun MainActivity.unlockFeaturesByAd() {
-    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).edit()
-        .putBoolean(Prefs.KEY_FEATURES_UNLOCKED_BY_AD, true)
-        .apply()
+internal fun unlockFeaturesByAd() {
+    featuresUnlockedThisSession = true
 }
 
 internal fun MainActivity.updatePremiumButtonUI() {

@@ -7,6 +7,7 @@ object Prefs {
     const val KEY_DARK_MODE = "isDarkMode"
 
     const val KEY_ADS_REMOVED = "AdsRemoved"
+    const val KEY_FEATURES_UNLOCKED_BY_AD = "FeaturesUnlockedByAd"
     const val KEY_PREMIUM_USER = "PremiumUser"
     const val KEY_PREMIUM_HASH = "PremiumHash"
     const val KEY_PREMIUM_LAST_VERIFIED = "PremiumLastVerified"

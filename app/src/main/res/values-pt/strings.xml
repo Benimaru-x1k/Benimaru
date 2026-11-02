@@ -122,7 +122,7 @@
     <string name="btn_restore_all_frozen">Restaurar todos os apps congelados</string>
     <string name="btn_clear_caches">Limpar caches</string>
     <string name="btn_show_button">Mostrar botão</string>
-    <string name="btn_watch_ad">Assistir anúncio para desbloquear</string>
+    <string name="btn_watch_ad">Assistir 1 anúncio para desbloquear tudo</string>
     <string name="btn_copy_details">Copiar dados da conta</string>
     <string name="btn_buy_telegram">Comprar direto pelo Telegram</string>
     <string name="btn_buy_usdt">Pagar com USDT (TRC20)</string>
@@ -143,10 +143,10 @@
     <string name="toast_you_premium">Você é um usuário Premium!</string>
     <string name="toast_premium_inactive">Seu acesso Premium não está mais ativo.</string>
     <string name="dlg_premium_feature">Recurso Premium</string>
-    <string name="dlg_premium_feature_msg">Desbloqueie uma vez assistindo a um vídeo curto, ou assine o Premium para liberar tudo permanentemente e remover os anúncios.</string>
+    <string name="dlg_premium_feature_msg">Assista a um vídeo curto para desbloquear TODOS os recursos premium para sempre, ou assine o Premium para também remover os anúncios.</string>
     <string name="toast_loading_ad">Carregando anúncio...</string>
     <string name="toast_ad_failed">Falha ao carregar o anúncio. Tente novamente mais tarde.</string>
-    <string name="toast_unlocked">Desbloqueado com sucesso!</string>
+    <string name="toast_unlocked">Todos os recursos premium desbloqueados!</string>
     <string name="toast_ad_skipped">Anúncio ignorado. O recurso continua bloqueado.</string>
     <string name="toast_unofficial">APK não oficial detectado! Fechando o app.</string>
     <string name="notes_default">Correções de bugs e melhorias.</string>

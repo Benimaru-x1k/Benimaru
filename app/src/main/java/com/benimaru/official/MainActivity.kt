@@ -16,7 +16,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.unity3d.services.banners.BannerView
+import com.unity3d.mediation.banner.LevelPlayBannerAdView
+import com.unity3d.mediation.interstitial.LevelPlayInterstitialAd
+import com.unity3d.mediation.rewarded.LevelPlayRewardedAd
 import es.dmoral.toasty.Toasty
 import java.io.File
 import rikka.shizuku.Shizuku
@@ -32,7 +34,14 @@ class MainActivity : AppCompatActivity() {
     internal var shizukuConnected = false
 
     @Volatile internal var rewardedReady = false
-    internal var bannerView: BannerView? = null
+    internal var bannerView: LevelPlayBannerAdView? = null
+    internal var interstitialAd: LevelPlayInterstitialAd? = null
+    internal var rewardedAd: LevelPlayRewardedAd? = null
+    internal var levelPlayInitialized = false
+    internal var levelPlayInitializing = false
+    internal var pendingReward: (() -> Unit)? = null
+    internal var rewardGranted = false
+    internal var pendingInterstitialFinish: (() -> Unit)? = null
 
     internal var isCrosshairEnabled = false
     internal var isMonitorEnabled = false
@@ -91,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         setupThemeToggle(isNightMode)
 
         updatePremiumButtonUI()
-        initializeUnityAds()
+        initializeLevelPlay()
         recheckPremiumIfNeeded(force = true)
 
         verifyAppSignature()
@@ -135,6 +144,10 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         bannerView?.destroy()
         bannerView = null
+        interstitialAd = null
+        rewardedAd = null
+        pendingReward = null
+        pendingInterstitialFinish = null
         Shizuku.removeRequestPermissionResultListener(permissionListener)
     }
 

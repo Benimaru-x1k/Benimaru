@@ -15,3 +15,21 @@
 -keep class com.benimaru.official.TouchDaemon {
     public static void main(java.lang.String[]);
 }
+
+# Unity LevelPlay (+ Unity Ads adapter)
+-keepattributes SourceFile,LineNumberTable,JavascriptInterface
+-keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }
+-keep class com.google.android.gms.appset.** { *; }
+-keep class com.google.android.gms.tasks.** { *; }
+-keep class com.ironsource.adapters.** { *; }
+-dontwarn com.ironsource.**
+-keepclassmembers class com.ironsource.** { public *; }
+-keep public class com.ironsource.**
+-keep public interface com.ironsource.mediationsdk.sdk** {*; }
+-keep public interface com.ironsource.mediationsdk.impressionData.ImpressionDataListener {*; }
+-dontwarn com.iab.omid.**
+-keep class com.iab.omid.** {*;}
+-keep class com.unity3d.ads.** { *; }
+-keep class com.unity3d.services.** { *; }
+-dontwarn com.unity3d.services.**
+-dontwarn com.google.ar.core.**

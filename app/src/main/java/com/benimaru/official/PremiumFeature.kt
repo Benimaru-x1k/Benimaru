@@ -34,6 +34,18 @@ internal fun MainActivity.isPremium(): Boolean {
     return getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getBoolean(Prefs.KEY_ADS_REMOVED, false)
 }
 
+internal fun MainActivity.areFeaturesUnlockedByAd(): Boolean {
+    return getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getBoolean(Prefs.KEY_FEATURES_UNLOCKED_BY_AD, false)
+}
+
+internal fun MainActivity.hasPremiumFeatures(): Boolean = isPremium() || areFeaturesUnlockedByAd()
+
+internal fun MainActivity.unlockFeaturesByAd() {
+    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).edit()
+        .putBoolean(Prefs.KEY_FEATURES_UNLOCKED_BY_AD, true)
+        .apply()
+}
+
 internal fun MainActivity.updatePremiumButtonUI() {
     if (isPremium()) {
         val btnPremium = findViewById<Button>(R.id.btnRemoveAds)
@@ -102,7 +114,7 @@ private fun MainActivity.clearPremiumLocally() {
         .remove(Prefs.KEY_PREMIUM_LAST_VERIFIED)
         .apply()
     updatePremiumButtonUI()
-    initializeUnityAds()
+    initializeLevelPlay()
 }
 
 internal fun MainActivity.revokePremium() {
@@ -182,7 +194,7 @@ internal fun MainActivity.showPremiumStatusSheet() {
 }
 
 internal fun MainActivity.handlePremiumFeature(action: () -> Unit) {
-    if (isPremium()) {
+    if (hasPremiumFeatures()) {
         action()
         return
     }
@@ -191,7 +203,12 @@ internal fun MainActivity.handlePremiumFeature(action: () -> Unit) {
         .icon(R.drawable.ic_crown, Color.parseColor("#E0A800"))
         .title(getString(R.string.dlg_premium_feature))
         .message(getString(R.string.dlg_premium_feature_msg))
-        .button(getString(R.string.btn_watch_ad), SheetStyle.PRIMARY) { showRewardedAd { action() } }
+        .button(getString(R.string.btn_watch_ad), SheetStyle.PRIMARY) {
+            showRewardedAd {
+                unlockFeaturesByAd()
+                action()
+            }
+        }
         .button(getString(R.string.btn_get_premium), SheetStyle.TONAL) { showRemoveAdsDialog() }
         .button(getString(R.string.btn_not_now), SheetStyle.TEXT)
         .show()

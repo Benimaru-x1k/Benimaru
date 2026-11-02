@@ -1,11 +1,11 @@
 package com.benimaru.official
 
 object AppConfig {
-    const val UNITY_GAME_ID = "5781189"
-    const val AD_UNIT_INTERSTITIAL = "Interstitial_Android"
-    const val AD_UNIT_BANNER = "Banner_Android"
-    const val AD_UNIT_REWARDED = "Rewarded_Android"
-    const val UNITY_TEST_MODE = false
+    // Unity LevelPlay
+    const val LEVELPLAY_APP_KEY = "290725abd"
+    const val AD_UNIT_BANNER = "24h3lp1sosejgjs1"
+    const val AD_UNIT_INTERSTITIAL = "0jmpm61xv9sz5j5v"
+    const val AD_UNIT_REWARDED = "2nm6ti9h61c4ou52"
 
     const val INTERSTITIAL_COOLDOWN_MS = 3 * 60 * 1000L
     const val INTERSTITIAL_ACTIONS_BEFORE_FIRST = 3

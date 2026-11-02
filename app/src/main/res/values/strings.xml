@@ -123,7 +123,7 @@
     <string name="btn_restore_all_frozen">Restore all frozen apps</string>
     <string name="btn_clear_caches">Clear caches</string>
     <string name="btn_show_button">Show button</string>
-    <string name="btn_watch_ad">Watch ad to unlock</string>
+    <string name="btn_watch_ad">Watch 1 ad to unlock everything</string>
     <string name="btn_copy_details">Copy account details</string>
     <string name="btn_buy_telegram">Buy directly via Telegram</string>
     <string name="btn_buy_usdt">Pay with USDT (TRC20)</string>
@@ -144,10 +144,10 @@
     <string name="toast_you_premium">You are a Premium user!</string>
     <string name="toast_premium_inactive">Your Premium access is no longer active.</string>
     <string name="dlg_premium_feature">Premium feature</string>
-    <string name="dlg_premium_feature_msg">Unlock it once by watching a short video, or get Premium to unlock everything permanently and remove ads.</string>
+    <string name="dlg_premium_feature_msg">Watch one short video to unlock ALL premium tools for good, or get Premium to also remove ads.</string>
     <string name="toast_loading_ad">Loading Ad...</string>
     <string name="toast_ad_failed">Ad failed to load. Please try again later.</string>
-    <string name="toast_unlocked">Unlocked successfully!</string>
+    <string name="toast_unlocked">All premium tools unlocked!</string>
     <string name="toast_ad_skipped">Ad skipped. Feature remains locked.</string>
     <string name="toast_unofficial">Unofficial APK detected! Closing app.</string>
     <string name="notes_default">Bug fixes and improvements.</string>

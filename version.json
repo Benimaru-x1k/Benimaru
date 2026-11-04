@@ -3,7 +3,7 @@
   "versionName": "4.5",
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.5/BenimaruTool-v4.5.apk",
   "mandatory": true,
-  "premiumAvailable": false,
+  "premiumAvailable": true,
   "premiumMessage": "Premium subscriptions are temporarily paused because I currently undergoing military enlistment training.\n\nNormal operations will resume as soon as I returns.",
   "releaseNotes": "🛠️ 4.5 Update!\n\n- Ads: Moved to Unity LevelPlay for better ad delivery.\n\n- Premium Tools: Watch just one ad to unlock ALL Premium tools permanently. No more ads for every tool.\n\n- Premium Accounts: Still fully ad-free, nothing changes."
 }

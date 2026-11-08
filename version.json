@@ -2,7 +2,7 @@
   "versionCode": 37,
   "versionName": "4.7",
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.7/BenimaruTool-v4.7.apk",
-  "mandatory": true,
+  "mandatory": false,
   "premiumAvailable": false,
   "premiumMessage": "Premium subscriptions are temporarily paused because I am currently on vacation.\n\nNormal operations will resume as soon as I return.",
   "releaseNotes": "🛠️ 4.7 Update!\n\n- Added Ad Loading Sheet\n\n- Release APK now signed with v1, v2 and v3 signature schemes"

@@ -41,6 +41,12 @@ class MainActivity : AppCompatActivity() {
     internal var levelPlayInitializing = false
     internal var pendingReward: (() -> Unit)? = null
     internal var rewardGranted = false
+    internal var rewardedLoading = false
+    internal var interstitialLoading = false
+    internal var rewardedWaiting = false
+    internal var rewardedRetry = 0
+    internal var interstitialRetry = 0
+    internal var levelPlayInitRetry = 0
     internal var pendingInterstitialFinish: (() -> Unit)? = null
 
     internal var isCrosshairEnabled = false

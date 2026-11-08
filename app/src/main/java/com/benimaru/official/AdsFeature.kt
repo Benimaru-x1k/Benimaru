@@ -22,13 +22,24 @@ import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val REWARDED_WAIT_MS = 6000
+
+private const val REWARDED_WAIT_MS = 15000
+private const val REWARDED_RELOAD_CHECK_MS = 250
 private const val REWARD_CALLBACK_GRACE_MS = 1500L
+
+private fun backoffMs(attempt: Int): Long = minOf(3000L shl minOf(attempt, 4), 30000L)
+
+private fun MainActivity.isOnline(): Boolean = try {
+    val cm = getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+    val caps = cm.getNetworkCapabilities(cm.activeNetwork)
+    caps?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+} catch (e: Exception) {
+    true
+}
 
 internal fun MainActivity.initializeLevelPlay() {
     if (isPremium()) return
 
-    // Already initialised (e.g. Premium was switched off again): just make sure ads exist.
     if (levelPlayInitialized) {
         createAdUnits()
         setupBannerAd()
@@ -42,6 +53,7 @@ internal fun MainActivity.initializeLevelPlay() {
         override fun onInitSuccess(configuration: LevelPlayConfiguration) {
             levelPlayInitializing = false
             levelPlayInitialized = true
+            levelPlayInitRetry = 0
             if (isFinishing || isDestroyed || isPremium()) return
             createAdUnits()
             setupBannerAd()
@@ -49,6 +61,11 @@ internal fun MainActivity.initializeLevelPlay() {
 
         override fun onInitFailed(error: LevelPlayInitError) {
             levelPlayInitializing = false
+            val wait = backoffMs(levelPlayInitRetry++)
+            lifecycleScope.launch {
+                delay(wait)
+                if (!isFinishing && !isDestroyed && !levelPlayInitialized) initializeLevelPlay()
+            }
         }
     })
 }
@@ -57,8 +74,18 @@ private fun MainActivity.createAdUnits() {
     if (interstitialAd == null) {
         interstitialAd = LevelPlayInterstitialAd(AppConfig.AD_UNIT_INTERSTITIAL).also {
             it.setListener(object : LevelPlayInterstitialAdListener {
-                override fun onAdLoaded(adInfo: LevelPlayAdInfo) {}
-                override fun onAdLoadFailed(error: LevelPlayAdError) {}
+                override fun onAdLoaded(adInfo: LevelPlayAdInfo) {
+                    interstitialLoading = false
+                    interstitialRetry = 0
+                }
+                override fun onAdLoadFailed(error: LevelPlayAdError) {
+                    interstitialLoading = false
+                    val wait = backoffMs(interstitialRetry++)
+                    lifecycleScope.launch {
+                        delay(wait)
+                        if (!isFinishing && !isDestroyed) loadInterstitialAd()
+                    }
+                }
                 override fun onAdDisplayed(adInfo: LevelPlayAdInfo) {}
                 override fun onAdDisplayFailed(error: LevelPlayAdError, adInfo: LevelPlayAdInfo) {
                     lastInterstitialAt = 0L
@@ -78,10 +105,18 @@ private fun MainActivity.createAdUnits() {
         rewardedAd = LevelPlayRewardedAd(AppConfig.AD_UNIT_REWARDED).also {
             it.setListener(object : LevelPlayRewardedAdListener {
                 override fun onAdLoaded(adInfo: LevelPlayAdInfo) {
+                    rewardedLoading = false
                     rewardedReady = true
+                    rewardedRetry = 0
                 }
                 override fun onAdLoadFailed(error: LevelPlayAdError) {
+                    rewardedLoading = false
                     rewardedReady = false
+                    val wait = backoffMs(rewardedRetry++)
+                    lifecycleScope.launch {
+                        delay(wait)
+                        if (!isFinishing && !isDestroyed) loadRewardedAd()
+                    }
                 }
                 override fun onAdDisplayed(adInfo: LevelPlayAdInfo) {}
                 override fun onAdDisplayFailed(error: LevelPlayAdError, adInfo: LevelPlayAdInfo) {
@@ -119,13 +154,19 @@ private fun MainActivity.createAdUnits() {
 }
 
 internal fun MainActivity.loadInterstitialAd() {
-    if (isPremium()) return
-    interstitialAd?.loadAd()
+    if (isPremium() || interstitialLoading) return
+    val ad = interstitialAd ?: return
+    if (ad.isAdReady()) return
+    interstitialLoading = true
+    ad.loadAd()
 }
 
 internal fun MainActivity.loadRewardedAd() {
-    if (hasPremiumFeatures()) return
-    rewardedAd?.loadAd()
+    if (hasPremiumFeatures() || rewardedLoading) return
+    val ad = rewardedAd ?: return
+    if (ad.isAdReady()) return
+    rewardedLoading = true
+    ad.loadAd()
 }
 
 private fun MainActivity.finishInterstitial() {
@@ -166,33 +207,52 @@ internal fun MainActivity.showRewardedAd(onSuccess: () -> Unit) {
     }
 
     if (isFinishing || isDestroyed) return
+    if (rewardedWaiting) return // ignore repeated taps while we are already waiting for / showing an ad
+
+    if (!isOnline()) {
+        Toasty.error(this, getString(R.string.toast_ad_no_internet), Toast.LENGTH_LONG, true).show()
+        return
+    }
 
     Toasty.info(this, getString(R.string.toast_loading_ad), Toast.LENGTH_SHORT, true).show()
+    rewardedWaiting = true
 
     lifecycleScope.launch {
-        if (!levelPlayInitialized) initializeLevelPlay()
+        try {
+            if (!levelPlayInitialized) initializeLevelPlay()
 
-        var waited = 0
-        var retried = false
-        while (rewardedAd?.isAdReady() != true && waited < REWARDED_WAIT_MS) {
-            if (!retried && waited >= 2000) {
-                retried = true
-                loadRewardedAd()
+            var waited = 0
+            var slowToastShown = false
+            while (rewardedAd?.isAdReady() != true && waited < REWARDED_WAIT_MS) {
+                // Make sure a load is actually in flight (the background retry may be sleeping).
+                if (levelPlayInitialized) {
+                    if (rewardedAd == null) initializeLevelPlay()
+                    loadRewardedAd()
+                }
+                // Watchdog: if a load never called back, allow a fresh one.
+                if (waited == 8000) rewardedLoading = false
+                if (!slowToastShown && waited >= 6000) {
+                    slowToastShown = true
+                    Toasty.info(this@showRewardedAd, getString(R.string.toast_ad_still_loading), Toast.LENGTH_SHORT, true).show()
+                }
+                delay(REWARDED_RELOAD_CHECK_MS.toLong())
+                waited += REWARDED_RELOAD_CHECK_MS
             }
-            delay(250)
-            waited += 250
-        }
 
-        val ad = rewardedAd
-        if (ad == null || !ad.isAdReady()) {
-            Toasty.error(this@showRewardedAd, getString(R.string.toast_ad_failed), Toast.LENGTH_SHORT, true).show()
-            return@launch
-        }
+            val ad = rewardedAd
+            if (isFinishing || isDestroyed) return@launch
+            if (ad == null || !ad.isAdReady()) {
+                Toasty.error(this@showRewardedAd, getString(R.string.toast_ad_failed), Toast.LENGTH_SHORT, true).show()
+                return@launch
+            }
 
-        rewardGranted = false
-        pendingReward = onSuccess
-        rewardedReady = false
-        ad.showAd(this@showRewardedAd)
+            rewardGranted = false
+            pendingReward = onSuccess
+            rewardedReady = false
+            ad.showAd(this@showRewardedAd)
+        } finally {
+            rewardedWaiting = false
+        }
     }
 }
 

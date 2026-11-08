@@ -122,6 +122,7 @@ private fun MainActivity.bindStatusReset(buttonId: Int, statusId: Int) {
 private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardApkInstall).setOnClickListener { showApkInstallSheet() }
     findViewById<CardView>(R.id.cardFlagSecure).setOnClickListener { showFlagSecureSheet() }
+    findViewById<CardView>(R.id.cardFreeform).setOnClickListener { showFreeformSheet() }
 
     findViewById<CardView>(R.id.cardFixedPerformance).setOnClickListener {
         if (prefs.getBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, false)) {
@@ -434,6 +435,7 @@ internal fun MainActivity.resetAllFunctions(prefs: android.content.SharedPrefere
         steps += "settings put global heads_up_notifications_enabled 1"
         steps += "settings delete global tether_dun_required"
         steps += "settings delete secure disable_secure_windows"
+        steps += FREEFORM_RESET_CMD
         steps += "settings put global development_settings_enabled 1"
         bankingRestoreCmd(prefs)?.let { steps += it }
         val resetCmd = steps.joinToString("; ")

@@ -651,4 +651,20 @@
     <string name="btn_show_monitor">Mostrar monitor</string>
     <string name="monitor_toast_ready">O monitor está ligado. Toque neste cartão de novo para mover, redimensionar ou alterar.</string>
     <string name="monitor_running_info">Dicas:\n• Toque em “Mover &amp; redimensionar”, arraste o monitor para onde quiser e toque em ✓ Concluir nele.\n• Escolha abaixo o que mostrar. As mudanças valem na hora.</string>
+
+    <!-- Freeform -->
+    <string name="title_freeform">Freeform</string>
+    <string name="desc_freeform">Ativa janelas livres para que os apps flutuem, mudem de tamanho e rodem lado a lado como em um computador.</string>
+    <string name="ff_msg">Ativa o modo de janelas livres do Android e força os apps a serem redimensionáveis. Alguns aparelhos precisam reiniciar, ou da opção \"Janelas livres\", para o efeito aparecer.</string>
+    <string name="ff_status_on">Status: ATIVADO. As janelas livres estão ativas.</string>
+    <string name="ff_status_off">Status: DESATIVADO. As janelas usam o modo padrão.</string>
+    <string name="ff_hint">Depois de ativar, abra os Recentes e escolha a opção de janela livre em um app, ou reinicie se ela não aparecer.</string>
+    <string name="ff_warn_old_android">Janelas livres exigem Android 7 ou superior, então pode não funcionar no seu aparelho.</string>
+    <string name="ff_btn_on">Ativar</string>
+    <string name="ff_btn_off">Desativar</string>
+    <string name="ff_toast_on">Freeform ativado. Abra os apps novamente, ou reinicie se não aparecer.</string>
+    <string name="ff_toast_off">Freeform desativado.</string>
+    <string name="ff_toast_failed">Não foi possível alterar a configuração. Verifique se o Shizuku está em execução.</string>
+    <string name="toast_ad_no_internet">Sem conexão com a internet. Conecte-se e tente novamente.</string>
+    <string name="toast_ad_still_loading">Ainda carregando o anúncio, aguarde...</string>
 </resources>

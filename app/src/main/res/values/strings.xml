@@ -662,4 +662,20 @@
     <string name="btn_show_monitor">Show monitor</string>
     <string name="monitor_toast_ready">Monitor is on. Tap this card again to move, resize or change it.</string>
     <string name="monitor_running_info">Tips:\n• Tap “Move &amp; resize”, drag the monitor where you want it, then press ✓ Done on it.\n• Pick what to show below. Changes apply right away.</string>
+
+    <!-- Freeform -->
+    <string name="title_freeform">Freeform</string>
+    <string name="desc_freeform">Turns on freeform windows so apps can float, resize and run side by side like on a desktop.</string>
+    <string name="ff_msg">Enables Android\'s freeform window mode and forces apps to be resizable. Some devices need a reboot, or the \"Freeform windows\" option, before it takes effect.</string>
+    <string name="ff_status_on">Status: ON. Freeform windows are enabled.</string>
+    <string name="ff_status_off">Status: OFF. Windows use the default mode.</string>
+    <string name="ff_hint">After turning it on, open Recents and choose the freeform / windowing option on an app, or reboot if you do not see it.</string>
+    <string name="ff_warn_old_android">Freeform windows need Android 7 or newer, so this may not work on your device.</string>
+    <string name="ff_btn_on">Turn on</string>
+    <string name="ff_btn_off">Turn off</string>
+    <string name="ff_toast_on">Freeform is on. Reopen your apps, or reboot if it does not appear.</string>
+    <string name="ff_toast_off">Freeform is off.</string>
+    <string name="ff_toast_failed">Could not change the setting. Check that Shizuku is running.</string>
+    <string name="toast_ad_no_internet">No internet connection. Connect to the internet and try again.</string>
+    <string name="toast_ad_still_loading">Still loading the ad, please wait...</string>
 </resources>

@@ -22,7 +22,6 @@ import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 private const val REWARDED_WAIT_MS = 15000
 private const val REWARDED_RELOAD_CHECK_MS = 250
 private const val REWARD_CALLBACK_GRACE_MS = 1500L
@@ -207,39 +206,46 @@ internal fun MainActivity.showRewardedAd(onSuccess: () -> Unit) {
     }
 
     if (isFinishing || isDestroyed) return
-    if (rewardedWaiting) return // ignore repeated taps while we are already waiting for / showing an ad
+    if (rewardedWaiting) return
 
     if (!isOnline()) {
         Toasty.error(this, getString(R.string.toast_ad_no_internet), Toast.LENGTH_LONG, true).show()
         return
     }
 
-    Toasty.info(this, getString(R.string.toast_loading_ad), Toast.LENGTH_SHORT, true).show()
     rewardedWaiting = true
 
-    lifecycleScope.launch {
+    var job: kotlinx.coroutines.Job? = null
+    val loadingSheet = ProgressSheet(this)
+        .icon(R.drawable.ic_play)
+        .title(getString(R.string.ad_loading_title))
+        .message(getString(R.string.ad_loading_msg))
+        .cancelButton(getString(R.string.btn_cancel)) { job?.cancel() }
+    loadingSheet.show(indeterminate = true)
+    loadingSheet.setIndeterminate(getString(R.string.ad_loading_step_prepare))
+
+    job = lifecycleScope.launch {
         try {
             if (!levelPlayInitialized) initializeLevelPlay()
 
             var waited = 0
             var slowToastShown = false
             while (rewardedAd?.isAdReady() != true && waited < REWARDED_WAIT_MS) {
-                // Make sure a load is actually in flight (the background retry may be sleeping).
                 if (levelPlayInitialized) {
                     if (rewardedAd == null) initializeLevelPlay()
                     loadRewardedAd()
                 }
-                // Watchdog: if a load never called back, allow a fresh one.
                 if (waited == 8000) rewardedLoading = false
                 if (!slowToastShown && waited >= 6000) {
                     slowToastShown = true
-                    Toasty.info(this@showRewardedAd, getString(R.string.toast_ad_still_loading), Toast.LENGTH_SHORT, true).show()
+                    loadingSheet.setIndeterminate(getString(R.string.ad_loading_step_slow))
                 }
                 delay(REWARDED_RELOAD_CHECK_MS.toLong())
                 waited += REWARDED_RELOAD_CHECK_MS
             }
 
             val ad = rewardedAd
+            loadingSheet.dismiss()
             if (isFinishing || isDestroyed) return@launch
             if (ad == null || !ad.isAdReady()) {
                 Toasty.error(this@showRewardedAd, getString(R.string.toast_ad_failed), Toast.LENGTH_SHORT, true).show()
@@ -251,6 +257,7 @@ internal fun MainActivity.showRewardedAd(onSuccess: () -> Unit) {
             rewardedReady = false
             ad.showAd(this@showRewardedAd)
         } finally {
+            loadingSheet.dismiss()
             rewardedWaiting = false
         }
     }

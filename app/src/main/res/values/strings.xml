@@ -678,4 +678,8 @@
     <string name="ff_toast_failed">Could not change the setting. Check that Shizuku is running.</string>
     <string name="toast_ad_no_internet">No internet connection. Connect to the internet and try again.</string>
     <string name="toast_ad_still_loading">Still loading the ad, please wait...</string>
+    <string name="ad_loading_title">Loading ad</string>
+    <string name="ad_loading_msg">Watch a short ad to unlock all premium tools. This can take a few seconds.</string>
+    <string name="ad_loading_step_prepare">Contacting ad server…</string>
+    <string name="ad_loading_step_slow">Still loading, your connection may be slow. Retrying…</string>
 </resources>

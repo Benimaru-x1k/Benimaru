@@ -667,4 +667,8 @@
     <string name="ff_toast_failed">Não foi possível alterar a configuração. Verifique se o Shizuku está em execução.</string>
     <string name="toast_ad_no_internet">Sem conexão com a internet. Conecte-se e tente novamente.</string>
     <string name="toast_ad_still_loading">Ainda carregando o anúncio, aguarde...</string>
+    <string name="ad_loading_title">Carregando anúncio</string>
+    <string name="ad_loading_msg">Assista a um anúncio curto para desbloquear todos os recursos premium. Isso pode levar alguns segundos.</string>
+    <string name="ad_loading_step_prepare">Conectando ao servidor de anúncios…</string>
+    <string name="ad_loading_step_slow">Ainda carregando, sua conexão pode estar lenta. Tentando novamente…</string>
 </resources>

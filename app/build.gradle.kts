@@ -8,18 +8,33 @@ android {
         version = release(37)
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("/home/debian/Downloads/Skeli.jks")   // your keystore
+            storePassword = "October2003"
+            keyAlias = "Skeli"
+            keyPassword = "October2003"
+
+            enableV1Signing = true   // forced on (optional with minSdk 24)
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true // optional, only for faster ADB incremental installs
+        }
+    }
+
     defaultConfig {
         applicationId = "com.benimaru.official"
         minSdk = 24
         targetSdk = 37
-        versionCode = 36
-        versionName = "4.6"
+        versionCode = 37
+        versionName = "4.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = false
             }

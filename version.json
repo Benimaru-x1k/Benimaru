@@ -1,9 +1,9 @@
 {
-  "versionCode": 36,
-  "versionName": "4.6",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.6/BenimaruTool-v4.6.apk",
+  "versionCode": 37,
+  "versionName": "4.7",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.7/BenimaruTool-v4.7.apk",
   "mandatory": true,
   "premiumAvailable": false,
   "premiumMessage": "Premium subscriptions are temporarily paused because I am currently on vacation.\n\nNormal operations will resume as soon as I return.",
-  "releaseNotes": "🚀️ 4.6 Update!\n\n- New: Freeform (free).\n\n- Improved: more reliable ads with automatic retry, and a no-internet message."
+  "releaseNotes": "🛠️ 4.7 Update!\n\n- Added Ad Loading Sheet\n- Release APK now signed with v1, v2 and v3 signature schemes"
 }

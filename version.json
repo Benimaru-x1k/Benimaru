@@ -1,9 +1,9 @@
 {
-  "versionCode": 35,
-  "versionName": "4.5",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.5/BenimaruTool-v4.5.apk",
+  "versionCode": 36,
+  "versionName": "4.6",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.6/BenimaruTool-v4.6.apk",
   "mandatory": true,
   "premiumAvailable": false,
   "premiumMessage": "Premium subscriptions are temporarily paused because I am currently on vacation.\n\nNormal operations will resume as soon as I return.",
-  "releaseNotes": "🛠️ 4.5 Update!\n\n- Ads: Moved to Unity LevelPlay for better ad delivery.\n\n- Premium Tools: Watch just one ad to unlock ALL Premium tools permanently. No more ads for every tool.\n\n- Premium Accounts: Still fully ad-free, nothing changes."
+  "releaseNotes": "🚀️ 4.6 Update!\n\n- New: Freeform (free).\n\n- Improved: more reliable ads with automatic retry, and a no-internet message."
 }

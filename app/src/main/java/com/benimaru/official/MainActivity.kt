@@ -16,9 +16,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.unity3d.mediation.banner.LevelPlayBannerAdView
-import com.unity3d.mediation.interstitial.LevelPlayInterstitialAd
-import com.unity3d.mediation.rewarded.LevelPlayRewardedAd
+import com.unity3d.services.banners.BannerView
 import es.dmoral.toasty.Toasty
 import java.io.File
 import rikka.shizuku.Shizuku
@@ -34,11 +32,10 @@ class MainActivity : AppCompatActivity() {
     internal var shizukuConnected = false
 
     @Volatile internal var rewardedReady = false
-    internal var bannerView: LevelPlayBannerAdView? = null
-    internal var interstitialAd: LevelPlayInterstitialAd? = null
-    internal var rewardedAd: LevelPlayRewardedAd? = null
-    internal var levelPlayInitialized = false
-    internal var levelPlayInitializing = false
+    internal var bannerView: BannerView? = null
+    @Volatile internal var interstitialReady = false
+    internal var adsInitialized = false
+    internal var adsInitializing = false
     internal var pendingReward: (() -> Unit)? = null
     internal var rewardGranted = false
     internal var rewardedLoading = false
@@ -46,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     internal var rewardedWaiting = false
     internal var rewardedRetry = 0
     internal var interstitialRetry = 0
-    internal var levelPlayInitRetry = 0
+    internal var adsInitRetry = 0
     internal var pendingInterstitialFinish: (() -> Unit)? = null
 
     internal var isCrosshairEnabled = false
@@ -106,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         setupThemeToggle(isNightMode)
 
         updatePremiumButtonUI()
-        initializeLevelPlay()
+        initializeAds()
         recheckPremiumIfNeeded(force = true)
 
         verifyAppSignature()
@@ -150,8 +147,6 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         bannerView?.destroy()
         bannerView = null
-        interstitialAd = null
-        rewardedAd = null
         pendingReward = null
         pendingInterstitialFinish = null
         Shizuku.removeRequestPermissionResultListener(permissionListener)

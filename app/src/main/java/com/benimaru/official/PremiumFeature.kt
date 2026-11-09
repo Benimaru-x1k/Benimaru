@@ -113,7 +113,7 @@ private fun MainActivity.clearPremiumLocally() {
         .remove(Prefs.KEY_PREMIUM_LAST_VERIFIED)
         .apply()
     updatePremiumButtonUI()
-    initializeLevelPlay()
+    initializeAds()
 }
 
 internal fun MainActivity.revokePremium() {

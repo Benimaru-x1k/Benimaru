@@ -26,8 +26,8 @@ android {
         applicationId = "com.benimaru.official"
         minSdk = 24
         targetSdk = 37
-        versionCode = 37
-        versionName = "4.7"
+        versionCode = 38
+        versionName = "4.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,10 +59,6 @@ dependencies {
     implementation("dev.rikka.shizuku:provider:13.1.0")
     implementation("com.github.GrenderG:Toasty:1.5.2")
     implementation("com.google.mlkit:translate:17.0.3")
-    implementation("com.unity3d.ads-mediation:mediation-sdk:9.5.0")
-    implementation("com.google.android.gms:play-services-appset:16.0.0")
+    implementation("com.unity3d.ads:unity-ads:4.16.6")
     implementation("com.google.android.gms:play-services-ads-identifier:18.1.0")
-    implementation("com.google.android.gms:play-services-basement:18.1.0")
-    // Only if you want Unity Ads as one of the networks LevelPlay fills from:
-    implementation("com.unity3d.ads-mediation:unityads-adapter:5.15.0")
 }

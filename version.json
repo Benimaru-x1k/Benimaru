@@ -2,7 +2,7 @@
   "versionCode": 38,
   "versionName": "4.8",
   "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.8/BenimaruTool-v4.8.apk",
-  "mandatory": true,
+  "mandatory": false,
   "premiumAvailable": false,
   "premiumMessage": "Premium subscriptions are temporarily paused because I am currently on vacation.\n\nNormal operations will resume as soon as I return.",
   "releaseNotes": "🛠️ 4.8 Update!\n\n- Added Ad Loading Sheet\n\n- Switched back to Unity Ads for faster, more reliable ad loading\n\n- Fixed rewarded ads (premium unlock) sometimes failing to load or show\n\n- Ads now preload and reload automatically after each view\n\n- Ad errors now show the reason when an ad fails."

@@ -4,14 +4,18 @@
 
 **The Ultimate Rootless Android Optimization & Gaming Utility**
 
-[![Platform: Android](https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
-[![API: Shizuku](https://img.shields.io/badge/API-Shizuku-blue?logo=android)](https://shizuku.rikka.app/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Platform](https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://developer.android.com)
+[![Shizuku](https://img.shields.io/badge/Powered%20by-Shizuku-2563EB?style=flat-square&logo=android&logoColor=white)](https://shizuku.rikka.app/)
+[![Root](https://img.shields.io/badge/Root-Not%20required-success?style=flat-square&logo=android&logoColor=white)](https://shizuku.rikka.app/guide/setup/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Material 3](https://img.shields.io/badge/UI-Material%203-6750A4?style=flat-square&logo=materialdesign&logoColor=white)](https://m3.material.io/)
+[![License](https://img.shields.io/badge/License-MIT-F5C518?style=flat-square)](LICENSE)
 
-[![Release](https://img.shields.io/github/v/release/Benimaru-x1k/Benimaru?logo=github&label=Release)](../../releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Benimaru-x1k/Benimaru/total?logo=github&label=Downloads&color=brightgreen)](../../releases)
-[![Languages](https://img.shields.io/badge/Languages-Auto%20(Device%20Language)-0A84FF?logo=googletranslate&logoColor=white)](#-automatic-language)
+[![Release](https://img.shields.io/github/v/release/Benimaru-x1k/Benimaru?style=flat-square&logo=github&label=Release&color=0A84FF)](../../releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Benimaru-x1k/Benimaru/total?style=flat-square&logo=github&label=Downloads&color=brightgreen)](../../releases)
+[![Stars](https://img.shields.io/github/stars/Benimaru-x1k/Benimaru?style=flat-square&logo=github&label=Stars&color=F5A623)](../../stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/Benimaru-x1k/Benimaru?style=flat-square&logo=github&label=Last%20commit)](../../commits)
+[![Languages](https://img.shields.io/badge/Languages-Auto%20(Device%20Language)-0A84FF?style=flat-square&logo=googletranslate&logoColor=white)](#-automatic-language)
 
 </div>
 

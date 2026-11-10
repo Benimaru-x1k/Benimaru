@@ -124,16 +124,16 @@
     <string name="btn_clear_caches">Clear caches</string>
     <string name="btn_show_button">Show button</string>
     <string name="btn_watch_ad">Watch 1 ad to unlock everything</string>
-    <string name="btn_copy_details">Copy account details</string>
-    <string name="btn_buy_telegram">Buy directly via Telegram</string>
-    <string name="btn_buy_usdt">Pay with USDT (TRC20)</string>
+    <string name="btn_copy_details">Step 2: Copy account details</string>
+    <string name="btn_buy_telegram">Join Our Telegram Group</string>
+    <string name="btn_buy_usdt">Step 3: Pay with USDT (TRC20)</string>
     <string name="btn_copy_usdt_address">Copy USDT address</string>
-    <string name="txt_usdt_title">Pay with USDT (TRC20)</string>
-    <string name="txt_usdt_message">Scan the QR code or copy the address below and send your payment in USDT on the TRON (TRC20) network.</string>
+    <string name="txt_usdt_title">Step 3: Pay with USDT (TRC20)</string>
+    <string name="txt_usdt_message">Send 6 USDT (a one-time payment) on the TRON (TRC20) network.\n1. Scan the QR code, or tap the address below to copy it.\n2. In your wallet or exchange, choose the TRON (TRC20) network.\n3. Send 6 USDT. If your wallet or exchange charges a withdrawal fee, add it so the full 6 USDT arrives.\n4. Save the transaction ID (TXID) for the next step.</string>
     <string name="txt_usdt_address_label">USDT TRC20 address</string>
-    <string name="txt_usdt_email_label">Send account details to</string>
+    <string name="txt_usdt_email_label">Send details to</string>
     <string name="txt_usdt_warning">Send only USDT on the TRON (TRC20) network. Funds sent on any other network will be lost.</string>
-    <string name="txt_usdt_email_note">After sending the payment, email your account details (username, password and device ID from \"Copy account details\") and the transaction ID to:</string>
+    <string name="txt_usdt_email_note">Step 4: After paying, email us the account details you copied in Step 2 (username, device ID and password hash) together with the transaction ID (TXID):</string>
     <string name="toast_usdt_address_copied">USDT address copied</string>
     <string name="toast_email_copied">Email copied</string>
     <string name="toast_cannot_open_link">No app found to open this link.</string>
@@ -256,7 +256,7 @@
     <string name="dlg_change_res">Change resolution</string>
     <string name="dlg_change_res_msg">Lower resolutions can boost frame rates and battery life.</string>
     <string name="toast_float_enabled">Floating menu enabled</string>
-    <string name="premium_benefits">✓  No ads, ever\n✓  Every premium tweak unlocked\n✓  Works on up to 2 devices\n✓  One-time $3 payment, lifetime access</string>
+    <string name="premium_benefits">✓  No ads, ever\n✓  Every premium tweak unlocked\n✓  Works on up to 2 devices\n✓  One-time $6 payment, lifetime access</string>
     <string name="hint_username">Username</string>
     <string name="hint_password">Password</string>
     <string name="hint_device_id">Device ID</string>
@@ -267,8 +267,8 @@
     <string name="err_username_format">Username must be 3-32 letters, numbers, dots, dashes or underscores.</string>
     <string name="err_password_short">Use a password with at least 6 characters.</string>
     <string name="txt_verifying">Verifying…</string>
-    <string name="toast_account_copied">Account details copied. Paste them in the chat.</string>
-    <string name="txt_buy_hint">Choose a username and password, then tap \"Copy account details\". Send the copied details to us on Telegram, or pay with USDT (TRC20) and email them to us after payment.</string>
+    <string name="toast_account_copied">Account details copied. Next: pay with USDT, then email them to us.</string>
+    <string name="txt_buy_hint">Get Premium in 4 simple steps. Follow them in order.</string>
     <string name="err_invalid_login">Invalid username or password.</string>
     <string name="err_device_limit">Account limit exceeded (max 2 devices allowed).</string>
     <string name="err_network">Network error. Please check your connection.</string>
@@ -682,4 +682,13 @@
     <string name="ad_loading_msg">Watch a short ad to unlock all premium tools. This can take a few seconds.</string>
     <string name="ad_loading_step_prepare">Contacting ad server…</string>
     <string name="ad_loading_step_slow">Still loading, your connection may be slow. Retrying…</string>
+    <string name="step1_title">Step 1: Create your login</string>
+    <string name="step1_desc">Choose a username and password. You will use them to log in once your account is activated.</string>
+    <string name="step2_title">Step 2: Copy your account details</string>
+    <string name="step2_desc">Tap \"Step 2\" at the bottom. Your details are copied to the clipboard. Nothing is sent yet.</string>
+    <string name="step3_title">Step 3: Pay $6 once</string>
+    <string name="step3_desc">Tap \"Step 3\" at the bottom to see the USDT address, the QR code and how to send the payment.</string>
+    <string name="step4_title">Step 4: Send proof and get activated</string>
+    <string name="step4_desc">Email us the copied details and your payment transaction ID. When we confirm, come back here, open the Login tab and sign in.</string>
+    <string name="err_copy_first">Do Step 2 first: tap \"Copy account details\" so we can activate your account after you pay.</string>
 </resources>

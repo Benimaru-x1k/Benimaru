@@ -250,7 +250,9 @@ private fun MainActivity.premiumFieldError(user: String, pass: String, forPurcha
     return null
 }
 
-private fun MainActivity.copyAccountDetails(user: String, pass: String, deviceId: String, btn: android.widget.Button) {
+private fun MainActivity.copyAccountDetails(
+    user: String, pass: String, deviceId: String, btn: android.widget.Button, onCopied: () -> Unit = {}
+) {
     lifecycleScope.launch {
         val hash = withContext(Dispatchers.Default) { PremiumRepository.hashPassword(user, pass) }
         btn.isEnabled = true
@@ -262,6 +264,7 @@ private fun MainActivity.copyAccountDetails(user: String, pass: String, deviceId
             )
         )
         Toasty.info(this@copyAccountDetails, getString(R.string.toast_account_copied), Toast.LENGTH_LONG, true).show()
+        onCopied()
     }
 }
 
@@ -273,10 +276,63 @@ private fun MainActivity.openExternalLink(url: String) {
     }
 }
 
+private class PremiumStep(val root: LinearLayout, val badge: TextView)
+
+private fun MainActivity.premiumStep(number: Int, title: String, desc: String, color: Int): PremiumStep {
+    val ctx: Context = this
+    val badge = TextView(ctx).apply {
+        text = number.toString()
+        textSize = 13f
+        gravity = Gravity.CENTER
+        setTypeface(typeface, Typeface.BOLD)
+        setTextColor(Color.BLACK)
+        background = Ui.rounded(color, dp(14))
+        layoutParams = LinearLayout.LayoutParams(dp(28), dp(28)).apply {
+            marginEnd = dp(12)
+            topMargin = dp(2)
+        }
+    }
+    val texts = LinearLayout(ctx).apply {
+        orientation = LinearLayout.VERTICAL
+        layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        addView(TextView(ctx).apply {
+            text = title
+            textSize = 15f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(Ui.onSurface(ctx))
+        })
+        addView(TextView(ctx).apply {
+            text = desc
+            textSize = 13f
+            setLineSpacing(0f, 1.15f)
+            setTextColor(Ui.onSurfaceVariant(ctx))
+            setPadding(0, dp(2), 0, 0)
+        })
+    }
+    val root = LinearLayout(ctx).apply {
+        orientation = LinearLayout.HORIZONTAL
+        visibility = View.GONE
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(18) }
+        addView(badge)
+        addView(texts)
+    }
+    return PremiumStep(root, badge)
+}
+
 internal fun MainActivity.showRemoveAdsDialog() {
     val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
     val gold = Color.parseColor("#E0A800")
     var buyMode = false
+    var detailsCopied = false
+    val doneGreen = Color.parseColor("#2E9E5B")
+
+    val step1 = premiumStep(1, getString(R.string.step1_title), getString(R.string.step1_desc), gold)
+    val step2 = premiumStep(2, getString(R.string.step2_title), getString(R.string.step2_desc), gold)
+    val step3 = premiumStep(3, getString(R.string.step3_title), getString(R.string.step3_desc), gold)
+    val step4 = premiumStep(4, getString(R.string.step4_title), getString(R.string.step4_desc), gold)
+    val steps = listOf(step1, step2, step3, step4)
 
 
     val tabs = createPremiumModeTabs()
@@ -331,10 +387,14 @@ internal fun MainActivity.showRemoveAdsDialog() {
         orientation = LinearLayout.VERTICAL
         addView(closedCard)
         addView(benefits)
+        addView(step1.root)
         addView(userLayout)
         addView(passLayout)
         addView(errorView)
+        addView(step2.root)
         addView(deviceRow)
+        addView(step3.root)
+        addView(step4.root)
         addView(note, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply { topMargin = dp(12) })
@@ -376,13 +436,21 @@ internal fun MainActivity.showRemoveAdsDialog() {
     sheet.button(getString(R.string.btn_copy_details), SheetStyle.TONAL, dismiss = false) { btn ->
         val (user, pass) = readFields(true) ?: return@button
         btn.isEnabled = false
-        copyAccountDetails(user, pass, deviceId, btn)
-    }
-    sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.PRIMARY, dismiss = false) {
-        openExternalLink(AppConfig.TELEGRAM_URL)
+        copyAccountDetails(user, pass, deviceId, btn) {
+            detailsCopied = true
+            step2.badge.text = "✓"
+            step2.badge.background = Ui.rounded(doneGreen, dp(14))
+        }
     }
     sheet.button(getString(R.string.btn_buy_usdt), SheetStyle.PRIMARY, dismiss = false) {
+        if (!detailsCopied) {
+            Toasty.warning(this, getString(R.string.err_copy_first), Toast.LENGTH_LONG, true).show()
+            return@button
+        }
         showUsdtPaymentSheet()
+    }
+    sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.TONAL, dismiss = false) {
+        openExternalLink(AppConfig.TELEGRAM_URL)
     }
     sheet.button(getString(R.string.btn_close), SheetStyle.TEXT)
     sheet.show()
@@ -401,6 +469,7 @@ internal fun MainActivity.showRemoveAdsDialog() {
         deviceRow.visibility = formVisibility
         note.visibility = formVisibility
         benefits.visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE
+        steps.forEach { it.root.visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE }
         sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
         for (i in 1..3) sheet.buttonViews[i].visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE
         showError(null)

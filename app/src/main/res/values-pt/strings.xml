@@ -123,16 +123,16 @@
     <string name="btn_clear_caches">Limpar caches</string>
     <string name="btn_show_button">Mostrar botão</string>
     <string name="btn_watch_ad">Assistir 1 anúncio para desbloquear tudo</string>
-    <string name="btn_copy_details">Copiar dados da conta</string>
-    <string name="btn_buy_telegram">Comprar direto pelo Telegram</string>
-    <string name="btn_buy_usdt">Pagar com USDT (TRC20)</string>
+    <string name="btn_copy_details">Passo 2: Copiar dados da conta</string>
+    <string name="btn_buy_telegram">Entrar no nosso grupo do Telegram</string>
+    <string name="btn_buy_usdt">Passo 3: Pagar com USDT (TRC20)</string>
     <string name="btn_copy_usdt_address">Copiar endereço USDT</string>
-    <string name="txt_usdt_title">Pagar com USDT (TRC20)</string>
-    <string name="txt_usdt_message">Escaneie o QR code ou copie o endereço abaixo e envie o pagamento em USDT pela rede TRON (TRC20).</string>
+    <string name="txt_usdt_title">Passo 3: Pagar com USDT (TRC20)</string>
+    <string name="txt_usdt_message">Envie 6 USDT (pagamento único) pela rede TRON (TRC20).\n1. Escaneie o QR code ou toque no endereço abaixo para copiá-lo.\n2. Na sua carteira ou corretora, escolha a rede TRON (TRC20).\n3. Envie 6 USDT. Se sua carteira ou corretora cobrar taxa de saque, some-a para que os 6 USDT completos cheguem.\n4. Guarde o ID da transação (TXID) para o próximo passo.</string>
     <string name="txt_usdt_address_label">Endereço USDT TRC20</string>
-    <string name="txt_usdt_email_label">Enviar dados da conta para</string>
+    <string name="txt_usdt_email_label">Enviar dados para</string>
     <string name="txt_usdt_warning">Envie apenas USDT pela rede TRON (TRC20). Fundos enviados por outra rede serão perdidos.</string>
-    <string name="txt_usdt_email_note">Após enviar o pagamento, envie por e-mail os dados da conta (usuário, senha e ID do dispositivo de \"Copiar dados da conta\") e o ID da transação para:</string>
+    <string name="txt_usdt_email_note">Passo 4: Depois de pagar, envie por e-mail os dados da conta copiados no Passo 2 (usuário, ID do dispositivo e hash da senha) junto com o ID da transação (TXID):</string>
     <string name="toast_usdt_address_copied">Endereço USDT copiado</string>
     <string name="toast_email_copied">E-mail copiado</string>
     <string name="toast_cannot_open_link">Nenhum aplicativo encontrado para abrir este link.</string>
@@ -255,7 +255,7 @@
     <string name="dlg_change_res">Alterar resolução</string>
     <string name="dlg_change_res_msg">Resoluções menores podem aumentar a taxa de quadros e a duração da bateria.</string>
     <string name="toast_float_enabled">Menu flutuante ativado</string>
-    <string name="premium_benefits">✓  Sem anúncios, nunca\n✓  Todos os ajustes premium liberados\n✓  Funciona em até 2 dispositivos\n✓  Pagamento único de US$ 3, acesso vitalício</string>
+    <string name="premium_benefits">✓  Sem anúncios, nunca\n✓  Todos os ajustes premium liberados\n✓  Funciona em até 2 dispositivos\n✓  Pagamento único de US$ 6, acesso vitalício</string>
     <string name="hint_username">Usuário</string>
     <string name="hint_password">Senha</string>
     <string name="hint_device_id">ID do dispositivo</string>
@@ -266,8 +266,8 @@
     <string name="err_username_format">O usuário deve ter de 3 a 32 letras, números, pontos, hifens ou sublinhados.</string>
     <string name="err_password_short">Use uma senha com pelo menos 6 caracteres.</string>
     <string name="txt_verifying">Verificando…</string>
-    <string name="toast_account_copied">Dados da conta copiados. Cole-os no chat.</string>
-    <string name="txt_buy_hint">Escolha um usuário e uma senha e toque em \"Copiar dados da conta\". Envie os dados copiados pelo Telegram ou pague com USDT (TRC20) e envie-os por e-mail após o pagamento.</string>
+    <string name="toast_account_copied">Dados da conta copiados. Próximo: pague com USDT e depois envie-os por e-mail.</string>
+    <string name="txt_buy_hint">Ative o Premium em 4 passos simples. Siga-os em ordem.</string>
     <string name="err_invalid_login">Usuário ou senha inválidos.</string>
     <string name="err_device_limit">Limite da conta excedido (máximo de 2 dispositivos).</string>
     <string name="err_network">Erro de rede. Verifique sua conexão.</string>
@@ -671,4 +671,13 @@
     <string name="ad_loading_msg">Assista a um anúncio curto para desbloquear todos os recursos premium. Isso pode levar alguns segundos.</string>
     <string name="ad_loading_step_prepare">Conectando ao servidor de anúncios…</string>
     <string name="ad_loading_step_slow">Ainda carregando, sua conexão pode estar lenta. Tentando novamente…</string>
+    <string name="step1_title">Passo 1: Crie seu login</string>
+    <string name="step1_desc">Escolha um usuário e uma senha. Você vai usá-los para entrar quando sua conta for ativada.</string>
+    <string name="step2_title">Passo 2: Copie os dados da conta</string>
+    <string name="step2_desc">Toque em \"Passo 2\" na parte de baixo. Os dados são copiados para a área de transferência. Nada é enviado ainda.</string>
+    <string name="step3_title">Passo 3: Pague US$ 6 uma vez</string>
+    <string name="step3_desc">Toque em \"Passo 3\" na parte de baixo para ver o endereço USDT, o QR code e como enviar o pagamento.</string>
+    <string name="step4_title">Passo 4: Envie o comprovante e seja ativado</string>
+    <string name="step4_desc">Envie por e-mail os dados copiados e o ID da transação do pagamento. Quando confirmarmos, volte aqui, abra a aba Login e entre.</string>
+    <string name="err_copy_first">Faça o Passo 2 primeiro: toque em \"Copiar dados da conta\" para podermos ativar sua conta após o pagamento.</string>
 </resources>

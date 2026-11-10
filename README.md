@@ -53,6 +53,7 @@ Benimaru Tool is packed with everything you need to optimize your device, catego
 | Feature | Description |
 |:--------|:------------|
 | 💻 **Shell Execute** ⭐ | Pick your own `.sh` script and run it **live inside the app** with Shizuku shell access. Includes a script preview, a *reset-all-functions-first* warning to avoid conflicts, live streaming output, a Stop button and Copy output. |
+| 🪟 **Freeform** ⭐ | Open your apps and games in resizable **floating windows** on top of other apps, so you can multitask (e.g., watch a guide or chat while you play) without leaving the screen. |
 | 📊 **Floating Hardware Monitor** | An MSI Afterburner-style draggable HUD showing live CPU clock, RAM, storage, battery, refresh rate and network speed. Position it anywhere without obstructing gameplay. |
 | 🧠 **RAM Booster** | See which apps use the most memory right now and stop the heavy ones in one tap. |
 | 🧊 **Freeze Bloatware** | Freeze apps you don't use so they stop using RAM and background CPU. Fully reversible with one tap. |

@@ -4,19 +4,18 @@
 
 **The Ultimate Rootless Android Optimization & Gaming Utility**
 
-[![Platform](https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://developer.android.com)
+[![Platform](https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84?style=flat-square&logo=androidstudio&logoColor=white)](https://developer.android.com)
 [![Shizuku](https://img.shields.io/badge/Powered%20by-Shizuku-2563EB?style=flat-square&logo=android&logoColor=white)](https://shizuku.rikka.app/)
-[![Root](https://img.shields.io/badge/Root-Not%20required-success?style=flat-square&logo=android&logoColor=white)](https://shizuku.rikka.app/guide/setup/)
+[![Root](https://img.shields.io/badge/Root-Not%20required-10B981?style=flat-square&logo=linux&logoColor=white)](https://shizuku.rikka.app/guide/setup/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Material 3](https://img.shields.io/badge/UI-Material%203-6750A4?style=flat-square&logo=materialdesign&logoColor=white)](https://m3.material.io/)
-[![License](https://img.shields.io/badge/License-MIT-F5C518?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-F5C518?style=flat-square&logo=opensourceinitiative&logoColor=white)](LICENSE)
 
 [![Release](https://img.shields.io/github/v/release/Benimaru-x1k/Benimaru?style=flat-square&logo=github&label=Release&color=0A84FF)](../../releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Benimaru-x1k/Benimaru/total?style=flat-square&logo=github&label=Downloads&color=brightgreen)](../../releases)
-[![Stars](https://img.shields.io/github/stars/Benimaru-x1k/Benimaru?style=flat-square&logo=github&label=Stars&color=F5A623)](../../stargazers)
-[![Last commit](https://img.shields.io/github/last-commit/Benimaru-x1k/Benimaru?style=flat-square&logo=github&label=Last%20commit)](../../commits)
+[![Downloads](https://img.shields.io/github/downloads/Benimaru-x1k/Benimaru/total?style=flat-square&logo=icloud&logoColor=white&label=Downloads&color=brightgreen)](../../releases)
+[![Stars](https://img.shields.io/github/stars/Benimaru-x1k/Benimaru?style=flat-square&logo=apachespark&logoColor=white&label=Stars&color=F5A623)](../../stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/Benimaru-x1k/Benimaru?style=flat-square&logo=git&logoColor=white&label=Last%20commit)](../../commits)
 [![Languages](https://img.shields.io/badge/Languages-Auto%20(Device%20Language)-0A84FF?style=flat-square&logo=googletranslate&logoColor=white)](#-automatic-language)
-
 </div>
 
 **Benimaru Tool** is a powerful, rootless Android utility application designed to push your device to its limits. By utilizing the [Shizuku](https://shizuku.rikka.app/) API, this app executes advanced ADB shell commands directly from your device—delivering kernel-level performance tweaks, touch latency reduction, and display customization **without requiring root access or a PC** after the initial setup.

@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity() {
     internal var overlayGraceUntil = 0L
 
     internal var lastPremiumRecheckAt = 0L
-    internal var lastSalesFlagCheckAt = 0L
     internal var isRecheckingPremium = false
 
     internal var onScriptPicked: ((Uri?) -> Unit)? = null
@@ -134,7 +133,6 @@ class MainActivity : AppCompatActivity() {
         refreshFreezeStatus()
         refreshShizukuSilently()
         refreshOverlayStatuses()
-        refreshPremiumSalesFlag()
 
         val apk = pendingApk
         if (apk != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && packageManager.canRequestPackageInstalls()) {

@@ -25,46 +25,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 
-internal fun MainActivity.savePremiumSalesFlag(json: JSONObject) {
-    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).edit()
-        .putBoolean(Prefs.KEY_PREMIUM_SALES_OPEN, json.optBoolean("premiumAvailable", true))
-        .putString(Prefs.KEY_PREMIUM_SALES_MSG, json.optString("premiumMessage", "").trim())
-        .apply()
-}
-
-internal fun MainActivity.premiumSalesOpen(): Boolean =
-    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getBoolean(Prefs.KEY_PREMIUM_SALES_OPEN, true)
-
-internal fun MainActivity.premiumSalesMessage(): String =
-    getSharedPreferences(Prefs.MAIN, Context.MODE_PRIVATE).getString(Prefs.KEY_PREMIUM_SALES_MSG, "").orEmpty()
-        .ifEmpty { getString(R.string.premium_closed_default) }
-
-
-internal fun MainActivity.refreshPremiumSalesFlag() {
-    val now = System.currentTimeMillis()
-    if (now - lastSalesFlagCheckAt < 10 * 60 * 1000L) return
-    lastSalesFlagCheckAt = now
-    lifecycleScope.launch(Dispatchers.IO) {
-        try {
-            val conn = URL("${AppConfig.VERSION_URL}?t=${System.currentTimeMillis()}").openConnection() as HttpURLConnection
-            conn.connectTimeout = 5000
-            conn.readTimeout = 5000
-            conn.useCaches = false
-            if (conn.responseCode == 200) {
-                val text = conn.inputStream.bufferedReader().readText()
-                conn.disconnect()
-                savePremiumSalesFlag(JSONObject(text))
-            } else {
-                conn.disconnect()
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("BenimaruTool", "Failed to refresh premium sales flag", e)
-        }
-    }
-}
-
 internal fun MainActivity.checkForUpdates() {
-    lastSalesFlagCheckAt = System.currentTimeMillis()
     lifecycleScope.launch(Dispatchers.IO) {
         try {
             val url = URL("${AppConfig.VERSION_URL}?t=${System.currentTimeMillis()}")
@@ -77,7 +38,6 @@ internal fun MainActivity.checkForUpdates() {
                 val jsonString = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
                 val jsonObject = JSONObject(jsonString)
-                savePremiumSalesFlag(jsonObject)
 
                 val latestVersionCode = jsonObject.getInt("versionCode")
                 val latestVersionName = jsonObject.getString("versionName")

@@ -10,8 +10,6 @@ object Prefs {
     const val KEY_PREMIUM_USER = "PremiumUser"
     const val KEY_PREMIUM_HASH = "PremiumHash"
     const val KEY_PREMIUM_LAST_VERIFIED = "PremiumLastVerified"
-    const val KEY_PREMIUM_SALES_OPEN = "PremiumSalesOpen"
-    const val KEY_PREMIUM_SALES_MSG = "PremiumSalesMsg"
 
     const val KEY_FIXED_PERF = "FixedPerf"
     const val KEY_FIXED_PERF_AGGRESSIVE = "FixedPerfAggressive"

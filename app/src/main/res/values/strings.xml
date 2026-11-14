@@ -260,6 +260,8 @@
     <string name="hint_username">Username</string>
     <string name="hint_password">Password</string>
     <string name="hint_device_id">Device ID</string>
+    <string name="btn_copy_account_details">Copy Account Details</string>
+    <string name="desc_copy_account_details">Copies your username, password hash and Device ID</string>
     <string name="toast_device_id_copied">Device ID copied</string>
     <string name="txt_password_note">Your password is never sent or stored as text. It is turned into a one-way hash on this device before it is used.</string>
     <string name="txt_login_hint">Log in with the account you created when you purchased.</string>
@@ -267,7 +269,7 @@
     <string name="err_username_format">Username must be 3-32 letters, numbers, dots, dashes or underscores.</string>
     <string name="err_password_short">Use a password with at least 6 characters.</string>
     <string name="txt_verifying">Verifying…</string>
-    <string name="toast_account_copied">Account details copied. Next: pay with USDT, then email them to us.</string>
+    <string name="toast_account_copied">Account details copied.</string>
     <string name="txt_buy_hint">Get Premium in 4 simple steps. Follow them in order.</string>
     <string name="err_invalid_login">Invalid username or password.</string>
     <string name="err_device_limit">Account limit exceeded (max 2 devices allowed).</string>

@@ -260,13 +260,15 @@
     <string name="hint_password">Senha</string>
     <string name="hint_device_id">ID do dispositivo</string>
     <string name="toast_device_id_copied">ID do dispositivo copiado</string>
+    <string name="btn_copy_account_details">Copiar dados da conta</string>
+    <string name="desc_copy_account_details">Copia seu usuário, o hash da senha e o ID do dispositivo</string>
     <string name="txt_password_note">Sua senha nunca é enviada nem armazenada como texto. Ela é convertida em um hash irreversível neste dispositivo antes de ser usada.</string>
     <string name="txt_login_hint">Entre com a conta que você criou ao comprar.</string>
     <string name="err_enter_user_pass">Digite um usuário e uma senha.</string>
     <string name="err_username_format">O usuário deve ter de 3 a 32 letras, números, pontos, hifens ou sublinhados.</string>
     <string name="err_password_short">Use uma senha com pelo menos 6 caracteres.</string>
     <string name="txt_verifying">Verificando…</string>
-    <string name="toast_account_copied">Dados da conta copiados. Próximo: pague com USDT e depois envie-os por e-mail.</string>
+    <string name="toast_account_copied">Dados da conta copiados.</string>
     <string name="txt_buy_hint">Ative o Premium em 4 passos simples. Siga-os em ordem.</string>
     <string name="err_invalid_login">Usuário ou senha inválidos.</string>
     <string name="err_device_limit">Limite da conta excedido (máximo de 2 dispositivos).</string>

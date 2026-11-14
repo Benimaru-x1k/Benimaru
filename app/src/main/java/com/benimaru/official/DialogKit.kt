@@ -100,6 +100,11 @@ class Sheet(private val activity: Activity) {
     private val buttons = mutableListOf<Btn>()
     private var cancelable = true
     private var dismissListener: (() -> Unit)? = null
+    private var sheetKey: String? = null
+
+    private companion object {
+        val activeKeys = mutableSetOf<String>()
+    }
 
     lateinit var dialog: BottomSheetDialog
         private set
@@ -129,6 +134,11 @@ class Sheet(private val activity: Activity) {
 
     fun show(): Sheet {
         if (activity.isFinishing || activity.isDestroyed) return this
+
+        val key = "${System.identityHashCode(activity)}|$titleText|${messageText ?: ""}"
+        if (!activeKeys.add(key)) return this
+        sheetKey = key
+
         val ctx: Context = activity
         val accent = Ui.accent(ctx)
 
@@ -236,7 +246,11 @@ class Sheet(private val activity: Activity) {
             behavior.isHideable = cancelable
             behavior.isDraggable = cancelable
             setOnShowListener { behavior.state = BottomSheetBehavior.STATE_EXPANDED }
-            setOnDismissListener { dismissListener?.invoke() }
+            setOnDismissListener {
+                sheetKey?.let { activeKeys.remove(it) }
+                sheetKey = null
+                dismissListener?.invoke()
+            }
             show()
         }
         return this

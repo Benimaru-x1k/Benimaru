@@ -131,6 +131,8 @@ internal fun MainActivity.downloadAppUpdate(downloadUrl: String, onFail: () -> U
     downloadAndInstall(getString(R.string.dl_updating), downloadUrl, "BenimaruTool-update.apk", finishAfterInstall = false, onFail = onFail)
 }
 
+private class GatewayTimeoutException(code: Int) : java.io.IOException("HTTP $code")
+
 internal fun MainActivity.formatMb(bytes: Long): String = String.format("%.1f MB", bytes / (1024.0 * 1024.0))
 
 private suspend fun CoroutineScope.streamToPartFile(
@@ -205,6 +207,7 @@ internal fun MainActivity.downloadAndInstall(
             }
             conn = c
             c.connect()
+            if (c.responseCode in 502..504) throw GatewayTimeoutException(c.responseCode)
             if (c.responseCode !in 200..299) {
                 throw java.io.IOException(getString(R.string.err_http, c.responseCode))
             }
@@ -228,6 +231,18 @@ internal fun MainActivity.downloadAndInstall(
                 onFail()
             }
             throw e
+        } catch (e: GatewayTimeoutException) {
+            part.delete()
+            withContext(Dispatchers.Main) {
+                progress.dismiss()
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (_: Exception) {
+                    Toasty.error(this@downloadAndInstall, getString(R.string.toast_cannot_open_link), Toast.LENGTH_SHORT, true).show()
+                }
+                if (finishAfterInstall) showShizukuRequiredDialog()
+                onFail()
+            }
         } catch (e: Exception) {
             part.delete()
             withContext(Dispatchers.Main) {

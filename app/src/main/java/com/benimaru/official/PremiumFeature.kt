@@ -213,34 +213,6 @@ internal fun MainActivity.handlePremiumFeature(action: () -> Unit) {
         .show()
 }
 
-private class PremiumModeTabs(
-    val toggle: com.google.android.material.button.MaterialButtonToggleGroup,
-    val loginTab: MaterialButton,
-    val buyTab: MaterialButton
-)
-
-private fun MainActivity.createPremiumModeTabs(): PremiumModeTabs {
-    val toggle = com.google.android.material.button.MaterialButtonToggleGroup(this).apply {
-        isSingleSelection = true
-        isSelectionRequired = true
-    }
-    val loginTab = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-        text = getString(R.string.btn_login)
-        isAllCaps = false
-        id = View.generateViewId()
-        layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
-    }
-    val buyTab = MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-        text = getString(R.string.btn_get_premium)
-        isAllCaps = false
-        id = View.generateViewId()
-        layoutParams = LinearLayout.LayoutParams(0, dp(44), 1f)
-    }
-    toggle.addView(loginTab)
-    toggle.addView(buyTab)
-    return PremiumModeTabs(toggle, loginTab, buyTab)
-}
-
 private fun MainActivity.premiumFieldError(user: String, pass: String, forPurchase: Boolean): String? {
     if (user.isEmpty() || pass.isEmpty()) return getString(R.string.err_enter_user_pass)
     if (forPurchase) {
@@ -251,11 +223,11 @@ private fun MainActivity.premiumFieldError(user: String, pass: String, forPurcha
 }
 
 private fun MainActivity.copyAccountDetails(
-    user: String, pass: String, deviceId: String, btn: android.widget.Button, onCopied: () -> Unit = {}
+    user: String, pass: String, deviceId: String, btn: android.widget.Button?, onCopied: () -> Unit = {}
 ) {
     lifecycleScope.launch {
         val hash = withContext(Dispatchers.Default) { PremiumRepository.hashPassword(user, pass) }
-        btn.isEnabled = true
+        btn?.isEnabled = true
         val cb = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
         cb.setPrimaryClip(
             android.content.ClipData.newPlainText(
@@ -276,75 +248,9 @@ private fun MainActivity.openExternalLink(url: String) {
     }
 }
 
-private class PremiumStep(val root: LinearLayout, val badge: TextView)
-
-private fun MainActivity.premiumStep(number: Int, title: String, desc: String, color: Int): PremiumStep {
-    val ctx: Context = this
-    val badge = TextView(ctx).apply {
-        text = number.toString()
-        textSize = 13f
-        gravity = Gravity.CENTER
-        setTypeface(typeface, Typeface.BOLD)
-        setTextColor(Color.BLACK)
-        background = Ui.rounded(color, dp(14))
-        layoutParams = LinearLayout.LayoutParams(dp(28), dp(28)).apply {
-            marginEnd = dp(12)
-            topMargin = dp(2)
-        }
-    }
-    val texts = LinearLayout(ctx).apply {
-        orientation = LinearLayout.VERTICAL
-        layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-        addView(TextView(ctx).apply {
-            text = title
-            textSize = 15f
-            setTypeface(typeface, Typeface.BOLD)
-            setTextColor(Ui.onSurface(ctx))
-        })
-        addView(TextView(ctx).apply {
-            text = desc
-            textSize = 13f
-            setLineSpacing(0f, 1.15f)
-            setTextColor(Ui.onSurfaceVariant(ctx))
-            setPadding(0, dp(2), 0, 0)
-        })
-    }
-    val root = LinearLayout(ctx).apply {
-        orientation = LinearLayout.HORIZONTAL
-        visibility = View.GONE
-        layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(18) }
-        addView(badge)
-        addView(texts)
-    }
-    return PremiumStep(root, badge)
-}
-
 internal fun MainActivity.showRemoveAdsDialog() {
     val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
     val gold = Color.parseColor("#E0A800")
-    var buyMode = false
-    var detailsCopied = false
-    val doneGreen = Color.parseColor("#2E9E5B")
-
-    val step1 = premiumStep(1, getString(R.string.step1_title), getString(R.string.step1_desc), gold)
-    val step2 = premiumStep(2, getString(R.string.step2_title), getString(R.string.step2_desc), gold)
-    val step3 = premiumStep(3, getString(R.string.step3_title), getString(R.string.step3_desc), gold)
-    val step4 = premiumStep(4, getString(R.string.step4_title), getString(R.string.step4_desc), gold)
-    val steps = listOf(step1, step2, step3, step4)
-
-
-    val tabs = createPremiumModeTabs()
-    val toggle = tabs.toggle
-    val loginTab = tabs.loginTab
-    val buyTab = tabs.buyTab
-
-    val benefits = infoCard(
-        this,
-        getString(R.string.premium_benefits),
-        gold
-    )
 
     val (userLayout, userEdit) = styledField(this, getString(R.string.hint_username), InputType.TYPE_CLASS_TEXT)
     val (passLayout, passEdit) = styledField(
@@ -364,55 +270,10 @@ internal fun MainActivity.showRemoveAdsDialog() {
         errorView.visibility = if (msg.isNullOrEmpty()) View.GONE else View.VISIBLE
     }
 
-    val deviceRow = optionRow(
-        this, getString(R.string.hint_device_id), deviceId,
-        icon = Ui.drawable(this, R.drawable.ic_lock)
-    ) {
-        val cb = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-        cb.setPrimaryClip(android.content.ClipData.newPlainText(getString(R.string.hint_device_id), deviceId))
-        Toasty.success(this, getString(R.string.toast_device_id_copied), Toast.LENGTH_SHORT, true).show()
-    }
-
-    val note = infoCard(
-        this,
-        getString(R.string.txt_password_note)
-    )
-
-    val salesOpen = premiumSalesOpen()
-    val closedCard = infoCard(this, premiumSalesMessage(), tint = Color.parseColor("#E09B00")).apply {
-        visibility = View.GONE
-    }
-
-    val form = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        addView(closedCard)
-        addView(benefits)
-        addView(step1.root)
-        addView(userLayout)
-        addView(passLayout)
-        addView(errorView)
-        addView(step2.root)
-        addView(deviceRow)
-        addView(step3.root)
-        addView(step4.root)
-        addView(note, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(12) })
-    }
-    (benefits.layoutParams as? LinearLayout.LayoutParams)?.bottomMargin = dp(4)
-
-    val sheet = Sheet(this)
-    sheet.icon(R.drawable.ic_crown, gold)
-        .title(getString(R.string.premium_label))
-        .message(getString(R.string.txt_login_hint))
-        .content(toggle)
-        .content(form)
-
-
-    fun readFields(forPurchase: Boolean): Pair<String, String>? {
+    fun readFields(): Pair<String, String>? {
         val user = userEdit.text.toString().trim()
         val pass = passEdit.text.toString()
-        val error = premiumFieldError(user, pass, forPurchase)
+        val error = premiumFieldError(user, pass, false)
         if (error != null) {
             showError(error)
             return null
@@ -421,9 +282,34 @@ internal fun MainActivity.showRemoveAdsDialog() {
         return user to pass
     }
 
+    val copyRow = optionRow(
+        this, getString(R.string.btn_copy_account_details), getString(R.string.desc_copy_account_details),
+        icon = Ui.drawable(this, R.drawable.ic_lock)
+    ) {
+        readFields()?.let { (user, pass) -> copyAccountDetails(user, pass, deviceId, null) }
+    }
+
+    val note = infoCard(this, getString(R.string.txt_password_note))
+
+    val form = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        addView(userLayout)
+        addView(passLayout)
+        addView(errorView)
+        addView(copyRow)
+        addView(note, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(12) })
+    }
+
+    val sheet = Sheet(this)
+    sheet.icon(R.drawable.ic_crown, gold)
+        .title(getString(R.string.premium_label))
+        .message(getString(R.string.txt_login_hint))
+        .content(form)
 
     sheet.button(getString(R.string.btn_login), SheetStyle.PRIMARY, dismiss = false) { btn ->
-        val (user, pass) = readFields(false) ?: return@button
+        val (user, pass) = readFields() ?: return@button
         btn.isEnabled = false
         btn.text = getString(R.string.txt_verifying)
         verifyPremiumAccount(user, pass) { ok, message ->
@@ -432,56 +318,11 @@ internal fun MainActivity.showRemoveAdsDialog() {
             if (ok) sheet.dismiss() else showError(message)
         }
     }
-
-    sheet.button(getString(R.string.btn_copy_details), SheetStyle.TONAL, dismiss = false) { btn ->
-        val (user, pass) = readFields(true) ?: return@button
-        btn.isEnabled = false
-        copyAccountDetails(user, pass, deviceId, btn) {
-            detailsCopied = true
-            step2.badge.text = "✓"
-            step2.badge.background = Ui.rounded(doneGreen, dp(14))
-        }
-    }
-    sheet.button(getString(R.string.btn_buy_usdt), SheetStyle.PRIMARY, dismiss = false) {
-        if (!detailsCopied) {
-            Toasty.warning(this, getString(R.string.err_copy_first), Toast.LENGTH_LONG, true).show()
-            return@button
-        }
-        showUsdtPaymentSheet()
-    }
     sheet.button(getString(R.string.btn_buy_telegram), SheetStyle.TONAL, dismiss = false) {
         openExternalLink(AppConfig.TELEGRAM_URL)
     }
     sheet.button(getString(R.string.btn_close), SheetStyle.TEXT)
     sheet.show()
-
-    fun applyMode() {
-        val blocked = buyMode && !salesOpen
-        sheet.messageView?.text = when {
-            blocked -> getString(R.string.premium_closed_title)
-            buyMode -> getString(R.string.txt_buy_hint)
-            else -> getString(R.string.txt_login_hint)
-        }
-        closedCard.visibility = if (blocked) View.VISIBLE else View.GONE
-        val formVisibility = if (blocked) View.GONE else View.VISIBLE
-        userLayout.visibility = formVisibility
-        passLayout.visibility = formVisibility
-        deviceRow.visibility = formVisibility
-        note.visibility = formVisibility
-        benefits.visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE
-        steps.forEach { it.root.visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE }
-        sheet.buttonViews[0].visibility = if (buyMode) View.GONE else View.VISIBLE
-        for (i in 1..3) sheet.buttonViews[i].visibility = if (buyMode && !blocked) View.VISIBLE else View.GONE
-        showError(null)
-    }
-    toggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
-        if (isChecked) {
-            buyMode = checkedId == buyTab.id
-            applyMode()
-        }
-    }
-    toggle.check(if (salesOpen) loginTab.id else buyTab.id)
-    applyMode()
 }
 
 internal fun MainActivity.verifyPremiumAccount(username: String, pass: String, onDone: (Boolean, String) -> Unit) {

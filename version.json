@@ -1,9 +1,9 @@
 {
-  "versionCode": 39,
-  "versionName": "4.9",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v4.9/BenimaruTool-v4.9.apk",
+  "versionCode": 40,
+  "versionName": "5.0",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v5.0/BenimaruTool-v5.0.apk",
   "mandatory": false,
   "premiumAvailable": true,
   "premiumMessage": "Premium subscriptions are temporarily paused because I am currently undertaking Philippine Army training.\n\nNormal operations will resume as soon as I return.",
-  "releaseNotes": "🚀️ 4.9 Update!\n\n- Every function card now has its own icon in the top-right corner, so tools are easier to recognize at a glance.\n\n- Added new button 'Join Our Telegram Group' that opens our official Telegram group."
+  "releaseNotes": "🚀️ 5.0 Update!\n\n- 🛠️Changes\n- Bottom sheets no longer open twice when a button is double-tapped.\n- If the in-app update fails with a server error (502, 503 or 504), the download link now opens in your browser automatically so you can still update."
 }

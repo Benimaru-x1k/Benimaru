@@ -1,7 +1,7 @@
 {
-  "versionCode": 40,
-  "versionName": "5.0",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v5.0/BenimaruTool-v5.0.apk",
+  "versionCode": 41,
+  "versionName": "5.1",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v5.1/BenimaruTool-v5.1.apk",
   "mandatory": false,
-  "releaseNotes": "🚀️ 5.0 Update!\n\n- 🛠️Changes\n- Bottom sheets no longer open twice when a button is double-tapped.\n- If the in-app update fails with a server error (502, 503 or 504), the download link now opens in your browser automatically so you can still update."
+  "releaseNotes": "🚀️ 5.1 Update!\n\n- 🛠️Changes\n- Fixed 'Show all apps' button not work when clicked.\n- Added loading sheet when 'Show all apps' button clicked.\n- Removed some unused strings accross the app.\n- Updated features & functions."
 }

@@ -128,7 +128,13 @@ class Sheet(private val activity: Activity) {
 
     fun isShowing(): Boolean = ::dialog.isInitialized && dialog.isShowing
 
+    private fun releaseKey() {
+        sheetKey?.let { activeKeys.remove(it) }
+        sheetKey = null
+    }
+
     fun dismiss() {
+        releaseKey()
         if (::dialog.isInitialized && dialog.isShowing) dialog.dismiss()
     }
 
@@ -247,8 +253,7 @@ class Sheet(private val activity: Activity) {
             behavior.isDraggable = cancelable
             setOnShowListener { behavior.state = BottomSheetBehavior.STATE_EXPANDED }
             setOnDismissListener {
-                sheetKey?.let { activeKeys.remove(it) }
-                sheetKey = null
+                releaseKey()
                 dismissListener?.invoke()
             }
             show()

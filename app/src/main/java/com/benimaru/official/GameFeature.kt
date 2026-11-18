@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.ResolveInfo
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
@@ -47,41 +49,94 @@ internal fun MainActivity.findGames(all: Boolean = false): List<ResolveInfo> {
             }
         }
         .distinctBy { it.activityInfo.packageName }
-        .sortedBy { it.loadLabel(pm).toString().lowercase() }
 }
 
+private class PickerApp(val info: ResolveInfo, val label: String, val icon: Drawable?)
+
+/**
+ * Shows the app picker. The app list, labels and icons are loaded on a background thread
+ * while a "Loading apps" bottom sheet is displayed, so the UI never freezes and the user
+ * can see that "Show all apps" is working.
+ */
 internal fun MainActivity.showGamePicker(title: String, message: String, showAll: Boolean = false, onPick: (ResolveInfo) -> Unit) {
-    val games = findGames(showAll)
-    if (games.isEmpty()) {
-        if (!showAll) {
-            showGamePicker(title, message, true, onPick)
-            return
-        }
-        Toasty.info(this, getString(R.string.toast_no_games), Toast.LENGTH_SHORT, true).show()
-        return
-    }
+    if (isFinishing || isDestroyed) return
     val pm = packageManager
-    val sheet = Sheet(this)
-    val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-    games.forEach { app ->
-        list.addView(optionRow(
-            this, app.loadLabel(pm), app.activityInfo.packageName,
-            icon = app.loadIcon(pm), tintIcon = false
-        ) {
-            sheet.dismiss()
-            onPick(app)
-        })
-    }
-    sheet.icon(R.drawable.ic_play)
-        .title(title)
-        .message(message)
-        .content(list)
-    if (!showAll) {
-        sheet.button(getString(R.string.btn_show_all_apps), SheetStyle.TONAL) {
-            showGamePicker(title, message, true, onPick)
+
+    lifecycleScope.launch {
+        var progress: ProgressSheet? = null
+        var loaded = false
+
+        // "Show all apps" loads many more icons, so show the loading sheet right away.
+        // For the (short) games list wait a moment to avoid a flash on fast devices.
+        val loadingJob = launch {
+            if (!showAll) delay(150)
+            if (!loaded && !isFinishing && !isDestroyed) {
+                val loadingText = getString(
+                    if (showAll) R.string.loading_all_apps_msg else R.string.loading_apps_msg
+                )
+                progress = ProgressSheet(this@showGamePicker)
+                    .icon(R.drawable.ic_play)
+                    .title(getString(R.string.loading_apps_title))
+                    .message(loadingText)
+                    .also {
+                        it.show(indeterminate = true)
+                        it.setIndeterminate(getString(R.string.txt_working))
+                    }
+            }
         }
+
+        val apps: List<PickerApp>
+        try {
+            apps = withContext(Dispatchers.Default) {
+                findGames(showAll)
+                    .map { info ->
+                        PickerApp(
+                            info,
+                            info.loadLabel(pm).toString(),
+                            runCatching { info.loadIcon(pm) }.getOrNull()
+                        )
+                    }
+                    .sortedBy { it.label.lowercase() }
+            }
+        } finally {
+            loaded = true
+            loadingJob.cancel()
+            progress?.dismiss()
+        }
+
+        if (isFinishing || isDestroyed) return@launch
+
+        if (apps.isEmpty()) {
+            if (!showAll) {
+                showGamePicker(title, message, true, onPick)
+            } else {
+                Toasty.info(this@showGamePicker, getString(R.string.toast_no_games), Toast.LENGTH_SHORT, true).show()
+            }
+            return@launch
+        }
+
+        val sheet = Sheet(this@showGamePicker)
+        val list = LinearLayout(this@showGamePicker).apply { orientation = LinearLayout.VERTICAL }
+        apps.forEach { app ->
+            list.addView(optionRow(
+                this@showGamePicker, app.label, app.info.activityInfo.packageName,
+                icon = app.icon, tintIcon = false
+            ) {
+                sheet.dismiss()
+                onPick(app.info)
+            })
+        }
+        sheet.icon(R.drawable.ic_play)
+            .title(title)
+            .message(message)
+            .content(list)
+        if (!showAll) {
+            sheet.button(getString(R.string.btn_show_all_apps), SheetStyle.TONAL) {
+                showGamePicker(title, message, true, onPick)
+            }
+        }
+        sheet.button(getString(R.string.btn_close), SheetStyle.TEXT).show()
     }
-    sheet.button(getString(R.string.btn_close), SheetStyle.TEXT).show()
 }
 
 internal fun MainActivity.showGameModeSelectorDialog() {

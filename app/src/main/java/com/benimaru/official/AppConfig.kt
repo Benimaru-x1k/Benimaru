@@ -21,8 +21,6 @@ object AppConfig {
     const val SIGNATURE_URL = "$REPO_RAW_BASE/signature.txt"
     const val VERSION_URL = "$REPO_RAW_BASE/version.json"
     const val TELEGRAM_URL = "https://t.me/+-ML_vRpa83dmMDc1"
-    const val USDT_TRC20_ADDRESS = "TGuax7NAhETmEgp1rbXFnPkZzS2nxxzSr9"
-    const val PAYMENT_EMAIL = "benimarux1kqq@gmail.com"
     const val SHIZUKU_APK_URL =
         "https://github.com/RikkaApps/Shizuku/releases/download/v13.6.0/shizuku-v13.6.0.r1086.2650830c-release.apk"
 

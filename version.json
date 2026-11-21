@@ -1,7 +1,7 @@
 {
-  "versionCode": 41,
-  "versionName": "5.1",
-  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v5.1/BenimaruTool-v5.1.apk",
+  "versionCode": 42,
+  "versionName": "5.2",
+  "apkUrl": "https://github.com/Benimaru-x1k/Benimaru/releases/download/v5.2/BenimaruTool-v5.2.apk",
   "mandatory": false,
-  "releaseNotes": "🚀️ 5.1 Update!\n\n- 🛠️Changes\n- Fixed 'Show all apps' button not work when clicked.\n- Added loading sheet when 'Show all apps' button clicked.\n- Removed some unused strings accross the app.\n- Updated features & functions."
+  "releaseNotes": "🚀 5.2 Update!\n\n- 📊 Ring gauges for RAM, storage and battery\n- 🔄 Live device stats and battery temperature\n- 🔍 Search bar to find tweaks fast\n- ⭐ Favorites: long-press a tweak to pin it\n- 🎯 New Favorites and Active filters\n- 🎨 Compact cards with category colors\n- ↩️ Undo after applying a tweak\n- 📳 Haptic feedback on actions\n- 🛠️ Shizuku hint with a Fix button\n- 🌗 Improved Material 3 theme"
 }

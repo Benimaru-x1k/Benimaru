@@ -60,7 +60,14 @@ internal fun MainActivity.applyFixedPerformance(prefs: android.content.SharedPre
             runAdbCommand(
                 cmd,
                 getString(if (aggressive) R.string.fp_done_aggressive else R.string.fp_done_standard),
-                showAd = true
+                showAd = true,
+                undo = TweakUndo(
+                    command = { fixedPerfResetCmd(prefs) },
+                    after = {
+                        prefs.edit().putBoolean(Prefs.KEY_FIXED_PERF, false).putBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, false).apply()
+                        findViewById<TextView>(R.id.tvStatusFixedPerf).text = getString(R.string.status_default)
+                    }
+                )
             ) {
                 prefs.edit().putBoolean(Prefs.KEY_FIXED_PERF, true).putBoolean(Prefs.KEY_FIXED_PERF_AGGRESSIVE, aggressive).apply()
                 findViewById<TextView>(R.id.tvStatusFixedPerf).text =

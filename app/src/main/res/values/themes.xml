@@ -1,10 +1,54 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme: Material 3 with the Benimaru color scheme.
+         Light/dark values come from values/colors.xml and values-night/colors.xml. -->
     <style name="Base.Theme.Benimaru" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:fontFamily">@font/app_font</item>
+
+        <!-- Brand / primary -->
+        <item name="colorPrimary">@color/primaryAccent</item>
+        <item name="colorOnPrimary">@color/schemeOnPrimary</item>
+        <item name="colorPrimaryContainer">@color/schemePrimaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/schemeOnPrimaryContainer</item>
+
+        <!-- Secondary -->
+        <item name="colorSecondary">@color/schemeSecondary</item>
+        <item name="colorOnSecondary">@color/schemeOnSecondary</item>
+        <item name="colorSecondaryContainer">@color/schemeSecondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/schemeOnSecondaryContainer</item>
+
+        <!-- Tertiary (success green) -->
+        <item name="colorTertiary">@color/schemeTertiary</item>
+        <item name="colorOnTertiary">@color/schemeOnTertiary</item>
+        <item name="colorTertiaryContainer">@color/schemeTertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/schemeOnTertiaryContainer</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/schemeError</item>
+        <item name="colorOnError">@color/schemeOnError</item>
+        <item name="colorErrorContainer">@color/schemeErrorContainer</item>
+        <item name="colorOnErrorContainer">@color/schemeOnErrorContainer</item>
+
+        <!-- Background / surfaces -->
+        <item name="android:colorBackground">@color/schemeBackground</item>
+        <item name="colorOnBackground">@color/schemeOnBackground</item>
+        <item name="colorSurface">@color/schemeSurface</item>
+        <item name="colorOnSurface">@color/schemeOnSurface</item>
+        <item name="colorSurfaceVariant">@color/schemeSurfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/schemeOnSurfaceVariant</item>
+        <item name="colorOutline">@color/schemeOutline</item>
+
+        <!-- Shapes -->
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Benimaru.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Benimaru.Large</item>
     </style>
 
     <style name="Theme.Benimaru" parent="Base.Theme.Benimaru" />
+
+    <style name="ShapeAppearance.Benimaru.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Benimaru.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">24dp</item>
+    </style>
 </resources>

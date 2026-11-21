@@ -3,13 +3,13 @@ package com.benimaru.official
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Color
 import android.os.Build
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +95,7 @@ private fun MainActivity.runTweakOnce(
     alreadyToastRes: Int,
     command: String,
     successMessageRes: Int,
+    undo: TweakUndo? = null,
     onSuccess: () -> Unit = { fetchSystemStatuses() }
 ) {
     val status = AppTranslator.toEnglish(findViewById<TextView>(statusId).text.toString())
@@ -102,7 +103,7 @@ private fun MainActivity.runTweakOnce(
         Toasty.info(this, getString(alreadyToastRes), Toast.LENGTH_SHORT, true).show()
         return
     }
-    runAdbCommand(command, getString(successMessageRes), showAd = true) { onSuccess() }
+    runAdbCommand(command, getString(successMessageRes), showAd = true, undo = undo) { onSuccess() }
 }
 
 private fun MainActivity.bindCommandReset(buttonId: Int, command: String, messageRes: Int) {
@@ -144,7 +145,8 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardImproveNetwork).setOnClickListener {
         runTweakOnce(
             R.id.tvStatusNetwork, { en(R.string.w_optimized) }, R.string.toast_already_optimized,
-            "settings put global tether_dun_required 0", R.string.msg_net_optimized
+            "settings put global tether_dun_required 0", R.string.msg_net_optimized,
+            undo = TweakUndo({ "settings delete global tether_dun_required" })
         )
     }
 
@@ -152,7 +154,11 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
         snapshotThen(prefs, TOUCH_SETTINGS) {
             runTweakOnce(
                 R.id.tvStatusTouch, { en(R.string.w_improved) }, R.string.toast_already_improved,
-                "settings put system pointer_speed 7 && settings put secure long_press_timeout 250", R.string.msg_touch_improved
+                "settings put system pointer_speed 7 && settings put secure long_press_timeout 250", R.string.msg_touch_improved,
+                undo = TweakUndo(
+                    command = { restoreSettingsCmd(prefs, TOUCH_SETTINGS) },
+                    after = { clearSavedSettings(prefs, TOUCH_SETTINGS) }
+                )
             )
         }
     }
@@ -162,7 +168,11 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
             runTweakOnce(
                 R.id.tvStatusAnimations, { "0.5x" }, R.string.toast_already_sped,
                 "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5 && settings put global animator_duration_scale 0.5",
-                R.string.msg_anim_fast
+                R.string.msg_anim_fast,
+                undo = TweakUndo(
+                    command = { restoreSettingsCmd(prefs, ANIM_SETTINGS) },
+                    after = { clearSavedSettings(prefs, ANIM_SETTINGS) }
+                )
             )
         }
     }
@@ -170,14 +180,16 @@ private fun MainActivity.setupTweakCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardDisableBlurs).setOnClickListener {
         runTweakOnce(
             R.id.tvStatusBlurs, { en(R.string.w_disabled) }, R.string.toast_already_disabled,
-            "settings put global disable_window_blurs 1", R.string.msg_blurs_off
+            "settings put global disable_window_blurs 1", R.string.msg_blurs_off,
+            undo = TweakUndo({ "settings put global disable_window_blurs 0" })
         )
     }
 
     findViewById<CardView>(R.id.cardGamingDnd).setOnClickListener {
         runTweakOnce(
             R.id.tvStatusDnd, { en(R.string.w_blocked) }, R.string.toast_already_blocked,
-            "settings put global heads_up_notifications_enabled 0", R.string.msg_dnd_on
+            "settings put global heads_up_notifications_enabled 0", R.string.msg_dnd_on,
+            undo = TweakUndo({ "settings put global heads_up_notifications_enabled 1" })
         )
     }
 
@@ -207,7 +219,7 @@ private fun MainActivity.showDevOptionsSheet(prefs: SharedPreferences) {
     render()
     val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
     content.addView(box)
-    content.addView(infoCard(this, getString(R.string.dev_opt_warning), Color.parseColor("#E09B00")).apply {
+    content.addView(infoCard(this, getString(R.string.dev_opt_warning), ContextCompat.getColor(this, R.color.warningAmber)).apply {
         layoutParams = LinearLayout.LayoutParams(-1, -2).also { it.topMargin = dp(14) }
     })
 
@@ -221,7 +233,14 @@ private fun MainActivity.showDevOptionsSheet(prefs: SharedPreferences) {
             if (banking) applyBankingMode(prefs)
             else runTweakOnce(
                 R.id.tvStatusDevOptions, { en(R.string.w_disabled) }, R.string.toast_already_disabled,
-                "settings put global development_settings_enabled 0", R.string.msg_devopt_off
+                "settings put global development_settings_enabled 0", R.string.msg_devopt_off,
+                undo = TweakUndo(
+                    command = {
+                        listOfNotNull("settings put global development_settings_enabled 1", bankingRestoreCmd(prefs))
+                            .joinToString("; ")
+                    },
+                    after = { clearSavedSettings(prefs, BANKING_SETTINGS) }
+                )
             )
         }
         .show()
@@ -235,6 +254,7 @@ private fun MainActivity.applyBankingMode(prefs: SharedPreferences) {
             runShell("settings put global adb_wifi_enabled 0")
             runShell("settings put global adb_enabled 0")
             withContext(Dispatchers.Main) {
+                hapticConfirm()
                 findViewById<TextView>(R.id.tvStatusDevOptions)?.text = getString(R.string.status_devopt_off)
                 Toasty.success(this@applyBankingMode, getString(R.string.msg_devopt_banking), Toast.LENGTH_LONG, true).show()
             }
@@ -291,12 +311,19 @@ private fun MainActivity.setupPremiumCardListeners(prefs: SharedPreferences) {
     findViewById<CardView>(R.id.cardThermalThrottling).setOnClickListener {
         handlePremiumFeature {
             Sheet(this)
-                .icon(R.drawable.ic_warning, Color.parseColor("#E53935"))
+                .icon(R.drawable.ic_warning, ContextCompat.getColor(this, R.color.dangerRed))
                 .title(getString(R.string.dlg_thermal_title))
                 .message(getString(R.string.dlg_thermal_msg))
                 .button(getString(R.string.btn_cancel), SheetStyle.TONAL)
                 .button(getString(R.string.btn_enable), SheetStyle.DANGER) {
-                    runAdbCommand("cmd thermalservice override-status 0", getString(R.string.msg_thermal_off)) {
+                    runAdbCommand(
+                        "cmd thermalservice override-status 0",
+                        getString(R.string.msg_thermal_off),
+                        undo = TweakUndo(
+                            command = { "cmd thermalservice reset" },
+                            after = { prefs.edit().putBoolean(Prefs.KEY_THERMAL_DISABLED, false).apply() }
+                        )
+                    ) {
                         prefs.edit().putBoolean(Prefs.KEY_THERMAL_DISABLED, true).apply()
                         fetchSystemStatuses()
                     }
@@ -405,7 +432,7 @@ private fun MainActivity.setupBottomActionListeners(prefs: SharedPreferences) {
 
     findViewById<Button>(R.id.btnResetAll).setOnClickListener {
         Sheet(this)
-            .icon(R.drawable.ic_reset, Color.parseColor("#E53935"))
+            .icon(R.drawable.ic_reset, ContextCompat.getColor(this, R.color.dangerRed))
             .title(getString(R.string.dlg_reset_all_title))
             .message(getString(R.string.dlg_reset_all_msg))
             .button(getString(R.string.btn_cancel), SheetStyle.TONAL)

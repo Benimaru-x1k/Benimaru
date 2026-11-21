@@ -2,12 +2,41 @@ package com.benimaru.official
 
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.widget.TextView
-import com.google.android.material.progressindicator.LinearProgressIndicator
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+private const val LIVE_STATS_INTERVAL_MS = 2500L
+
+internal fun MainActivity.startLiveStats() {
+    if (liveStatsJob?.isActive == true) return
+    liveStatsJob = lifecycleScope.launch {
+        while (isActive) {
+            updateDeviceInfo()
+            delay(LIVE_STATS_INTERVAL_MS)
+        }
+    }
+}
+
+internal fun MainActivity.stopLiveStats() {
+    liveStatsJob?.cancel()
+    liveStatsJob = null
+}
+
+private fun MainActivity.readBatteryTempC(): Float? {
+    val intent: Intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) ?: return null
+    val tenths = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE)
+    return if (tenths == Int.MIN_VALUE) null else tenths / 10f
+}
 
 internal fun MainActivity.updateDeviceInfo() {
     try {
@@ -42,12 +71,33 @@ internal fun MainActivity.updateDeviceInfo() {
         findViewById<TextView>(R.id.tvResolutionDisplay).text = currentRes
         findViewById<TextView>(R.id.tvFreeStorageDisplay).text = String.format("%.1f GB", availStorageGb)
 
-        findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.pbRam)
-            .setProgressCompat(((usedRamGb / totalRamGb) * 100).toInt().coerceIn(0, 100), true)
-        findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.pbStorage)
-            .setProgressCompat(((usedStorageGb / totalStorageGb) * 100).toInt().coerceIn(0, 100), true)
-        findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.pbBattery)
-            .setProgressCompat(batLevel.coerceIn(0, 100), true)
+        findViewById<RingGaugeView>(R.id.pbRam)
+            .setProgress(((usedRamGb / totalRamGb) * 100).toInt().coerceIn(0, 100), true)
+        findViewById<RingGaugeView>(R.id.pbStorage)
+            .setProgress(((usedStorageGb / totalStorageGb) * 100).toInt().coerceIn(0, 100), true)
+        findViewById<RingGaugeView>(R.id.pbBattery).apply {
+            invertColors = true
+            setProgress(batLevel.coerceIn(0, 100), true)
+        }
+
+        val tvTemp = findViewById<TextView>(R.id.tvBatteryTemp)
+        val tempC = readBatteryTempC()
+        if (tempC == null) {
+            tvTemp.text = "--°C"
+            tvTemp.setTextColor(ContextCompat.getColor(this, R.color.onGradientMuted))
+        } else {
+            tvTemp.text = String.format("%.1f°C", tempC)
+            tvTemp.setTextColor(
+                ContextCompat.getColor(
+                    this,
+                    when {
+                        tempC >= 45f -> R.color.gaugeBad
+                        tempC >= 40f -> R.color.gaugeWarn
+                        else -> R.color.onGradientMuted
+                    }
+                )
+            )
+        }
     } catch (e: Exception) {
         android.util.Log.e("BenimaruTool", "Error in updateDeviceInfo", e)
     }

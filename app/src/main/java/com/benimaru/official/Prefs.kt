@@ -34,4 +34,5 @@ object Prefs {
     const val KEY_MONITOR_SCALE = "MonitorScale"
     const val KEY_MONITOR_ROWS = "MonitorRows"
     const val KEY_LANG_RETRY_AFTER = "LangRetryAfter"
+    const val KEY_FAVORITE_CARDS = "FavoriteCards"
 }

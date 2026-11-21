@@ -24,4 +24,34 @@
     <color name="gradientCenter">#B71C1C</color>
     <color name="outlineGold">#E0A800</color>
     <color name="outlineGreen">#2E9E5B</color>
+    <!-- Category accents (lighter for dark mode) -->
+    <color name="catPerformance">#FB923C</color>
+    <color name="catDisplay">#A78BFA</color>
+    <color name="catNetwork">#38BDF8</color>
+    <color name="catGaming">#F472B6</color>
+    <color name="catTools">#2DD4BF</color>
+
+    <!-- Material 3 color scheme (dark) -->
+    <color name="schemeOnPrimary">#FFFFFFFF</color>
+    <color name="schemePrimaryContainer">#7F1D1D</color>
+    <color name="schemeOnPrimaryContainer">#FFDAD6</color>
+    <color name="schemeSecondary">#E0B8B5</color>
+    <color name="schemeOnSecondary">#3B1F1D</color>
+    <color name="schemeSecondaryContainer">#3A2B2B</color>
+    <color name="schemeOnSecondaryContainer">#F2DEDC</color>
+    <color name="schemeTertiary">#5FD08C</color>
+    <color name="schemeOnTertiary">#003919</color>
+    <color name="schemeTertiaryContainer">#0F4A2A</color>
+    <color name="schemeOnTertiaryContainer">#C8F2D8</color>
+    <color name="schemeError">#FFB4AB</color>
+    <color name="schemeOnError">#690005</color>
+    <color name="schemeErrorContainer">#93000A</color>
+    <color name="schemeOnErrorContainer">#FFDAD6</color>
+    <color name="schemeBackground">#0F1115</color>
+    <color name="schemeOnBackground">#E6E8EC</color>
+    <color name="schemeSurface">#1A1D23</color>
+    <color name="schemeOnSurface">#E6E8EC</color>
+    <color name="schemeSurfaceVariant">#2A2F37</color>
+    <color name="schemeOnSurfaceVariant">#BFC5CE</color>
+    <color name="schemeOutline">#8A919B</color>
 </resources>

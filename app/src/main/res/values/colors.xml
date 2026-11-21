@@ -23,4 +23,71 @@
     <color name="gradientCenter">#1565C0</color>
     <color name="outlineGold">#E0A800</color>
     <color name="outlineGreen">#2E9E5B</color>
+    <!-- Semantic colors (previously hardcoded in layouts and Kotlin) -->
+    <color name="successGreen">#2E9E5B</color>
+    <color name="successGreenDark">#2E7D32</color>
+    <color name="warningAmber">#E09B00</color>
+    <color name="dangerRed">#E53935</color>
+    <color name="neutralGray">#8A8F98</color>
+    <color name="premiumGold">#E0A800</color>
+    <color name="premiumGoldDark">#8A6D00</color>
+    <color name="hairline">#20808080</color>
+    <color name="strokeFree">#662E9E5B</color>
+    <color name="strokePremium">#66E0A800</color>
+    <color name="strokeWarning">#66E09B00</color>
+    <color name="hintBackground">#1FE09B00</color>
+    <color name="goldTint">#26FFC107</color>
+    <color name="dangerTint">#26E53935</color>
+
+    <!-- Colors used on top of the device card gradient -->
+    <color name="onGradientMuted">#B3FFFFFF</color>
+    <color name="glassFill">#20FFFFFF</color>
+    <color name="glassTrack">#33FFFFFF</color>
+    <color name="glassStroke">#80FFFFFF</color>
+    <color name="glassBadgeFill">#26000000</color>
+
+    <!-- Ring gauges -->
+    <color name="gaugeTrack">#33FFFFFF</color>
+    <color name="gaugeGood">#4ADE80</color>
+    <color name="gaugeWarn">#FBBF24</color>
+    <color name="gaugeBad">#FF6B6B</color>
+
+    <!-- Shizuku status pill -->
+    <color name="shizukuOk">#4ADE80</color>
+    <color name="shizukuBad">#FF6B6B</color>
+    <color name="shizukuOkFill">#334ADE80</color>
+    <color name="shizukuOkStroke">#B34ADE80</color>
+    <color name="shizukuBadFill">#33FF6B6B</color>
+    <color name="shizukuBadStroke">#B3FF6B6B</color>
+
+    <!-- Category accents -->
+    <color name="catPerformance">#F97316</color>
+    <color name="catDisplay">#8B5CF6</color>
+    <color name="catNetwork">#0EA5E9</color>
+    <color name="catGaming">#EC4899</color>
+    <color name="catTools">#14B8A6</color>
+
+    <!-- Material 3 color scheme (light) -->
+    <color name="schemeOnPrimary">#FFFFFFFF</color>
+    <color name="schemePrimaryContainer">#D6E8FF</color>
+    <color name="schemeOnPrimaryContainer">#0A2A52</color>
+    <color name="schemeSecondary">#4F6D8F</color>
+    <color name="schemeOnSecondary">#FFFFFFFF</color>
+    <color name="schemeSecondaryContainer">#D8E4F2</color>
+    <color name="schemeOnSecondaryContainer">#0F2236</color>
+    <color name="schemeTertiary">#2E9E5B</color>
+    <color name="schemeOnTertiary">#FFFFFFFF</color>
+    <color name="schemeTertiaryContainer">#CFF0DC</color>
+    <color name="schemeOnTertiaryContainer">#0B3B20</color>
+    <color name="schemeError">#B3261E</color>
+    <color name="schemeOnError">#FFFFFFFF</color>
+    <color name="schemeErrorContainer">#F9DEDC</color>
+    <color name="schemeOnErrorContainer">#410E0B</color>
+    <color name="schemeBackground">#F4F6FA</color>
+    <color name="schemeOnBackground">#1B1F24</color>
+    <color name="schemeSurface">#FFFFFF</color>
+    <color name="schemeOnSurface">#1B1F24</color>
+    <color name="schemeSurfaceVariant">#E3E8EF</color>
+    <color name="schemeOnSurfaceVariant">#444C57</color>
+    <color name="schemeOutline">#7A8490</color>
 </resources>

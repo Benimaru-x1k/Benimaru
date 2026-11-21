@@ -10,15 +10,15 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/home/debian/Downloads/Skeli.jks")   // your keystore
+            storeFile = file("/home/debian/Downloads/Skeli.jks")
             storePassword = "October2003"
             keyAlias = "Skeli"
             keyPassword = "October2003"
 
-            enableV1Signing = true   // forced on (optional with minSdk 24)
+            enableV1Signing = true
             enableV2Signing = true
             enableV3Signing = true
-            enableV4Signing = true // optional, only for faster ADB incremental installs
+            enableV4Signing = true
         }
     }
 
@@ -26,8 +26,8 @@ android {
         applicationId = "com.benimaru.official"
         minSdk = 24
         targetSdk = 37
-        versionCode = 41
-        versionName = "5.1"
+        versionCode = 42
+        versionName = "5.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

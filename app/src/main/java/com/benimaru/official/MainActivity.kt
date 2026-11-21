@@ -19,6 +19,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.unity3d.services.banners.BannerView
 import es.dmoral.toasty.Toasty
 import java.io.File
+import kotlinx.coroutines.Job
 import rikka.shizuku.Shizuku
 
 internal const val PICKER_SHELL = "shell"
@@ -50,6 +51,9 @@ class MainActivity : AppCompatActivity() {
     internal var isMonitorEnabled = false
     internal var isAutoClickEnabled = false
     internal var overlayGraceUntil = 0L
+
+    internal var liveStatsJob: Job? = null
+    internal var refreshCardFilter: (() -> Unit)? = null
 
     internal var lastPremiumRecheckAt = 0L
     internal var isRecheckingPremium = false
@@ -127,7 +131,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateDeviceInfo()
+        startLiveStats()
         updatePremiumButtonUI()
         recheckPremiumIfNeeded()
         refreshFreezeStatus()
@@ -139,6 +143,11 @@ class MainActivity : AppCompatActivity() {
             pendingApk = null
             installApk(apk, false)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopLiveStats()
     }
 
     override fun onDestroy() {

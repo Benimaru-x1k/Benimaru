@@ -674,4 +674,29 @@
     <string name="loading_apps_title">Loading apps</string>
     <string name="loading_apps_msg">Looking for your games. This only takes a moment.</string>
     <string name="loading_all_apps_msg">Loading all installed apps. This can take a few seconds, please wait.</string>
+
+    <!-- Dashboard: title, search, filters -->
+    <string name="title_main">Benimaru Tool</string>
+    <string name="lbl_ram">RAM</string>
+    <string name="lbl_shizuku">Shizuku</string>
+    <string name="search_hint">Search tweaks</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="chip_favorites">Favorites</string>
+    <string name="chip_active">Active</string>
+    <string name="empty_search">No tweaks match your search</string>
+    <string name="empty_favorites">Long-press any tweak to pin it here</string>
+    <string name="empty_active">No tweaks are active right now</string>
+    <string name="toast_fav_added">Pinned to the top</string>
+    <string name="toast_fav_removed">Removed from favorites</string>
+
+    <!-- Undo -->
+    <string name="btn_undo">Undo</string>
+    <string name="msg_undone">Change undone</string>
+
+    <!-- Shizuku hint -->
+    <string name="btn_fix">Fix</string>
+    <string name="shizuku_hint_title">Shizuku is not connected</string>
+    <string name="shizuku_hint_not_installed">Most tweaks need Shizuku. Install it to get started.</string>
+    <string name="shizuku_hint_not_running">Shizuku is installed but not running. Start it, then come back.</string>
+    <string name="shizuku_hint_no_permission">Shizuku is running. Allow Benimaru to use it so tweaks can be applied.</string>
 </resources>

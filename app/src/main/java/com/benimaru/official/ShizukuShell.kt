@@ -1,10 +1,11 @@
 package com.benimaru.official
 
 import android.content.pm.PackageManager
-import android.graphics.Color
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.card.MaterialCardView
@@ -81,6 +82,8 @@ internal fun MainActivity.refreshShizukuSilently() {
     if (ok != shizukuConnected) {
         updateShizukuBannerUI(ok)
         if (ok) fetchSystemStatuses()
+    } else {
+        updateShizukuHint(ok)
     }
 }
 
@@ -111,7 +114,13 @@ internal fun MainActivity.runShell(cmd: String): ShellResult = try {
     ShellResult(-1, e.message ?: "error")
 }
 
-internal fun MainActivity.runAdbCommand(command: String, successMessage: String, showAd: Boolean = false, onSuccess: () -> Unit = {}) {
+internal fun MainActivity.runAdbCommand(
+    command: String,
+    successMessage: String,
+    showAd: Boolean = false,
+    undo: TweakUndo? = null,
+    onSuccess: () -> Unit = {}
+) {
     if (!hasShizukuPermission()) return
 
     lifecycleScope.launch(Dispatchers.IO) {
@@ -120,7 +129,12 @@ internal fun MainActivity.runAdbCommand(command: String, successMessage: String,
             val exitCode = process.waitFor()
             withContext(Dispatchers.Main) {
                 if (exitCode == 0) {
-                    Toasty.success(this@runAdbCommand, successMessage, Toast.LENGTH_SHORT, true).show()
+                    hapticConfirm()
+                    if (undo != null) {
+                        showUndoSnackbar(successMessage, undo)
+                    } else {
+                        Toasty.success(this@runAdbCommand, successMessage, Toast.LENGTH_SHORT, true).show()
+                    }
                     onSuccess()
                     if (showAd) showInterstitialAd()
                 } else {
@@ -161,11 +175,14 @@ internal fun MainActivity.updateShizukuBannerUI(isConnected: Boolean) {
     val cardShizuku = findViewById<MaterialCardView>(R.id.cardShizukuStatus)
     val tvShizuku = findViewById<TextView>(R.id.tvShizukuStatus)
 
-    val color = Color.parseColor(if (isConnected) "#4ADE80" else "#FF6B6B")
-    tvShizuku.text = if (isConnected) "Shizuku" else getString(R.string.shizuku_offline)
-    tvShizuku.setTextColor(Color.WHITE)
-    cardShizuku.setCardBackgroundColor(Color.parseColor(if (isConnected) "#334ADE80" else "#33FF6B6B"))
-    cardShizuku.strokeColor = Color.parseColor(if (isConnected) "#B34ADE80" else "#B3FF6B6B")
+    val color = ContextCompat.getColor(this, if (isConnected) R.color.shizukuOk else R.color.shizukuBad)
+    tvShizuku.text = if (isConnected) getString(R.string.lbl_shizuku) else getString(R.string.shizuku_offline)
+    tvShizuku.setTextColor(ContextCompat.getColor(this, R.color.white))
+    cardShizuku.setCardBackgroundColor(
+        ContextCompat.getColor(this, if (isConnected) R.color.shizukuOkFill else R.color.shizukuBadFill)
+    )
+    cardShizuku.strokeColor =
+        ContextCompat.getColor(this, if (isConnected) R.color.shizukuOkStroke else R.color.shizukuBadStroke)
     cardShizuku.strokeWidth = dp(2)
 
     AppCompatResources.getDrawable(this, R.drawable.ic_status_dot)?.let { d ->
@@ -179,6 +196,49 @@ internal fun MainActivity.updateShizukuBannerUI(isConnected: Boolean) {
             Toasty.success(this, getString(R.string.toast_shizuku_ok), Toast.LENGTH_SHORT, true).show()
         } else {
             checkShizukuStatus()
+        }
+    }
+
+    updateShizukuHint(isConnected)
+}
+
+internal fun MainActivity.updateShizukuHint(isConnected: Boolean) {
+    val card = findViewById<View>(R.id.cardShizukuHint) ?: return
+    if (isConnected) {
+        card.visibility = View.GONE
+        return
+    }
+    val messageRes = when {
+        !isShizukuInstalled() -> R.string.shizuku_hint_not_installed
+        !Shizuku.pingBinder() -> R.string.shizuku_hint_not_running
+        else -> R.string.shizuku_hint_no_permission
+    }
+    findViewById<TextView>(R.id.tvShizukuHint).setText(messageRes)
+    findViewById<View>(R.id.btnShizukuFix).setOnClickListener { fixShizuku() }
+    card.visibility = View.VISIBLE
+}
+
+internal fun MainActivity.fixShizuku() {
+    when {
+        !isShizukuInstalled() -> downloadShizukuApk()
+        !Shizuku.pingBinder() -> launchShizukuApp()
+        else -> {
+            val granted = try {
+                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            } catch (e: Exception) {
+                false
+            }
+            when {
+                granted -> {
+                    updateShizukuBannerUI(true)
+                    fetchSystemStatuses()
+                }
+                Shizuku.shouldShowRequestPermissionRationale() -> {
+                    Toasty.info(this, getString(R.string.toast_open_shizuku), Toast.LENGTH_LONG, true).show()
+                    launchShizukuApp()
+                }
+                else -> Shizuku.requestPermission(SHIZUKU_REQUEST_CODE)
+            }
         }
     }
 }

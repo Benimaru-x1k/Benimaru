@@ -43,7 +43,20 @@ internal fun MainActivity.showRefreshRateDialog() {
                 else -> {
                     sheet.dismiss()
                     val cmd = "settings put system min_refresh_rate $min && settings put system peak_refresh_rate $max"
-                    runAdbCommand(cmd, getString(R.string.toast_hz_set, min, max), showAd = true) { fetchSystemStatuses() }
+                    val previous = Regex("""(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*Hz""")
+                        .find(findViewById<android.widget.TextView>(R.id.tvStatusRefresh).text.toString())
+                    val undoCmd = if (previous != null) {
+                        "settings put system min_refresh_rate ${previous.groupValues[1]} && " +
+                            "settings put system peak_refresh_rate ${previous.groupValues[2]}"
+                    } else {
+                        "settings delete system min_refresh_rate && settings delete system peak_refresh_rate"
+                    }
+                    runAdbCommand(
+                        cmd,
+                        getString(R.string.toast_hz_set, min, max),
+                        showAd = true,
+                        undo = TweakUndo({ undoCmd })
+                    ) { fetchSystemStatuses() }
                 }
             }
         }
